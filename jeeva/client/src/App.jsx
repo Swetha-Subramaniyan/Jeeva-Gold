@@ -7,6 +7,8 @@ import Billing from "./components/Billing/Billing";
 import Report from "./components/Report/Report";
 import Stock from "./components/Stock/Stock";
 import Navbar from "./components/Navbar/Navbar";
+import Master from "./components/Master/Master";
+import MasterCustomer from "./components/Master/Mastercustomer";
 
 function App() {
   return (
@@ -53,6 +55,8 @@ function App() {
             </PageWithNavbar>
           }
         />
+        <Route path="/master"element={<Master/>}></Route>
+        <Route path="/mastercustomer"element={<MasterCustomer/>}></Route>
       </Routes>
     </BrowserRouter>
   );
@@ -72,3 +76,6 @@ function PageWithNavbar({ children }) {
 }
 
 export default App;
+
+
+

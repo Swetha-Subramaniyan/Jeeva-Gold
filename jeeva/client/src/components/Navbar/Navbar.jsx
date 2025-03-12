@@ -6,6 +6,11 @@ function Navbar() {
     <nav style={navbarStyle}>
       <ul style={navListStyle}>
         <li style={navItemStyle}>
+          <a href="/master" style={linkStyle}>
+            Master
+          </a>
+        </li>
+        <li style={navItemStyle}>
           <a href="/customer" style={linkStyle}>
             Customer
           </a>
