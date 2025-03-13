@@ -41,7 +41,7 @@ function Navbar() {
 }
 
 const navbarStyle = {
-background: "#25274D",
+  background: "#A31D1D",
   padding: "10px 0",
   width: "100%",
   boxSizing: "border-box",

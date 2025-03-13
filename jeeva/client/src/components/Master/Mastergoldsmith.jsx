@@ -28,21 +28,22 @@ function Mastergoldsmith() {
     setIsModalOpen(false);
   };
 
-  const handleSaveGoldsmith = () => {
-    if (goldsmithName && phoneNumber && address) {
-      setGoldsmith([
-        ...goldsmith,
-        {
-          name: goldsmithName,
-          phone: phoneNumber,
-          address: address,
-        },
-      ]);
-      closeModal();
-    } else {
-      alert("Please fill in all customer details.");
-    }
-  };
+const handleSaveGoldsmith = () => {
+  if (goldsmithName && phoneNumber && address) {
+    const newGoldsmith = {
+      name: goldsmithName,
+      phone: phoneNumber,
+      address: address,
+    };
+    const updatedGoldsmith = [...goldsmith, newGoldsmith];
+
+    setGoldsmith(updatedGoldsmith);
+    localStorage.setItem("goldsmith", JSON.stringify(updatedGoldsmith));
+    closeModal();
+  } else {
+    alert("Please fill in all goldsmith details.");
+  }
+};
 
   return (
     <div className="customer-container">

@@ -1,0 +1,93 @@
+.job-card {
+  width: 80%;
+  max-width: 600px;
+  margin: 20px auto;
+  border: 1px solid #ccc;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  font-family: sans-serif;
+}
+
+.job-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  border-bottom: 1px solid #ccc;
+}
+
+.job-card-logo {
+  font-size: 1.2em;
+  font-weight: bold;
+}
+
+.job-card-contact {
+  text-align: right;
+}
+
+.job-card-details {
+  padding: 20px;
+}
+
+.job-card-number {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.job-card-customer,
+.job-card-description,
+.job-card-notes {
+  margin-bottom: 20px;
+}
+
+.job-card-customer h3,
+.job-card-description h3,
+.job-card-notes h3 {
+  font-size: 1em;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.job-card-items {
+  margin-bottom: 20px;
+  color: black;
+}
+
+.job-card-items table {
+  width: 100%;
+  border-collapse: collapse;
+   color: black;
+}
+
+.job-card-items th,
+.job-card-items td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+   color: black;
+}
+
+.job-card-items th {
+  background-color: #f2f2f2;
+}
+
+.job-card-total {
+  text-align: right;
+  margin-bottom: 20px;
+}
+
+.job-card-signature {
+  margin-bottom: 20px;
+}
+
+.job-card-signature p {
+  font-style: italic;
+}
+
+.job-card-footer {
+  background-color: #f8f8f8;
+  padding: 10px 20px;
+  text-align: center;
+  border-top: 1px solid #ccc;
+  font-size: 0.8em;
+}
