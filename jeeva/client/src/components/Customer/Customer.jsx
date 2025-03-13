@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import {
   Container,
@@ -8,13 +9,20 @@ import {
   TableBody,
   TableRow,
   TableCell,
+  TableContainer,
+  IconButton,
+  TextField,
+  InputAdornment,
 } from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
+import PreviewIcon from "@mui/icons-material/Preview";
+import { useNavigate } from "react-router-dom";
 import "./Customer.css";
-import VisibilityIcon from "@mui/icons-material/Visibility";
-
 
 const Customer = () => {
   const [customers, setCustomers] = useState([]);
+  const [searchTerm, setSearchTerm] = useState(""); 
+  const navigate = useNavigate();
 
   useEffect(() => {
     const storedCustomers = JSON.parse(localStorage.getItem("customers"));
@@ -23,41 +31,81 @@ const Customer = () => {
     }
   }, []);
 
+  const filteredCustomers = customers.filter(
+    (customer) =>
+      customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      customer.phone.includes(searchTerm) ||
+      customer.address.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
-    <Container maxWidth="md">
-      <Paper className="customer-details-container" elevation={3}>
+    <Container maxWidth="lg">
+      <Paper className="customer-table-container" elevation={3} sx={{ p: 3 }}>
         <Typography variant="h5" align="center" gutterBottom>
           Customer Details
         </Typography>
-        {customers.length > 0 ? (
-          <Table>
-            <TableHead style={{ color: "white" }}>
-              <TableRow>
-                <TableCell>
-                  <strong>Customer Name</strong>
-                </TableCell>
-                <TableCell>
-                  <strong>Phone Number</strong>
-                </TableCell>
-                <TableCell>
-                  <strong>Address</strong>
-                </TableCell>
-                <TableCell>
-                  <strong>Status</strong>
-                </TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {customers.map((customer, index) => (
-                <TableRow key={index}>
-                  <TableCell>{customer.name}</TableCell>
-                  <TableCell>{customer.phone}</TableCell>
-                  <TableCell>{customer.address}</TableCell>
-                 <TableCell><VisibilityIcon/></TableCell>
+
+        <TextField
+          label="Search Customer"
+          variant="outlined"
+          fullWidth
+          margin="normal"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          sx={{
+            "& .MuiOutlinedInput-root": {
+              borderRadius: "30px",
+              width:"22rem",
+              backgroundColor: "#f8f9fa",
+              "&.Mui-focused": {
+                backgroundColor: "#ffffff", 
+              },
+            },
+          }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon style={{ color: "#777" }} />
+              </InputAdornment>
+            ),
+          }}
+        />
+
+        {filteredCustomers.length > 0 ? (
+          <TableContainer>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell align="center">
+                    <strong>Customer Name</strong>
+                  </TableCell>
+                  <TableCell align="center">
+                    <strong>Phone Number</strong>
+                  </TableCell>
+                  <TableCell align="center">
+                    <strong>Address</strong>
+                  </TableCell>
+                  <TableCell align="center">
+                    <strong>Actions</strong>
+                  </TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHead>
+              <TableBody>
+                {filteredCustomers.map((customer, index) => (
+                  <TableRow key={index} hover>
+                    <TableCell align="center">{customer.name}</TableCell>
+                    <TableCell align="center">{customer.phone}</TableCell>
+                    <TableCell align="center">{customer.address}</TableCell>
+                    <TableCell align="center">
+                      <IconButton onClick={() => navigate("/customertrans")}>
+                        <PreviewIcon color="primary" />
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
         ) : (
           <Typography variant="body1" align="center">
             No customer details available.

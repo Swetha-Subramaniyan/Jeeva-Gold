@@ -9,6 +9,8 @@ import Stock from "./components/Stock/Stock";
 import Navbar from "./components/Navbar/Navbar";
 import Master from "./components/Master/Master";
 import MasterCustomer from "./components/Master/Mastercustomer";
+import Customertrans from "./components/Customer/Customertrans";
+import Jobcard from "./components/Goldsmith/Jobcard";
 
 function App() {
   return (
@@ -55,8 +57,24 @@ function App() {
             </PageWithNavbar>
           }
         />
-        <Route path="/master"element={<Master/>}></Route>
-        <Route path="/mastercustomer"element={<MasterCustomer/>}></Route>
+        <Route
+          path="/customertrans"
+          element={
+            <PageWithNavbar>
+              <Customertrans />
+            </PageWithNavbar>
+          }
+        ></Route>
+        <Route
+          path="/jobcard"
+          element={
+            <PageWithNavbar>
+              <Jobcard />
+            </PageWithNavbar>
+          }
+        ></Route>
+        <Route path="/master" element={<Master />}></Route>
+        <Route path="/mastercustomer" element={<MasterCustomer />}></Route>
       </Routes>
     </BrowserRouter>
   );
