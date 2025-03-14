@@ -1,93 +1,119 @@
+
+.job-card-container {
+  display: flex;
+  justify-content: space-between;
+  /* align-items: flex-start; */
+  padding: 20px;
+  margin-right: 25rem;
+}
+
+.job-card-form {
+  width: 25%;
+  padding: 20px;
+  border: 2px solid #000;
+  background: #f9f9f9;
+  font-family: Arial, sans-serif;
+  margin-left: 5rem;
+}
+
+.job-card-form h3 {
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.job-card-form label {
+  font-weight: bold;
+  display: block;
+  margin: 10px 0 5px;
+}
+
+.job-card-form input,
+.job-card-form select {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 10px;
+  border: 1px solid #000;
+  border-radius: 5px;
+}
+
+.job-card-form button {
+  width: 100%;
+  padding: 10px;
+  background: #000;
+  color: #fff;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.job-card-form button:hover {
+  background: #444;
+}
+
 .job-card {
-  width: 80%;
-  max-width: 600px;
-  margin: 20px auto;
-  border: 1px solid #ccc;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  font-family: sans-serif;
+  width: 55%;
+  padding: 20px;
+  border: 2px solid #000;
+  font-family: Arial, sans-serif;
+  background: #fff;
 }
 
 .job-card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 20px;
-  border-bottom: 1px solid #ccc;
+  text-align: right;
+  border-bottom: 2px solid #000;
+  padding-bottom: 10px;
 }
 
 .job-card-logo {
-  font-size: 1.2em;
+  font-size: 22px;
   font-weight: bold;
 }
 
-.job-card-contact {
+.job-card-contact p {
+  margin: 2px 0;
   text-align: right;
 }
 
 .job-card-details {
-  padding: 20px;
-}
-
-.job-card-number {
+  margin: 10px 0;
   display: flex;
   justify-content: space-between;
-  margin-bottom: 10px;
 }
 
-.job-card-customer,
-.job-card-description,
-.job-card-notes {
-  margin-bottom: 20px;
-}
-
-.job-card-customer h3,
-.job-card-description h3,
-.job-card-notes h3 {
-  font-size: 1em;
-  font-weight: bold;
-  margin-bottom: 5px;
-}
-
-.job-card-items {
-  margin-bottom: 20px;
-  color: black;
+.divider {
+  border: 1px solid #000;
+  margin: 10px 0;
 }
 
 .job-card-items table {
   width: 100%;
   border-collapse: collapse;
-   color: black;
+  margin-top: 10px;
 }
 
 .job-card-items th,
 .job-card-items td {
-  border: 1px solid #ddd;
+  border: 1px solid #000;
   padding: 8px;
-  text-align: left;
-   color: black;
-}
-
-.job-card-items th {
-  background-color: #f2f2f2;
-}
-
-.job-card-total {
-  text-align: right;
-  margin-bottom: 20px;
-}
-
-.job-card-signature {
-  margin-bottom: 20px;
-}
-
-.job-card-signature p {
-  font-style: italic;
+  text-align: center;
 }
 
 .job-card-footer {
-  background-color: #f8f8f8;
-  padding: 10px 20px;
+  margin-top: 35px;
   text-align: center;
-  border-top: 1px solid #ccc;
-  font-size: 0.8em;
 }
+
+.job-card-signature {
+  margin-top: 15px;
+} 
+.job-card-number{
+  display: flex;
+gap: 21rem;
+
+}
+
+
+ 

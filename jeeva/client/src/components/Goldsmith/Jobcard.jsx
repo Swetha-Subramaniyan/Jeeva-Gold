@@ -1,103 +1,201 @@
-import React from "react";
+
+import React, { useState } from "react";
 import "./Jobcard.css";
 
 const Jobcard = () => {
+  const today = new Date().toISOString().split("T")[0];
+  const [formData, setFormData] = useState({
+    date: today,
+    estimateWeight: "",
+    givenWeight: "",
+    selectedItem: "",
+    description: "",
+  });
+
+  const [jobDetails, setJobDetails] = useState({
+    date: today,
+    items: [],
+    description: "",
+  });
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleAddItem = () => {
+    if (
+      !formData.selectedItem ||
+      !formData.givenWeight ||
+      !formData.estimateWeight
+    ) {
+      alert("Please fill all item fields before adding.");
+      return;
+    }
+
+    setJobDetails((prev) => ({
+      ...prev,
+      date: formData.date,
+      description: formData.description,
+      items: [
+        ...prev.items,
+        {
+          selectedItem: formData.selectedItem,
+          givenWeight: formData.givenWeight,
+          estimateWeight: formData.estimateWeight,
+        },
+      ],
+    }));
+
+    setFormData((prev) => ({
+      ...prev,
+      selectedItem: "",
+      givenWeight: "",
+      estimateWeight: "",
+    }));
+  };
+
   return (
-    <div className="job-card">
-      <div className="job-card-header">
-        <div className="job-card-logo">
-         
-         
-          JEEVA GOLD COINS
-        </div>
-        <div className="job-card-contact">
-          <p>9875637456</p>
-          <p>Town Hall 458 Road</p>
-          <p>Coimbatore</p>
-        </div>
+    <div className="job-card-container">
+      <div className="job-card-form">
+        <h3>Job Card Details</h3>
+
+        <label>Date:</label>
+        <input
+          type="date"
+          name="date"
+          value={formData.date}
+          onChange={handleChange}
+        />
+
+        <label>Given Weight:</label>
+        <input
+          type="text"
+          name="givenWeight"
+          value={formData.givenWeight}
+          onChange={handleChange}
+        />
+
+        <label>Estimate Weight:</label>
+        <input
+          type="text"
+          name="estimateWeight"
+          value={formData.estimateWeight}
+          onChange={handleChange}
+        />
+
+        <label>Select Item:</label>
+        <select
+          name="selectedItem"
+          value={formData.selectedItem}
+          onChange={handleChange}
+        >
+          <option value="">Select an Item</option>
+          <option value="Ring">Ring</option>
+          <option value="Chain">Chain</option>
+          <option value="Bracelet">Bracelet</option>
+        </select>
+
+        <label>Description:</label>
+        <textarea
+          name="description"
+          value={formData.description}
+          onChange={handleChange}
+          rows="4"
+          cols="33"
+        ></textarea>
+
+        <button onClick={handleAddItem}>Add Item</button>
       </div>
 
-      <div className="job-card-details">
-        <div className="job-card-number">
+      <div className="job-card">
+        <div className="job-card-header">
+          <div className="job-card-logo">JEEVA GOLD COINS</div>
+          <div className="job-card-contact">
+            <p>Town Hall 458 Road</p>
+            <p>Coimbatore</p>
+            <p>9875637456</p>
+          </div>
+        </div>
+
+        <div className="job-card-details">
+          <div className="job-card-number">
+            <p>
+              <strong>No:</strong> JC20-001
+            </p>
+            <p>
+              <strong>Date:</strong> {jobDetails.date}
+            </p>
+          </div>
+        </div>
+
+        <hr className="divider" />
+
+        <div className="job-card-customer">
+          <h3>Goldsmith Information</h3><br></br>
           <p>
-            <strong>No.:</strong> JC20-001
+            <strong>Name:</strong>
           </p>
           <p>
-            <strong>Date:</strong> March 8, 2025
+            <strong>Address:</strong>
+          </p>
+          <p>
+            <strong>Phone:</strong>
           </p>
         </div>
 
-        <div className="job-card-customer">
-          <h3>Customer Information</h3>
-          <p>
-            <strong>Name:</strong> Joseph
-          </p>
-          <p>
-            <strong>Address:</strong> 123 Main Street,
-          </p>
-          <p>
-            <strong>Phone:</strong> 9867453678
-          </p>
-          
-        </div>
+        <hr className="divider" />
 
         <div className="job-card-description">
           <h3>Description</h3>
-          <p>Design with modern and minimalist design</p>
+          <p>{jobDetails.description}</p>
         </div>
 
-        <div className="job-card-designer">
-          <p>
-            <strong>Goldsmith:</strong> John Smith
-          </p>
-        </div>
-<br></br>
-        
+        <hr className="divider" />
+
         <div className="job-card-items">
           <table>
             <thead>
               <tr>
-                <th>No.</th>
+                <th>SI.No</th>
                 <th>Item Description</th>
-                <th>Pieces</th>
-                <th>Price</th>
-                <th>Amount ($)</th>
+                <th>Given Weight</th>
+                <th>Estimate Weight</th>
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td>1</td>
-                <td>Chain</td>
-                <td>1</td>
-                <td>50.00</td>
-                <td>50.00</td>
-              </tr>
-             
+              {jobDetails.items.length > 0 ? (
+                jobDetails.items.map((item, index) => (
+                  <tr key={index}>
+                    <td>{index + 1}</td>
+                    <td>{item.selectedItem}</td>
+                    <td>{item.givenWeight} g</td>
+                    <td>{item.estimateWeight} g</td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="4" style={{ textAlign: "center" }}>
+                    No items added
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
 
-        <div className="job-card-total">
-          <p>
-            <strong>Subtotal:</strong> 150.00
-          </p>
-          <p>
-            <strong>Taxes:</strong> 12.00 (Assuming 8% sales tax)
-          </p>
-          <p>
-            <strong>Total Amount:</strong> 162.00
-          </p>
+        <div className="job-card-footer">
+          <div className="job-card-signature">
+            <p>
+              <strong>Authorized Signature:</strong> _________________________
+            </p>
+          </div>
         </div>
 
-        <div className="job-card-signature">
-          <p>
-            <strong>Authorized Signature:</strong> _________________________
-          </p>
-        </div>
-      </div>
+        <hr className="divider" />
 
-      <div className="job-card-footer">
-        <p>jeevagoldcoins@gmail.com </p>
+        <div className="job-card-footer">
+          <p>jeevagoldcoins@gmail.com</p>
+        </div>
       </div>
     </div>
   );
