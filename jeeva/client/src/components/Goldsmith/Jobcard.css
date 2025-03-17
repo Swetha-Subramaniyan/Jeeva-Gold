@@ -1,7 +1,7 @@
 
 .job-card-container {
   display: flex;
-  justify-content: space-between;
+  /* justify-content: space-between; */
   /* align-items: flex-start; */
   padding: 20px;
   margin-right: 25rem;
@@ -13,7 +13,7 @@
   border: 2px solid #000;
   background: #f9f9f9;
   font-family: Arial, sans-serif;
-  margin-left: 5rem;
+  margin-left: 2rem;
 }
 
 .job-card-form h3 {
@@ -51,7 +51,7 @@
 }
 
 .job-card {
-  width: 55%;
+  width: 63%;
   padding: 20px;
   border: 2px solid #000;
   font-family: Arial, sans-serif;
@@ -114,6 +114,66 @@
 gap: 21rem;
 
 }
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.popup-content {
+  background: white;
+  padding: 20px;
+  border-radius: 5px;
+  width: 300px;
+  text-align: center;
+}
+
+.popup-buttons {
+  margin-top: 10px;
+  display: flex;
+  justify-content: space-between;
+}
 
 
+.job-card-totals {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    text-align: center; 
+}
+
+.job-card-totals h3 {
+    margin-bottom: 15px;
+    font-size: 18px;
+    color: #333;
+}
+
+.job-card-totals p {
+    margin: 8px 0;
+    font-size: 16px;
+    color: #555;
+}
+
+.job-card-totals strong {
+    font-weight: 600;
+    color: #000;
+}
+
+.job-card-totals span {
+    font-weight: 500;
+    font-size: 16px;
+}
+
+.job-card-totals {
+    border-top: 2px solid #ddd;
+    padding-top: 20px;
+}
  
