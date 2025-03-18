@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import "./Customertrans.css";
 
@@ -10,6 +11,9 @@ const Customertrans = () => {
     date: "",
     value: "",
     type: "Select",
+    goldRate: "",
+    cashValue: "",
+    goldValue: "",
   });
 
   const handleChange = (e) => {
@@ -17,12 +21,50 @@ const Customertrans = () => {
   };
 
   const addTransaction = () => {
-    if (newTransaction.date && newTransaction.value && newTransaction.type) {
-      setTransactions([...transactions, newTransaction]);
-      setNewTransaction({ date: "", value: "", type: "Cash" });
+    if (newTransaction.date && newTransaction.type !== "Select") {
+      let finalValue;
+      if (newTransaction.type === "Cash") {
+        if (newTransaction.cashValue && newTransaction.goldRate) {
+          finalValue = (
+            parseFloat(newTransaction.cashValue) /
+            parseFloat(newTransaction.goldRate)
+          ).toFixed(2);
+        } else {
+          alert("Please enter cash value and gold rate!");
+          return;
+        }
+      } else if (newTransaction.type === "Gold") {
+        if (newTransaction.goldValue && newTransaction.goldRate) {
+          finalValue = (
+            parseFloat(newTransaction.goldValue) *
+            parseFloat(newTransaction.goldRate)
+          ).toFixed(2);
+        } else {
+          alert("Please enter gold value and gold rate!");
+          return;
+        }
+      }
+
+      setTransactions([
+        ...transactions,
+        {
+          date: newTransaction.date,
+          value: finalValue,
+          type: newTransaction.type,
+          goldRate: newTransaction.goldRate,
+        },
+      ]);
+      setNewTransaction({
+        date: "",
+        value: "",
+        type: "Select",
+        goldRate: "",
+        cashValue: "",
+        goldValue: "",
+      });
       setShowPopup(false);
     } else {
-      alert("Please fill all fields!");
+      alert("Please fill all required fields!");
     }
   };
 
@@ -77,11 +119,11 @@ const Customertrans = () => {
               />
             </label>
             <label>
-              Value:{" "}
+              Gold Rate:{" "}
               <input
                 type="number"
-                name="value"
-                value={newTransaction.value}
+                name="goldRate"
+                value={newTransaction.goldRate}
                 onChange={handleChange}
               />
             </label>
@@ -97,8 +139,43 @@ const Customertrans = () => {
                 <option value="Gold">Gold</option>
               </select>
             </label>
+            {newTransaction.type === "Cash" && (
+              <label>
+                Cash Value:
+                <input
+                  type="number"
+                  name="cashValue"
+                  value={newTransaction.cashValue}
+                  onChange={handleChange}
+                />
+                {newTransaction.goldRate && (
+                  <span> / {newTransaction.goldRate}</span>
+                )}
+              </label>
+            )}
+            {newTransaction.type === "Gold" && (
+              <label>
+                Gold Value:
+                <input
+                  type="number"
+                  name="goldValue"
+                  value={newTransaction.goldValue}
+                  onChange={handleChange}
+                />
+                {newTransaction.goldRate && (
+                  <span> * {newTransaction.goldRate}</span>
+                )}
+              </label>
+            )}
             <button
-              style={{ backgroundColor: "	#1DA3A3",color:"white",fontSize:"1rem" }}
+              style={{
+                backgroundColor: " #1DA3A3",
+                color: "white",
+                fontSize: "1rem",
+                width:"5rem",
+                marginLeft:"5rem"
+
+              }}
               onClick={addTransaction}
             >
               Save
@@ -126,7 +203,7 @@ const Customertrans = () => {
                 <td>{transaction.date}</td>
                 <td>
                   {transaction.type === "Gold"
-                    ? `${transaction.value} g`
+                    ? `${transaction.value}`
                     : `₹ ${transaction.value}`}
                 </td>
                 <td>{transaction.type}</td>
