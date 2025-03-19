@@ -1,13 +1,14 @@
 
 .container {
   width: 50%; 
-  margin: 20px auto;
+  margin: 10px auto;
   padding: 20px;
   border: 1px solid #ddd;
   border-radius: 8px;
   background-color: white;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   font-family: Arial, sans-serif;
+
 }
 
 .heading {
@@ -72,12 +73,14 @@
 }
 
 .printButton {
-  width: 100%;
+  width: 20%;
   padding: 10px;
   background-color: black;
   color: white;
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 16px;
-}
+  font-size: 6px;
+  left: 19rem;
+} 
+

@@ -11,6 +11,7 @@ import Master from "./components/Master/Master";
 import MasterCustomer from "./components/Master/Mastercustomer";
 import Customertrans from "./components/Customer/Customertrans";
 import Jobcard from "./components/Goldsmith/Jobcard";
+import AddCustomer from "./components/Billing/Addcustomer";
 
 function App() {
   return (
@@ -75,6 +76,8 @@ function App() {
         ></Route>
         <Route path="/master" element={<Master />}></Route>
         <Route path="/mastercustomer" element={<MasterCustomer />}></Route>
+        <Route path="/addcustomer"element={<AddCustomer/>}></Route>
+        
       </Routes>
     </BrowserRouter>
   );
