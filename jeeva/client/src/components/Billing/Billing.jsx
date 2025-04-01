@@ -321,7 +321,7 @@ const Billing = () => {
           <p>
             <strong>Bill No:</strong> {billNo}
           </p>
-          <p style={{ marginLeft: "14rem" }}>
+          <p style={{ marginLeft: "12rem" }}>
             <strong>Date:</strong> {date} <br />
             <br />
             <strong>Time:</strong> {time}
@@ -362,6 +362,7 @@ const Billing = () => {
             </p>
           </Box>
         )}
+        
 
         <Box className="searchSection">
           <Autocomplete
