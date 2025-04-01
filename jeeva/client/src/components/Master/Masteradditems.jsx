@@ -6,7 +6,7 @@ const Masteradditems = () => {
   const [items, setItems] = useState([]);
   const [itemName, setItemName] = useState("");
   const [quantity, setQuantity] = useState("");
-
+ 
   const handleAddItem = () => {
     if (itemName && quantity) {
       setItems([
@@ -30,12 +30,12 @@ const Masteradditems = () => {
           placeholder="Enter item name"
         />
 
-        <label>Quantity:</label>
+        <label>Stone or Enamel weight:</label>
         <input
           type="text"
           value={quantity}
           onChange={(e) => setQuantity(e.target.value)}
-          placeholder="Enter quantity"
+          placeholder="Enter Weight"
         />
 
         <button onClick={handleAddItem}>Add Item</button>
@@ -47,9 +47,9 @@ const Masteradditems = () => {
           <table>
             <thead>
               <tr>
-                <th>Sl.No</th>
+                <th>SI.No</th>
                 <th>Item Name</th>
-                <th>Quantity</th>
+                <th>Enamel Weight</th>
               </tr>
             </thead>
             <tbody>
