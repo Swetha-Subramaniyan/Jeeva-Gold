@@ -1,6 +1,17 @@
 
 // import React, { useState, useEffect, useRef } from "react";
-// import { Autocomplete, TextField, Box, Button } from "@mui/material";
+// import {
+//   Autocomplete,
+//   TextField,
+//   Box,
+//   Button,
+//   Modal,
+//   Typography,
+//   IconButton,
+//   Tooltip,
+// } from "@mui/material";
+// import PrintIcon from "@mui/icons-material/Print";
+// import AddIcon from "@mui/icons-material/Add";
 // import "./Billing.css";
 // import AddCustomer from "./Addcustomer";
 
@@ -11,40 +22,23 @@
 //   const [date, setDate] = useState("");
 //   const [time, setTime] = useState("");
 //   const [isPrinting, setIsPrinting] = useState(false);
+//   const [openAddItem, setOpenAddItem] = useState(false);
+//   const [newItem, setNewItem] = useState({
+//     name: "",
+//     no: "",
+//     percentage: "",
+//     weight: "",
+//     pure: "",
+//   });
 //   const billRef = useRef();
-
-//   const [products, setProducts] = useState([
-//     { id: "P001", name: "Gold Ring", touch: 92, weight: 6.64, pure: 6.19 },
-//     {
-//       id: "P002",
-//       name: "Silver Necklace",
-//       touch: 92,
-//       weight: 11.34,
-//       pure: 10.66,
-//     },
-//     {
-//       id: "P003",
-//       name: "Diamond Bracelet",
-//       touch: 95,
-//       weight: 8.5,
-//       pure: 8.07,
-//     },
-//   ]);
-
-//   const customers = [
+//   const [customers, setCustomers] = useState([
 //     {
 //       id: "C001",
-//       customer_name: "John ",
+//       customer_name: "John",
 //       address: "ABC Street",
 //       phone_number: "9856743789",
 //     },
-//     {
-//       id: "C002",
-//       customer_name: "Jane ",
-//       address: "DEF Colony",
-//       phone_number: "7843567894",
-//     },
-//   ];
+//   ]);
 
 //   useEffect(() => {
 //     const updateTime = () => {
@@ -58,7 +52,6 @@
 //         })
 //       );
 //     };
-
 //     updateTime();
 //     const timer = setInterval(updateTime, 60000);
 //     return () => clearInterval(timer);
@@ -70,22 +63,105 @@
 //     }
 //   };
 
-//   const calculateTotal = () => {
-//     return billItems.reduce((total, item) => total + item.pure, 0).toFixed(3);
+//   const handleAddCustomer = (newCustomer) => {
+//     setCustomers((prevCustomers) => [...prevCustomers, newCustomer]);
 //   };
 
-//   const calculateLess = (total) => {
-//     return (total * 0.9992).toFixed(3);
+//   const handleAddItem = () => {
+//     setOpenAddItem(true);
 //   };
 
-//   const calculateClosing = (total, less) => {
-//     return (total - less).toFixed(3);
+//   const handleCloseAddItem = () => {
+//     setOpenAddItem(false);
+//     setNewItem({
+//       name: "",
+//       no: "",
+//       percentage: "",
+//       weight: "",
+//       pure: "",
+//     });
 //   };
+
+//   const handleInputChange = (e) => {
+//     const { name, value } = e.target;
+//     setNewItem((prev) => ({
+//       ...prev,
+//       [name]: value,
+//     }));
+//   };
+
+//   const calculateValues = () => {
+//     const coin = parseFloat(newItem.name) || 0;
+//     const no = parseFloat(newItem.no) || 0;
+//     const percentage = parseFloat(newItem.percentage) || 0;
+
+//     const weight = coin * no;
+//     const pure = weight * (percentage / 100);
+
+//     setNewItem((prev) => ({
+//       ...prev,
+//       weight: weight.toString(),
+//       pure: pure % 1 === 0 ? pure.toString() : pure.toFixed(3),
+//     }));
+//   };
+
+//   useEffect(() => {
+//     if (newItem.name && newItem.no && newItem.percentage) {
+//       calculateValues();
+//     }
+//   }, [newItem.name, newItem.no, newItem.percentage]);
+
+//   const handleSaveItem = () => {
+//     if (newItem.name && newItem.no && newItem.percentage) {
+//       setBillItems((prevItems) => [
+//         ...prevItems,
+//         {
+//           id: Date.now().toString(),
+//           name: newItem.name,
+//           touch: newItem.no,
+//           weight: newItem.weight,
+//           pure: newItem.pure,
+//           percentage: newItem.percentage,
+//         },
+//       ]);
+//       handleCloseAddItem();
+//     }
+//   };
+
+//   const calculateTotals = () => {
+//     let totalNo = 0;
+//     let totalWeight = 0;
+//     let totalPurity = 0;
+
+//     billItems.forEach((item) => {
+//       totalNo += parseFloat(item.touch) || 0;
+//       totalWeight += parseFloat(item.weight) || 0;
+//       totalPurity += parseFloat(item.pure) || 0;
+//     });
+
+//     return { totalNo, totalWeight, totalPurity };
+//   };
+
+//   const { totalNo, totalWeight, totalPurity } = calculateTotals();
 
 //   return (
 //     <>
-//       <Box mt={3}>
-//         <AddCustomer />
+//       <Box className="action-buttons">
+//         <Tooltip title="Add Bill Details" arrow>
+//           <IconButton className="add-button" onClick={handleAddItem}>
+//             <AddIcon />
+//           </IconButton>
+//         </Tooltip>
+
+//         <Tooltip title="Print Bill" arrow>
+//           <IconButton className="print-button" onClick={() => window.print()}>
+//             <PrintIcon />
+//           </IconButton>
+//         </Tooltip>
+//       </Box>
+
+//       <Box className="add-customer-container">
+//         <AddCustomer onAddCustomer={handleAddCustomer} />
 //       </Box>
 
 //       <Box className="container" ref={billRef}>
@@ -95,17 +171,14 @@
 //           <p>
 //             <strong>Bill No:</strong> {billNo}
 //           </p>
-//           <p style={{ marginLeft: "14rem" }}>
+//           <p className="date-time">
 //             <strong>Date:</strong> {date} <br />
 //             <br />
 //             <strong>Time:</strong> {time}
 //           </p>
 //         </Box>
 
-//         <Box
-//           className="searchSection"
-//           style={{ display: isPrinting ? "none" : "flex" }}
-//         >
+//         <Box className="searchSection">
 //           <Autocomplete
 //             options={customers}
 //             getOptionLabel={(option) => option.customer_name}
@@ -137,92 +210,120 @@
 //           </Box>
 //         )}
 
-//         <Box className="searchSection">
-//           <Autocomplete
-//             options={products}
-//             getOptionLabel={(option) => option.name}
-//             onChange={handleProductSelect}
-//             renderInput={(params) => (
-//               <TextField
-//                 {...params}
-//                 label="Select Product"
-//                 variant="outlined"
-//                 size="small"
-//               />
-//             )}
-//             className="smallAutocomplete"
-//           />
-//         </Box>
-
 //         <Box className="itemsSection">
 //           <h3>Bill Details:</h3>
 //           <table className="table">
 //             <thead>
 //               <tr>
-//                 <th className="th">Description</th>
-//                 <th className="th">Touch</th>
+//                 <th className="th">Coin</th>
+//                 <th className="th">No</th>
+//                 <th className="th">%</th>
 //                 <th className="th">Weight</th>
-//                 <th className="th">Pure</th>
+//                 <th className="th">Purity</th>
 //               </tr>
 //             </thead>
 //             <tbody>
-//               {billItems.length > 0 ? (
-//                 billItems.map((item, index) => (
-//                   <tr key={index}>
-//                     <td className="td">{item.name}</td>
-//                     <td className="td">{item.touch}</td>
-//                     <td className="td">{item.weight}</td>
-//                     <td className="td">{item.pure}</td>
-//                   </tr>
-//                 ))
-//               ) : (
-//                 <tr>
-//                   <td
-//                     colSpan="4"
-//                     style={{ textAlign: "center", padding: "10px" }}
-//                   >
-//                     No products selected
-//                   </td>
+//               {billItems.map((item, index) => (
+//                 <tr key={index}>
+//                   <td className="td">{item.name}</td>
+//                   <td className="td">{item.touch}</td>
+//                   <td className="td">{item.percentage}</td>
+//                   <td className="td">{item.weight}</td>
+//                   <td className="td">{item.pure}</td>
 //                 </tr>
-//               )}
+//               ))}
 //               <tr>
-//                 <td colSpan="3" className="td">
+//                 <td className="td">
 //                   <strong>Total</strong>
 //                 </td>
-//                 <td className="td">{calculateTotal()}</td>
-//               </tr>
-//               <tr>
-//                 <td colSpan="3" className="td">
-//                   <strong>Less (99.92%)</strong>
+//                 <td className="td">
+//                   <strong>{totalNo}</strong>
 //                 </td>
-//                 <td className="td">{calculateLess(calculateTotal())}</td>
-//               </tr>
-//               <tr>
-//                 <td colSpan="3" className="td">
-//                   <strong>Closing</strong>
+//                 <td className="td"></td>
+//                 <td className="td">
+//                   <strong>{Math.round(totalWeight)}</strong>
 //                 </td>
 //                 <td className="td">
-//                   {calculateClosing(
-//                     calculateTotal(),
-//                     calculateLess(calculateTotal())
-//                   )}
+//                   <strong>{totalPurity.toFixed(3)}</strong>
 //                 </td>
 //               </tr>
 //             </tbody>
 //           </table>
 //         </Box>
-
-//         <Button
-//           variant="contained"
-//           className="printButton"
-//           style={{
-//             display: isPrinting ? "none" : "block",
-//             backgroundColor: "black",
-//           }}
-//         >
-//           Print Bill
-//         </Button>
 //       </Box>
+
+//       <Modal
+//         open={openAddItem}
+//         onClose={handleCloseAddItem}
+//         aria-labelledby="add-item-modal"
+//       >
+//         <Box className="modal-container">
+//           <Typography variant="h6" gutterBottom>
+//             Add Bill Details
+//           </Typography>
+//           <Box component="form" className="modal-form">
+//             <TextField
+//               fullWidth
+//               label="Coin Value"
+//               name="name"
+//               value={newItem.name}
+//               onChange={handleInputChange}
+//               margin="normal"
+//               type="number"
+//             />
+//             <TextField
+//               fullWidth
+//               label="No"
+//               name="no"
+//               value={newItem.no}
+//               onChange={handleInputChange}
+//               margin="normal"
+//               type="number"
+//             />
+//             <TextField
+//               fullWidth
+//               label="Percentage (%)"
+//               name="percentage"
+//               value={newItem.percentage}
+//               onChange={handleInputChange}
+//               margin="normal"
+//               type="number"
+//             />
+//             <TextField
+//               fullWidth
+//               label="Weight (Auto-calculated)"
+//               name="weight"
+//               value={newItem.weight}
+//               margin="normal"
+//               InputProps={{
+//                 readOnly: true,
+//               }}
+//             />
+//             <TextField
+//               fullWidth
+//               label="Purity (Auto-calculated)"
+//               name="pure"
+//               value={newItem.pure}
+//               margin="normal"
+//               InputProps={{
+//                 readOnly: true,
+//               }}
+//             />
+//             <Box className="modal-actions">
+//               <Button onClick={handleCloseAddItem} className="cancel-button">
+//                 Cancel
+//               </Button>
+//               <Button
+//                 variant="contained"
+//                 onClick={handleSaveItem}
+//                 className="save-button"
+//               >
+//                 Save
+//               </Button>
+//             </Box>
+//           </Box>
+//         </Box>
+//       </Modal>
 //     </>
 //   );
 // };
@@ -230,8 +331,21 @@
 // export default Billing;
 
 
+
+
 import React, { useState, useEffect, useRef } from "react";
-import { Autocomplete, TextField, Box, Button } from "@mui/material";
+import {
+  Autocomplete,
+  TextField,
+  Box,
+  Button,
+  Modal,
+  Typography,
+  IconButton,
+  Tooltip,
+} from "@mui/material";
+import PrintIcon from "@mui/icons-material/Print";
+import AddIcon from "@mui/icons-material/Add";
 import "./Billing.css";
 import AddCustomer from "./Addcustomer";
 
@@ -242,6 +356,14 @@ const Billing = () => {
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [isPrinting, setIsPrinting] = useState(false);
+  const [openAddItem, setOpenAddItem] = useState(false);
+  const [newItem, setNewItem] = useState({
+    name: "",
+    no: "",
+    percentage: "",
+    weight: "",
+    pure: "",
+  });
   const billRef = useRef();
   const [customers, setCustomers] = useState([
     {
@@ -250,31 +372,9 @@ const Billing = () => {
       address: "ABC Street",
       phone_number: "9856743789",
     },
-    {
-      id: "C002",
-      customer_name: "Jane",
-      address: "DEF Colony",
-      phone_number: "7843567894",
-    },
   ]);
-
-  const [products, setProducts] = useState([
-    { id: "P001", name: "Gold Ring", touch: 92, weight: 6.64, pure: 6.19 },
-    {
-      id: "P002",
-      name: "Silver Necklace",
-      touch: 92,
-      weight: 11.34,
-      pure: 10.66,
-    },
-    {
-      id: "P003",
-      name: "Diamond Bracelet",
-      touch: 95,
-      weight: 8.5,
-      pure: 8.07,
-    },
-  ]);
+  const [goldRate, setGoldRate] = useState("");
+  const [hallmarkCharges, setHallmarkCharges] = useState("");
 
   useEffect(() => {
     const updateTime = () => {
@@ -303,14 +403,108 @@ const Billing = () => {
     setCustomers((prevCustomers) => [...prevCustomers, newCustomer]);
   };
 
-  const calculateTotal = () =>
-    billItems.reduce((total, item) => total + item.pure, 0).toFixed(3);
-  const calculateLess = (total) => (total * 0.9992).toFixed(3);
-  const calculateClosing = (total, less) => (total - less).toFixed(3);
+  const handleAddItem = () => {
+    setOpenAddItem(true);
+  };
+
+  const handleCloseAddItem = () => {
+    setOpenAddItem(false);
+    setNewItem({
+      name: "",
+      no: "",
+      percentage: "",
+      weight: "",
+      pure: "",
+    });
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setNewItem((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const calculateValues = () => {
+    const coin = parseFloat(newItem.name) || 0;
+    const no = parseFloat(newItem.no) || 0;
+    const percentage = parseFloat(newItem.percentage) || 0;
+
+    const weight = coin * no;
+    const pure = weight * (percentage / 100);
+
+    setNewItem((prev) => ({
+      ...prev,
+      weight: weight.toString(),
+      pure: pure % 1 === 0 ? pure.toString() : pure.toFixed(3),
+    }));
+  };
+
+  useEffect(() => {
+    if (newItem.name && newItem.no && newItem.percentage) {
+      calculateValues();
+    }
+  }, [newItem.name, newItem.no, newItem.percentage]);
+
+  const handleSaveItem = () => {
+    if (newItem.name && newItem.no && newItem.percentage) {
+      setBillItems((prevItems) => [
+        ...prevItems,
+        {
+          id: Date.now().toString(),
+          name: newItem.name,
+          touch: newItem.no,
+          weight: newItem.weight,
+          pure: newItem.pure,
+          percentage: newItem.percentage,
+        },
+      ]);
+      handleCloseAddItem();
+    }
+  };
+
+  const calculateTotals = () => {
+    let totalNo = 0;
+    let totalWeight = 0;
+    let totalPurity = 0;
+
+    billItems.forEach((item) => {
+      totalNo += parseFloat(item.touch) || 0;
+      totalWeight += parseFloat(item.weight) || 0;
+      totalPurity += parseFloat(item.pure) || 0;
+    });
+
+    return { totalNo, totalWeight, totalPurity };
+  };
+
+  const { totalNo, totalWeight, totalPurity } = calculateTotals();
+
+  const calculateFinalTotal = () => {
+    const rate = parseFloat(goldRate) || 0;
+    const charges = parseFloat(hallmarkCharges) || 0;
+    return totalPurity * rate + charges;
+  };
+
+  const finalTotal = calculateFinalTotal();
 
   return (
     <>
-      <Box mt={3}>
+      <Box className="action-buttons">
+        <Tooltip title="Add Bill Details" arrow>
+          <IconButton className="add-button" onClick={handleAddItem}>
+            <AddIcon />
+          </IconButton>
+        </Tooltip>
+
+        <Tooltip title="Print Bill" arrow>
+          <IconButton className="print-button" onClick={() => window.print()}>
+            <PrintIcon />
+          </IconButton>
+        </Tooltip>
+      </Box>
+
+      <Box className="add-customer-container">
         <AddCustomer onAddCustomer={handleAddCustomer} />
       </Box>
 
@@ -321,17 +515,14 @@ const Billing = () => {
           <p>
             <strong>Bill No:</strong> {billNo}
           </p>
-          <p style={{ marginLeft: "12rem" }}>
+          <p className="date-time">
             <strong>Date:</strong> {date} <br />
             <br />
             <strong>Time:</strong> {time}
           </p>
         </Box>
 
-        <Box
-          className="searchSection"
-          style={{ display: isPrinting ? "none" : "flex" }}
-        >
+        <Box className="searchSection">
           <Autocomplete
             options={customers}
             getOptionLabel={(option) => option.customer_name}
@@ -362,34 +553,17 @@ const Billing = () => {
             </p>
           </Box>
         )}
-        
-
-        <Box className="searchSection">
-          <Autocomplete
-            options={products}
-            getOptionLabel={(option) => option.name}
-            onChange={handleProductSelect}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Select Product"
-                variant="outlined"
-                size="small"
-              />
-            )}
-            className="smallAutocomplete"
-          />
-        </Box>
 
         <Box className="itemsSection">
           <h3>Bill Details:</h3>
           <table className="table">
             <thead>
               <tr>
-                <th className="th">Description</th>
-                <th className="th">Touch</th>
+                <th className="th">Coin</th>
+                <th className="th">No</th>
+                <th className="th">%</th>
                 <th className="th">Weight</th>
-                <th className="th">Pure</th>
+                <th className="th">Purity</th>
               </tr>
             </thead>
             <tbody>
@@ -397,46 +571,126 @@ const Billing = () => {
                 <tr key={index}>
                   <td className="td">{item.name}</td>
                   <td className="td">{item.touch}</td>
+                  <td className="td">{item.percentage}</td>
                   <td className="td">{item.weight}</td>
                   <td className="td">{item.pure}</td>
                 </tr>
               ))}
+              <tr>
+                <td className="td">
+                  <strong>Total</strong>
+                </td>
+                <td className="td">
+                  <strong>{totalNo}</strong>
+                </td>
+                <td className="td"></td>
+                <td className="td">
+                  <strong>{Math.round(totalWeight)}</strong>
+                </td>
+                <td className="td">
+                  <strong>{totalPurity.toFixed(3)}</strong>
+                </td>
+              </tr>
             </tbody>
           </table>
-        </Box>
-
-        {/* Calculation Section */}
-        {billItems.length > 0 && (
-          <Box className="calculationSection">
-            <p>
-              <strong>Total:</strong> {calculateTotal()}
-            </p>
-            <p>
-              <strong>Less 0.9992:</strong> {calculateLess(calculateTotal())}
-            </p>
-            <p>
-              <strong>Closing:</strong>{" "}
-              {calculateClosing(
-                calculateTotal(),
-                calculateLess(calculateTotal())
-              )}
-            </p>
+          <Box className="total-calculation">
+            <TextField
+              label="Gold Rate"
+              value={goldRate}
+              onChange={(e) => setGoldRate(e.target.value)}
+              type="number"
+              size="small"
+              className="gold-rate-input"
+            />
+            <TextField
+              label="Hallmark Charges"
+              value={hallmarkCharges}
+              onChange={(e) => setHallmarkCharges(e.target.value)}
+              type="number"
+              size="small"
+              className="hallmark-charges-input"
+            />
+            <Typography variant="h6">
+              Final Total: {finalTotal.toFixed(2)}
+            </Typography>
           </Box>
-        )}
-
-        <Button
-          variant="contained"
-          className="printButton"
-          style={{ backgroundColor: "black" }}
-        >
-          Print Bill
-        </Button>
+        </Box>
       </Box>
+
+      <Modal
+        open={openAddItem}
+        onClose={handleCloseAddItem}
+        aria-labelledby="add-item-modal"
+      >
+        <Box className="modal-container">
+          <Typography variant="h6" gutterBottom>
+            Add Bill Details
+          </Typography>
+          <Box component="form" className="modal-form">
+            <TextField
+              fullWidth
+              label="Coin Value"
+              name="name"
+              value={newItem.name}
+              onChange={handleInputChange}
+              margin="normal"
+              type="number"
+            />
+            <TextField
+              fullWidth
+              label="No"
+              name="no"
+              value={newItem.no}
+              onChange={handleInputChange}
+              margin="normal"
+              type="number"
+            />
+            <TextField
+              fullWidth
+              label="Percentage (%)"
+              name="percentage"
+              value={newItem.percentage}
+              onChange={handleInputChange}
+              margin="normal"
+              type="number"
+            />
+            <TextField
+              fullWidth
+              label="Weight (Auto-calculated)"
+              name="weight"
+              value={newItem.weight}
+              margin="normal"
+              InputProps={{
+                readOnly: true,
+              }}
+            />
+            <TextField
+              fullWidth
+              label="Purity (Auto-calculated)"
+              name="pure"
+              value={newItem.pure}
+              margin="normal"
+              InputProps={{
+                readOnly: true,
+              }}
+            />
+            <Box className="modal-actions">
+              <Button onClick={handleCloseAddItem} className="cancel-button">
+                Cancel
+              </Button>
+              <Button
+                variant="contained"
+                onClick={handleSaveItem}
+                className="save-button"
+              >
+                Save
+              </Button>
+            </Box>
+          </Box>
+        </Box>
+      </Modal>
     </>
   );
 };
 
 export default Billing;
-
-
-

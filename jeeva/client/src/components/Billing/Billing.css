@@ -8,12 +8,13 @@
   background-color: white;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   font-family: Arial, sans-serif;
-
+  position: relative;
 }
 
 .heading {
   text-align: center;
   margin-bottom: 20px;
+  color: #333;
 }
 
 .billInfo {
@@ -28,8 +29,13 @@
   margin: 0; 
 }
 
+.date-time {
+  text-align: right;
+}
+
 .billInfo strong {
   font-weight: bold;
+  color: #444;
 }
 
 .searchSection {
@@ -51,8 +57,17 @@
   background-color: #f9f9f9;
 }
 
+.customerDetails h3 {
+  margin-top: 0;
+  color: #333;
+}
+
 .itemsSection {
   margin-top: 20px;
+}
+
+.itemsSection h3 {
+  color: #333;
 }
 
 .table {
@@ -61,26 +76,95 @@
   margin-bottom: 20px;
 }
 
-.th,
-.td {
+.th, .td {
   border: 1px solid #ddd;
   padding: 8px;
-  text-align: left;
+  text-align: center;
 }
 
 .th {
-  background-color:black;
-}
-
-.printButton {
-  width: 20%;
-  padding: 10px;
   background-color: black;
   color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 6px;
-  left: 19rem;
-} 
+}
 
+.action-buttons {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  gap: 10px;
+  z-index: 1000;
+}
+
+.add-button {
+  background-color: #A31D1D !important;
+  color: white !important;
+top: 5rem;
+right: 4rem;
+}
+
+.add-button:hover {
+  background-color: #333 !important;
+}
+
+.print-button {
+  background-color:#1DA3A3 !important;
+top: 5rem;
+  color: white !important;
+  right: 4rem;
+}
+
+
+
+.add-customer-container {
+  margin-top: 30px;
+  margin-left: 25%;
+  width: 50%;
+}
+
+.modal-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 400px;
+  background-color: white;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  padding: 24px;
+  border-radius: 8px;
+  outline: none;
+}
+
+.modal-form {
+  margin-top: 16px;
+}
+
+.modal-actions {
+  margin-top: 24px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.cancel-button {
+  color: #666;
+}
+
+.save-button {
+  background-color: black !important;
+  color: white !important;
+}
+
+.save-button:hover {
+  background-color: #333 !important;
+}
+
+@media print {
+  .action-buttons {
+    display: none;
+  }
+  
+  .add-customer-container {
+    display: none;
+  }
+}
