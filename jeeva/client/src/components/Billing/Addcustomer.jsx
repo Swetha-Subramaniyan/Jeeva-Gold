@@ -1,12 +1,17 @@
+
 import React, { useState } from "react";
 import {
-  Button,
+  IconButton,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
   TextField,
+  Tooltip,
+  Box,
+  Button,
 } from "@mui/material";
+import PersonAddAlt1Icon from "@mui/icons-material/PersonAddAlt1"; 
 
 const AddCustomer = ({ onAddCustomer }) => {
   const [open, setOpen] = useState(false);
@@ -29,28 +34,38 @@ const AddCustomer = ({ onAddCustomer }) => {
   const handleSave = () => {
     if (customer.name && customer.address && customer.phone) {
       const newCustomer = {
-        id: `C${Date.now()}`, 
+        id: `C${Date.now()}`,
         customer_name: customer.name,
         address: customer.address,
         phone_number: customer.phone,
       };
-      onAddCustomer(newCustomer); 
+      onAddCustomer(newCustomer);
       handleClose();
     }
   };
 
   return (
-    <div>
-      <Button
-        variant="contained"
-        onClick={handleClickOpen}
-      
-      >
-        Add Customer
-      </Button>
+    <Box sx={{ display: "inline-block", m: 1 }}>
+      <Tooltip title="Add Customer" arrow>
+        <IconButton
+          color="primary"
+          onClick={handleClickOpen}
+          sx={{
+            backgroundColor: "#1DA3A3",
+            marginLeft: "60rem",
+            color: "white",
+            "&:hover": {
+              backgroundColor: "#1DA3A3",
+              opacity: 0.9,
+            },
+          }}
+        >
+          <PersonAddAlt1Icon fontSize="medium" />{" "}
+        </IconButton>
+      </Tooltip>
 
       <Dialog open={open} onClose={handleClose}>
-        <DialogTitle>Add Customer</DialogTitle>
+        <DialogTitle>Add New Customer</DialogTitle>
         <DialogContent>
           <TextField
             autoFocus
@@ -61,6 +76,7 @@ const AddCustomer = ({ onAddCustomer }) => {
             variant="outlined"
             value={customer.name}
             onChange={handleChange}
+            sx={{ mt: 2 }}
           />
           <TextField
             margin="dense"
@@ -70,27 +86,51 @@ const AddCustomer = ({ onAddCustomer }) => {
             variant="outlined"
             value={customer.address}
             onChange={handleChange}
+            sx={{ mt: 2 }}
           />
           <TextField
             margin="dense"
-            label="Phone"
+            label="Phone Number"
             name="phone"
             fullWidth
             variant="outlined"
             value={customer.phone}
             onChange={handleChange}
+            sx={{ mt: 2 }}
           />
         </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose} color="secondary">
+        <DialogActions sx={{ p: 3 }}>
+          <Button
+            onClick={handleClose}
+            variant="outlined"
+            sx={{
+              color: "black",
+              borderColor: "black",
+              "&:hover": {
+                borderColor: "black",
+                backgroundColor: "rgba(0, 0, 0, 0.04)",
+              },
+            }}
+          >
             Cancel
           </Button>
-          <Button onClick={handleSave} color="primary" variant="contained">
-            Save
+          <Button
+            onClick={handleSave}
+            variant="contained"
+            sx={{
+              backgroundColor: "black",
+              color: "white",
+              "&:hover": {
+                backgroundColor: "black",
+                opacity: 0.9,
+              },
+            }}
+          >
+            Save Customer
           </Button>
         </DialogActions>
       </Dialog>
-    </div>
+    </Box>
   );
 };
 
