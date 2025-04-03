@@ -13,31 +13,55 @@ const Stock = () => {
     quantity: "",
     touch: "",
     totalWeight: "",
+    purity: "",
   });
+  const [editIndex, setEditIndex] = useState(null);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     let updatedData = { ...formData, [name]: value };
 
-    if (name === "gram" || name === "quantity") {
+    if (name === "gram" || name === "quantity" || name === "touch") {
       const gram = parseFloat(updatedData.gram) || 0;
       const quantity = parseInt(updatedData.quantity) || 0;
+      const touch = parseFloat(updatedData.touch) || 0;
       updatedData.totalWeight = (gram * quantity).toFixed(2);
+      updatedData.purity = ((touch * gram * quantity) / 100).toFixed(3);
     }
 
     setFormData(updatedData);
   };
 
   const handleSubmit = () => {
-    setStockItems([...stockItems, formData]);
+    if (editIndex !== null) {
+      const updatedItems = [...stockItems];
+      updatedItems[editIndex] = formData;
+      setStockItems(updatedItems);
+      setEditIndex(null);
+    } else {
+      setStockItems([...stockItems, formData]);
+    }
+
     setFormData({
       coinType: "",
       gram: "",
       quantity: "",
       touch: "",
       totalWeight: "",
+      purity: "",
     });
     setShowPopup(false);
+  };
+
+  const handleEdit = (index) => {
+    setFormData(stockItems[index]);
+    setEditIndex(index);
+    setShowPopup(true);
+  };
+
+  const handleDelete = (index) => {
+    const updatedItems = stockItems.filter((_, i) => i !== index);
+    setStockItems(updatedItems);
   };
 
   const filteredStockItems = stockItems.filter((item) => {
@@ -73,7 +97,7 @@ const Stock = () => {
       {showPopup && (
         <div className="popup-overlay">
           <div className="popup">
-            <h3>Add Coin Stock</h3>
+            <h3>{editIndex !== null ? "Edit Coin Stock" : "Add Coin Stock"}</h3>
             <input
               type="text"
               name="coinType"
@@ -96,7 +120,7 @@ const Stock = () => {
               onChange={handleChange}
             />
             <input
-              type="text"
+              type="number"
               name="touch"
               placeholder="Touch"
               value={formData.touch}
@@ -107,12 +131,28 @@ const Stock = () => {
               name="totalWeight"
               placeholder="Total Weight"
               value={formData.totalWeight}
-              readOnly
+              readOnly={editIndex === null} 
+              onChange={handleChange} 
             />
+            <input
+              type="number"
+              name="purity"
+              placeholder="Purity"
+              value={formData.purity}
+              readOnly={editIndex === null} 
+              onChange={handleChange} 
+            />
+
             <button className="save-btn" onClick={handleSubmit}>
-              Save
+              {editIndex !== null ? "Update" : "Save"}
             </button>
-            <button className="close-btn" onClick={() => setShowPopup(false)}>
+            <button
+              className="close-btn"
+              onClick={() => {
+                setShowPopup(false);
+                setEditIndex(null);
+              }}
+            >
               Close
             </button>
           </div>
@@ -127,6 +167,8 @@ const Stock = () => {
             <th>Quantity</th>
             <th>Touch</th>
             <th>Total Weight</th>
+            <th>Purity</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -137,6 +179,18 @@ const Stock = () => {
               <td>{item.quantity}</td>
               <td>{item.touch}</td>
               <td>{item.totalWeight}</td>
+              <td>{item.purity}</td>
+              <td>
+                <button className="edit-btn" onClick={() => handleEdit(index)}>
+                  Edit
+                </button>
+                <button
+                  className="delete-btn"
+                  onClick={() => handleDelete(index)}
+                >
+                  Delete
+                </button>
+              </td>
             </tr>
           ))}
         </tbody>
