@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import "./Stock.css";
 
 const Stock = () => {
@@ -64,12 +64,30 @@ const Stock = () => {
     setStockItems(updatedItems);
   };
 
-  const filteredStockItems = stockItems.filter((item) => {
-    return (
-      (filterCoinType === "" || item.coinType.includes(filterCoinType)) &&
-      (filterGram === "" || item.gram.includes(filterGram))
-    );
-  });
+  const filteredStockItems = useMemo(() => {
+    return stockItems.filter((item) => {
+      return (
+        (filterCoinType === "" ||
+          item.coinType.toLowerCase().includes(filterCoinType.toLowerCase())) &&
+        (filterGram === "" || item.gram.includes(filterGram))
+      );
+    });
+  }, [stockItems, filterCoinType, filterGram]);
+
+  const totals = useMemo(() => {
+    let totalWeightSum = 0;
+    let totalPuritySum = 0;
+
+    filteredStockItems.forEach((item) => {
+      totalWeightSum += parseFloat(item.totalWeight) || 0;
+      totalPuritySum += parseFloat(item.purity) || 0;
+    });
+
+    return {
+      totalWeight: totalWeightSum.toFixed(2),
+      purity: totalPuritySum.toFixed(3),
+    };
+  }, [filteredStockItems]);
 
   return (
     <div className="stock-container">
@@ -131,16 +149,16 @@ const Stock = () => {
               name="totalWeight"
               placeholder="Total Weight"
               value={formData.totalWeight}
-              readOnly={editIndex === null} 
-              onChange={handleChange} 
+              readOnly={editIndex === null}
+              onChange={handleChange}
             />
             <input
               type="number"
               name="purity"
               placeholder="Purity"
               value={formData.purity}
-              readOnly={editIndex === null} 
-              onChange={handleChange} 
+              readOnly={editIndex === null}
+              onChange={handleChange}
             />
 
             <button className="save-btn" onClick={handleSubmit}>
@@ -165,7 +183,7 @@ const Stock = () => {
             <th>Coin Type</th>
             <th>Gram</th>
             <th>Quantity</th>
-            <th>Touch</th>
+            <th>%</th>
             <th>Total Weight</th>
             <th>Purity</th>
             <th>Actions</th>
@@ -180,6 +198,7 @@ const Stock = () => {
               <td>{item.touch}</td>
               <td>{item.totalWeight}</td>
               <td>{item.purity}</td>
+
               <td>
                 <button className="edit-btn" onClick={() => handleEdit(index)}>
                   Edit
@@ -194,6 +213,20 @@ const Stock = () => {
             </tr>
           ))}
         </tbody>
+        <tfoot>
+          <tr>
+            <td colSpan="4" style={{ textAlign: "right" }}>
+              <strong>Totals:</strong>
+            </td>
+            <td>
+              <strong>{totals.totalWeight}</strong>
+            </td>
+            <td>
+              <strong>{totals.purity}</strong>
+            </td>
+            <td></td>
+          </tr>
+        </tfoot>
       </table>
     </div>
   );

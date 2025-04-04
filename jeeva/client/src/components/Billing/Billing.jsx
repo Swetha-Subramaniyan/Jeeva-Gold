@@ -269,7 +269,7 @@ const Billing = () => {
               className="gold-rate-input"
             />
             <TextField
-              label="Hallmark Charges"
+              label="Hallmark or MC Charges"
              value={hallmarkCharges}
               onChange={(e) => setHallmarkCharges(e.target.value)}
               type="number"
