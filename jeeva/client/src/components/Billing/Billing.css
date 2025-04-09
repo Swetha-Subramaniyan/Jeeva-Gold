@@ -159,6 +159,7 @@ top: 5rem;
   background-color: #333 !important;
 }
 
+
 @media print {
   .action-buttons {
     display: none;
