@@ -12,6 +12,7 @@ import {
 } from "@mui/material";
 import PrintIcon from "@mui/icons-material/Print";
 import AddIcon from "@mui/icons-material/Add";
+import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import "./Billing.css";
 import AddCustomer from "./Addcustomer";
 
@@ -30,7 +31,7 @@ const Billing = () => {
     weight: "",
     pure: "",
   });
-  const billRef = useRef();
+  const [billRef] = useState(useRef(null)); 
   const [customers, setCustomers] = useState([
     {
       id: "C001",
@@ -41,6 +42,15 @@ const Billing = () => {
   ]);
   const [goldRate, setGoldRate] = useState("");
   const [hallmarkCharges, setHallmarkCharges] = useState("");
+  const [receivedGold, setReceivedGold] = useState({
+    weight: "",
+    percentage: "",
+    purity: "",
+  });
+  const [balancePurity, setBalancePurity] = useState(0);
+  const [cashBalance, setCashBalance] = useState(0);
+  const [showAdditionalReceived, setShowAdditionalReceived] = useState(false);
+  const [additionalReceivedPurity, setAdditionalReceivedPurity] = useState("");
 
   useEffect(() => {
     const updateTime = () => {
@@ -78,7 +88,7 @@ const Billing = () => {
     setNewItem({
       name: "",
       no: "",
-      percentage:"",
+      percentage: "",
       weight: "",
       pure: "",
     });
@@ -86,7 +96,7 @@ const Billing = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setNewItem((prev) => ({ 
+    setNewItem((prev) => ({
       ...prev,
       [name]: value,
     }));
@@ -141,18 +151,44 @@ const Billing = () => {
       totalPurity += parseFloat(item.pure) || 0;
     });
 
-    return { totalNo,totalWeight,totalPurity };
+    return { totalNo, totalWeight, totalPurity };
   };
 
   const { totalNo, totalWeight, totalPurity } = calculateTotals();
 
-  const calculateFinalTotal = () => {
-    const rate = parseFloat(goldRate) || 0;
-    const charges = parseFloat(hallmarkCharges) || 0;
-    return totalPurity * rate + charges;
+  const handleReceivedGoldChange = (e) => {
+    const { name, value } = e.target;
+    setReceivedGold((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
-  const finalTotal = calculateFinalTotal();
+  useEffect(() => {
+    const weight = parseFloat(receivedGold.weight) || 0;
+    const percentage = parseFloat(receivedGold.percentage) || 0;
+    const purity = weight * (percentage / 100);
+    setReceivedGold((prev) => ({ ...prev, purity: purity.toFixed(3) }));
+  }, [receivedGold.weight, receivedGold.percentage]);
+
+  useEffect(() => {
+    setBalancePurity(totalPurity - parseFloat(receivedGold.purity || 0));
+  }, [totalPurity, receivedGold.purity]);
+
+  useEffect(() => {
+    const rate = parseFloat(goldRate) || 0;
+    const additionalPurity = parseFloat(additionalReceivedPurity) || 0;
+    setCashBalance(additionalPurity * rate + parseFloat(hallmarkCharges || 0));
+  }, [goldRate, hallmarkCharges, additionalReceivedPurity]);
+
+  const handleAddAdditionalReceived = () => {
+    setShowAdditionalReceived(true); 
+    setAdditionalReceivedPurity(""); 
+  };
+
+  const handleAdditionalReceivedPurityChange = (e) => {
+    setAdditionalReceivedPurity(e.target.value);
+  };
 
   return (
     <>
@@ -257,6 +293,73 @@ const Billing = () => {
                   <strong>{totalPurity.toFixed(3)}</strong>
                 </td>
               </tr>
+              <tr>
+                <td className="td">
+                  <strong>Received Gold</strong>
+                </td>
+                <td className="td"></td>
+                <td className="td">
+                  <TextField
+                    size="small"
+                    name="percentage"
+                    value={receivedGold.percentage}
+                    onChange={handleReceivedGoldChange}
+                    placeholder="%"
+                    style={{ width: "60px" }}
+                  />
+                </td>
+                <td className="td">
+                  <TextField
+                    size="small"
+                    name="weight"
+                    value={receivedGold.weight}
+                    onChange={handleReceivedGoldChange}
+                    placeholder="Weight"
+                    style={{ width: "80px" }}
+                  />
+                </td>
+                <td className="td">
+                  <strong>{receivedGold.purity}</strong>
+                </td>
+              </tr>
+              <tr>
+                <td className="td">
+                  <strong>Balance</strong>
+                </td>
+                <td className="td"></td>
+                <td className="td"></td>
+                <td className="td"></td>
+                <td className="td">
+                  <strong>{balancePurity.toFixed(3)}</strong>
+                  <Tooltip title="Add Received Purity" arrow>
+                    <IconButton
+                      size="small"
+                      onClick={handleAddAdditionalReceived}
+                    >
+                      <AddCircleOutlineIcon />
+                    </IconButton>
+                  </Tooltip>
+                </td>
+              </tr>
+              {showAdditionalReceived && (
+                <tr>
+                  <td className="td">
+                    <strong>Received Purity</strong>
+                  </td>
+                  <td className="td"></td>
+                  <td className="td"></td>
+                  <td className="td"></td>
+                  <td className="td">
+                    <TextField
+                      size="small"
+                      value={additionalReceivedPurity}
+                      onChange={handleAdditionalReceivedPurityChange}
+                      placeholder="Enter Purity"
+                      style={{ width: "120px" }}
+                    />
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
           <Box className="total-calculation">
@@ -270,14 +373,14 @@ const Billing = () => {
             />
             <TextField
               label="Hallmark or MC Charges"
-             value={hallmarkCharges}
+              value={hallmarkCharges}
               onChange={(e) => setHallmarkCharges(e.target.value)}
               type="number"
               size="small"
               className="hallmark-charges-input"
             />
             <Typography variant="h6">
-              Final Total: {finalTotal.toFixed(2)}
+              Cash Balance: {cashBalance.toFixed(2)}
             </Typography>
           </Box>
         </Box>
@@ -298,7 +401,6 @@ const Billing = () => {
               label="Coin Value"
               name="name"
               value={newItem.name}
-          
               onChange={handleInputChange}
               margin="normal"
               type="number"
@@ -316,7 +418,7 @@ const Billing = () => {
               fullWidth
               label="Percentage (%)"
               name="percentage"
-            value={newItem.percentage}
+              value={newItem.percentage}
               onChange={handleInputChange}
               margin="normal"
               type="number"
@@ -336,7 +438,6 @@ const Billing = () => {
               label="Purity (Auto-calculated)"
               name="pure"
               value={newItem.pure}
-      
               margin="normal"
               InputProps={{
                 readOnly: true,
@@ -362,3 +463,8 @@ const Billing = () => {
 };
 
 export default Billing;
+
+
+
+
+
