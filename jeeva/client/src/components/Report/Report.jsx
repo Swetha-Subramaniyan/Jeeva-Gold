@@ -329,7 +329,7 @@ function Report() {
   return (
     <Box className="report-container">
       <Typography style={{textAlign:"center"}} variant="h5" className="report-title" gutterBottom>
-        Daily Sales Report 
+        Daily Sales Report
       </Typography>
 <br></br>
       <Box sx={{ display: "flex", gap: 2, mb: 3, flexWrap: "wrap" }}>
