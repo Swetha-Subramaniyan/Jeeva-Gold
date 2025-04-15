@@ -1,36 +1,37 @@
-
 import React, { useState } from "react";
 import logo from "../../Assets/logo.png";
-import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 import "./Home.css";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
-function Home() {
+
+function Register() {
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleLogin = async (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
 
     try {
-      const res = await axios.post("http://localhost:5000/api/auth/login", {
+      const res = await axios.post("http://localhost:5000/api/auth/register", {
         username,
         password,
       });
 
-      if (res.data.token) {
-        localStorage.setItem("token", res.data.token);
-        navigate("/customer");
-      } else {
-        setError("Invalid username or password.");
-      }
+      setSuccess("Registration successful! Please log in.");
+      setTimeout(() => navigate("/"), 2000);
     } catch (err) {
-      setError("Invalid username or password.");
+      setError("Registration failed. Try again.");
     }
+  };
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
   };
 
   return (
@@ -42,9 +43,9 @@ function Home() {
         <div className="login-box">
           <div className="login-header">
             <i className="fas fa-user-circle"></i>
-            <h2>Login</h2>
+            <h2>Register</h2>
           </div>
-          <form onSubmit={handleLogin}>
+          <form onSubmit={handleRegister}>
             <div className="input-group">
               <label>Username</label>
               <input
@@ -67,20 +68,20 @@ function Home() {
                 />
                 <span
                   className="password-toggle-icon"
-                  onClick={() => setShowPassword(!showPassword)}
+                  onClick={togglePasswordVisibility}
                 >
-                  {showPassword ? <FaEyeSlash /> : <FaEye />}{" "}
+                  {showPassword ? <FaEye /> : <FaEyeSlash />}
                 </span>
               </div>
             </div>
-            {error && <div className="error-message">{error}</div>}{" "}
+            {error && <div className="error-message">{error}</div>}
+            {success && <div className="success-message">{success}</div>}
             <button type="submit" className="submit-btn">
-              Sign In
+              Register
             </button>
           </form>
           <div className="login-footer">
-            <a href="/">Forgot Password?</a>
-            <a href="/register">Sign Up</a>
+            <a href="/">Already have an account? Login</a>
           </div>
         </div>
       </div>
@@ -88,4 +89,4 @@ function Home() {
   );
 }
 
-export default Home;
+export default Register;
