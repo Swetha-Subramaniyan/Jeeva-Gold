@@ -12,12 +12,14 @@ import MasterCustomer from "./components/Master/Mastercustomer";
 import Customertrans from "./components/Customer/Customertrans";
 import Jobcard from "./components/Goldsmith/Jobcard";
 import AddCustomer from "./components/Billing/Addcustomer";
+import Register from "./components/Home/Register";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/register" element={<Register/>}></Route>
         <Route
           path="/customer"
           element={
