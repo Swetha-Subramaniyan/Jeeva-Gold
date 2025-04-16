@@ -4,7 +4,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import "./Home.css";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-
+import { BACKEND_SERVER_URL } from "../../Config/Config";
 
 function Register() {
   const navigate = useNavigate();
@@ -18,7 +18,7 @@ function Register() {
     e.preventDefault();
 
     try {
-      const res = await axios.post("http://localhost:5000/api/auth/register", {
+      const res = await axios.post(`${BACKEND_SERVER_URL}/api/auth/register`, {
         username,
         password,
       });

@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import "./Mastercustomer.css";
 import {
@@ -10,6 +9,9 @@ import {
   TextField,
   Paper,
 } from "@mui/material";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { BACKEND_SERVER_URL } from "../../Config/Config";
 
 function MasterCustomer() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -29,107 +31,134 @@ function MasterCustomer() {
     setIsModalOpen(false);
   };
 
+  const handleSaveCustomer = async () => {
+    if (customerName.trim() === "") {
+      alert("Customer name is required.");
+      return;
+    }
 
-const handleSaveCustomer = () => {
-  if (customerName && phoneNumber && address) {
-    const newCustomer = {
+    const customerData = {
       name: customerName,
       phone: phoneNumber,
       address: address,
     };
-    const updatedCustomers = [...customers, newCustomer];
 
-    setCustomers(updatedCustomers);
-    localStorage.setItem("customers", JSON.stringify(updatedCustomers)); 
-    closeModal();
-  } else {
-    alert("Please fill in all customer details.");
-  }
-};
+    try {
+     const response = await fetch(`${BACKEND_SERVER_URL}/api/customers`, {
+       method: "POST",
+       headers: {
+         "Content-Type": "application/json",
+       },
+       body: JSON.stringify(customerData),
+     });
+
+      if (response.ok) {
+        const newCustomer = await response.json();
+        setCustomers((prev) => [...prev, newCustomer]);
+        toast.success("Customer added successfully!");
+        closeModal();
+      } else {
+        const err = await response.json();
+        toast.error("Error: " + err.message);
+      }
+    } catch (error) {
+      console.error("Error saving customer:", error);
+      toast.error("Something went wrong.");
+    }
+  };
 
   return (
-    <div className="customer-container">
-      <Button
-        style={{
-          backgroundColor: "#F5F5F5",
-          color: "black",
-          borderColor: "#25274D",
-          borderStyle: "solid",
-          borderWidth: "2px",
-        }}
-        variant="contained"
-        onClick={openModal}
-      >
-        Add Customer
-      </Button>
+    <>
+      <ToastContainer
+        position="top-right"
+        autoClose={1000}
+        hideProgressBar={true}
+        closeOnClick
+        pauseOnHover={false}
+        draggable={false}
+      />
 
-      <Dialog open={isModalOpen} onClose={closeModal}>
-        <DialogTitle>Add New Customer</DialogTitle>
-        <DialogContent>
-          <TextField
-            autoFocus
-            margin="dense"
-            label="Customer Name"
-            type="text"
-            fullWidth
-            value={customerName}
-            onChange={(e) => setCustomerName(e.target.value)}
-          />
-          <TextField
-            margin="dense"
-            label="Phone Number"
-            type="tel"
-            fullWidth
-            value={phoneNumber}
-            onChange={(e) => setPhoneNumber(e.target.value)}
-          />
-          <TextField
-            margin="dense"
-            label="Address"
-            type="text"
-            fullWidth
-            multiline
-            rows={4}
-            value={address}
-            onChange={(e) => setAddress(e.target.value)}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={closeModal} color="secondary">
-            Cancel
-          </Button>
-          <Button onClick={handleSaveCustomer} color="primary">
-            Save
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <div className="customer-container">
+        <Button
+          style={{
+            backgroundColor: "#F5F5F5",
+            color: "black",
+            borderColor: "#25274D",
+            borderStyle: "solid",
+            borderWidth: "2px",
+          }}
+          variant="contained"
+          onClick={openModal}
+        >
+          Add Customer
+        </Button>
 
-      {customers.length > 0 && (
-        <Paper className="customer-table">
-          <table border="1" width="100%">
-            <thead>
-              <tr>
-                <th>Customer Name</th>
-                <th>Phone Number</th>
-                <th>Address</th>
-              </tr>
-            </thead>
-            <tbody>
-              {customers.map((customer, index) => (
-                <tr key={index}>
-                  <td>{customer.name}</td>
-                  <td>{customer.phone}</td>
-                  <td>{customer.address}</td>
+        <Dialog open={isModalOpen} onClose={closeModal}>
+          <DialogTitle>Add New Customer</DialogTitle>
+          <DialogContent>
+            <TextField
+              autoFocus
+              margin="dense"
+              label="Customer Name"
+              type="text"
+              fullWidth
+              value={customerName}
+              onChange={(e) => setCustomerName(e.target.value)}
+            />
+            <TextField
+              margin="dense"
+              label="Phone Number"
+              type="tel"
+              fullWidth
+              value={phoneNumber}
+              onChange={(e) => setPhoneNumber(e.target.value)}
+            />
+            <TextField
+              margin="dense"
+              label="Address"
+              type="text"
+              fullWidth
+              multiline
+              rows={4}
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={closeModal} color="secondary">
+              Cancel
+            </Button>
+            <Button onClick={handleSaveCustomer} color="primary">
+              Save
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {customers.length > 0 && (
+          <Paper className="customer-table">
+            <table border="1" width="100%">
+              <thead>
+                <tr>
+                  <th>Customer Name</th>
+                  <th>Phone Number</th>
+                  <th>Address</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </Paper>
-      )}
-    </div>
+              </thead>
+              <tbody>
+                {customers.map((customer, index) => (
+                  <tr key={index}>
+                    <td>{customer.name}</td>
+                    <td>{customer.phone}</td>
+                    <td>{customer.address}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </Paper>
+        )}
+      </div>
+    </>
   );
 }
 
 export default MasterCustomer;
-
-

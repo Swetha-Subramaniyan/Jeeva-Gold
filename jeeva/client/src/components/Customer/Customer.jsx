@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import {
   Container,
@@ -18,17 +17,25 @@ import SearchIcon from "@mui/icons-material/Search";
 import PreviewIcon from "@mui/icons-material/Preview";
 import { useNavigate } from "react-router-dom";
 import "./Customer.css";
+import { BACKEND_SERVER_URL } from "../../Config/Config";
 
 const Customer = () => {
   const [customers, setCustomers] = useState([]);
-  const [searchTerm, setSearchTerm] = useState(""); 
+  const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
-    const storedCustomers = JSON.parse(localStorage.getItem("customers"));
-    if (storedCustomers) {
-      setCustomers(storedCustomers);
-    }
+    const fetchCustomers = async () => {
+      try {
+        const response = await fetch(`${BACKEND_SERVER_URL}/api/customers`);
+        const data = await response.json();
+        setCustomers(data);
+      } catch (error) {
+        console.error("Error fetching customers:", error);
+      }
+    };
+
+    fetchCustomers();
   }, []);
 
   const filteredCustomers = customers.filter(
@@ -55,10 +62,10 @@ const Customer = () => {
           sx={{
             "& .MuiOutlinedInput-root": {
               borderRadius: "30px",
-              width:"22rem",
+              width: "22rem",
               backgroundColor: "#f8f9fa",
               "&.Mui-focused": {
-                backgroundColor: "#ffffff", 
+                backgroundColor: "#ffffff",
               },
             },
           }}
