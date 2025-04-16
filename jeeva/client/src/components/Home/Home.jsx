@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import "./Home.css";
+import { BACKEND_SERVER_URL } from "../../Config/Config";
 
 function Home() {
   const navigate = useNavigate();
@@ -17,7 +18,7 @@ function Home() {
     e.preventDefault();
 
     try {
-      const res = await axios.post("http://localhost:5000/api/auth/login", {
+      const res = await axios.post(`${BACKEND_SERVER_URL}/api/auth/login`, {
         username,
         password,
       });

@@ -3,6 +3,7 @@ const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const authRoutes = require("./Routes/auth.routes");
+const customerRoutes = require("./Routes/customer.routes");
 require("dotenv").config();
 
 const app = express();
@@ -17,6 +18,9 @@ app.get("/", (req, res) => {
 
 
 app.use("/api/auth", authRoutes);
+app.use("/api/customers", customerRoutes);
+
+
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
