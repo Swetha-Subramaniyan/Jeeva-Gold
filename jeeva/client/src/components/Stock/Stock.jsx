@@ -1,6 +1,8 @@
-
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import "./Stock.css";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { BACKEND_SERVER_URL } from "../../Config/Config";
 
 const Stock = () => {
   const [showPopup, setShowPopup] = useState(false);
@@ -16,12 +18,20 @@ const Stock = () => {
     purity: "",
   });
   const [editIndex, setEditIndex] = useState(null);
+  const [editingId, setEditingId] = useState(null);
+
+  useEffect(() => {
+    fetch(`${BACKEND_SERVER_URL}/api/v1/stocks`)
+      .then((res) => res.json())
+      .then((data) => setStockItems(data))
+      .catch((err) => console.error("Error fetching stocks:", err));
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     let updatedData = { ...formData, [name]: value };
 
-    if (name === "gram" || name === "quantity" || name === "touch") {
+    if (["gram", "quantity", "touch"].includes(name)) {
       const gram = parseFloat(updatedData.gram) || 0;
       const quantity = parseInt(updatedData.quantity) || 0;
       const touch = parseFloat(updatedData.touch) || 0;
@@ -32,14 +42,57 @@ const Stock = () => {
     setFormData(updatedData);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (editIndex !== null) {
-      const updatedItems = [...stockItems];
-      updatedItems[editIndex] = formData;
-      setStockItems(updatedItems);
+      const updatedItem = formData;
+      const itemId = stockItems[editIndex].id;
+
+      try {
+        const response = await fetch(
+          `${BACKEND_SERVER_URL}/api/v1/stocks/${itemId}`,
+          {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(updatedItem),
+          }
+        );
+
+        if (!response.ok) throw new Error("Failed to update stock item");
+
+        const result = await response.json();
+
+        const updatedItems = [...stockItems];
+        updatedItems[editIndex] = result.data;
+        setStockItems(updatedItems);
+      } catch (err) {
+        console.error("Error updating stock:", err);
+        toast.error("Failed to update stock item!");
+      }
+
+      toast.success("Stock item updated successfully!");
       setEditIndex(null);
-    } else {
-      setStockItems([...stockItems, formData]);
+      setShowPopup(false);
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `${BACKEND_SERVER_URL}/api/v1/stocks/create`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData),
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to create stock item");
+
+      const result = await response.json();
+      setStockItems([result.data, ...stockItems]);
+      toast.success("Stock item created successfully!");
+    } catch (err) {
+      console.error("Error adding stock:", err);
+      toast.error("Failed to create stock item!");
     }
 
     setFormData({
@@ -56,20 +109,40 @@ const Stock = () => {
   const handleEdit = (index) => {
     setFormData(stockItems[index]);
     setEditIndex(index);
+    setEditingId(stockItems[index]._id);
     setShowPopup(true);
   };
 
-  const handleDelete = (index) => {
-    const updatedItems = stockItems.filter((_, i) => i !== index);
-    setStockItems(updatedItems);
+  const handleDelete = async (index) => {
+    const itemToDelete = stockItems[index];
+
+    try {
+      const response = await fetch(
+        `${BACKEND_SERVER_URL}/api/v1/stocks/${itemToDelete.id}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to delete stock item");
+
+      const updatedItems = stockItems.filter((_, i) => i !== index);
+      setStockItems(updatedItems);
+      toast.success("Stock item deleted successfully!");
+    } catch (err) {
+      console.error("Error deleting stock:", err);
+      toast.error("Failed to delete stock item!");
+    }
   };
 
   const filteredStockItems = useMemo(() => {
     return stockItems.filter((item) => {
       return (
         (filterCoinType === "" ||
-          item.coinType.toLowerCase().includes(filterCoinType.toLowerCase())) &&
-        (filterGram === "" || item.gram.includes(filterGram))
+          item.coinType
+            ?.toLowerCase()
+            .includes(filterCoinType.toLowerCase())) &&
+        (filterGram === "" || item.gram?.toString().includes(filterGram))
       );
     });
   }, [stockItems, filterCoinType, filterGram]);
@@ -91,6 +164,7 @@ const Stock = () => {
 
   return (
     <div className="stock-container">
+      <ToastContainer />
       <h2>Coin Stock Report</h2>
       <button className="add-btn" onClick={() => setShowPopup(true)}>
         Add Item
@@ -149,16 +223,14 @@ const Stock = () => {
               name="totalWeight"
               placeholder="Total Weight"
               value={formData.totalWeight}
-              readOnly={editIndex === null}
-              onChange={handleChange}
+              readOnly
             />
             <input
               type="number"
               name="purity"
               placeholder="Purity"
               value={formData.purity}
-              readOnly={editIndex === null}
-              onChange={handleChange}
+              readOnly
             />
 
             <button className="save-btn" onClick={handleSubmit}>
@@ -169,6 +241,7 @@ const Stock = () => {
               onClick={() => {
                 setShowPopup(false);
                 setEditIndex(null);
+                setEditingId(null);
               }}
             >
               Close
@@ -191,14 +264,13 @@ const Stock = () => {
         </thead>
         <tbody>
           {filteredStockItems.map((item, index) => (
-            <tr key={index}>
+            <tr key={item._id || index}>
               <td>{item.coinType}</td>
               <td>{item.gram}</td>
               <td>{item.quantity}</td>
               <td>{item.touch}</td>
               <td>{item.totalWeight}</td>
               <td>{item.purity}</td>
-
               <td>
                 <button className="edit-btn" onClick={() => handleEdit(index)}>
                   Edit

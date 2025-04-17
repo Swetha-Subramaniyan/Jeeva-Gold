@@ -20,3 +20,20 @@ model Customer {
   address   String?   
   createdAt DateTime @default(now())
 }
+model MasterItem {
+  id           Int      @id @default(autoincrement())
+  itemName     String
+  enamelWeight String
+  createdAt    DateTime @default(now())
+}
+model CoinStock {
+  id          Int      @id @default(autoincrement())
+  coinType    String
+  gram        Float
+  quantity    Int
+  touch       Float
+  totalWeight Float
+  purity      Float
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
