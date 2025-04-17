@@ -1,5 +1,6 @@
 
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom"; 
 import MasterCustomer from "./Mastercustomer";
 import "./Master.css";
 import Mastergoldsmith from "./Mastergoldsmith";
@@ -8,31 +9,36 @@ import Masteradditems from "./Masteradditems";
 const Master = () => {
   const [showCustomerDetails, setShowCustomerDetails] = useState(false);
   const [showGoldsmithDetails, setShowGoldsmithDetails] = useState(false);
-  const [showAddItemsDetails, setShowAddItemsDetails]= useState(false);
+  const [showAddItemsDetails, setShowAddItemsDetails] = useState(false);
+
+  const navigate = useNavigate(); 
 
   const handleAddCustomerClick = () => {
     setShowCustomerDetails(true);
-    setShowGoldsmithDetails(false); 
-    setShowAddItemsDetails(false)
+    setShowGoldsmithDetails(false);
+    setShowAddItemsDetails(false);
   };
 
   const handleAddGoldsmithClick = () => {
     setShowGoldsmithDetails(true);
-    setShowCustomerDetails(false); 
-    setShowAddItemsDetails(false)
+    setShowCustomerDetails(false);
+    setShowAddItemsDetails(false);
   };
 
   const handleAddItemsClick = () => {
     setShowAddItemsDetails(true);
     setShowCustomerDetails(false);
     setShowGoldsmithDetails(false);
-    
   };
 
   const handleStockClick = () => {
     setShowCustomerDetails(false);
     setShowGoldsmithDetails(false);
-    
+  };
+
+  const handleLogout = () => {
+ 
+    navigate("/"); 
   };
 
   return (
@@ -52,7 +58,6 @@ const Master = () => {
             margin: 0,
             padding: 0,
             justifyContent: "center",
-            
           }}
         >
           <li style={{ marginRight: "20px" }}>
@@ -91,7 +96,7 @@ const Master = () => {
               Items
             </button>
           </li>
-          <li>
+          <li style={{ marginRight: "20px" }}>
             <button
               onClick={handleStockClick}
               className="nav-button"
@@ -108,6 +113,25 @@ const Master = () => {
       {showCustomerDetails && <MasterCustomer />}
       {showGoldsmithDetails && <Mastergoldsmith />}
       {showAddItemsDetails && <Masteradditems />}
+
+      <button
+        onClick={handleLogout}
+        style={{
+          backgroundColor: "#A31D1D",
+          color: "white",
+          border: "none",
+          padding: "8px 12px",
+          borderRadius: "4px",
+          position: "absolute",
+          top: "15px", 
+          right: "15px", 
+          cursor: "pointer",
+          fontWeight: "bold",
+          fontSize:"1rem"
+        }}
+      >
+        Logout
+      </button>
     </div>
   );
 };

@@ -1,7 +1,15 @@
 
 import React from "react";
+import { useNavigate } from "react-router-dom"; 
 
 function Navbar() {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+ 
+    navigate("/"); 
+  };
+
   return (
     <nav style={navbarStyle}>
       <ul style={navListStyle}>
@@ -36,17 +44,22 @@ function Navbar() {
           </a>
         </li>
       </ul>
+  
+      <button onClick={handleLogout} style={logoutButtonStyle}>
+        Logout
+      </button>
     </nav>
   );
 }
+
 
 const navbarStyle = {
   background: "#A31D1D",
   padding: "10px 0",
   width: "100%",
   boxSizing: "border-box",
+  position: "relative",
 };
-
 
 const navListStyle = {
   listStyle: "none",
@@ -54,12 +67,10 @@ const navListStyle = {
   justifyContent: "center",
   margin: 0,
   padding: 13,
- 
 };
 
 const navItemStyle = {
   margin: "0 15px",
-
 };
 
 const linkStyle = {
@@ -69,4 +80,18 @@ const linkStyle = {
   borderRadius: "4px",
   transition: "background-color 0.3s ease",
 };
+
+
+const logoutButtonStyle = {
+  backgroundColor: "#A31D1D",
+  color: "white",
+  border: "none",
+  padding: "8px 12px",
+  borderRadius: "4px",
+  position: "absolute",
+  right: "10px", 
+  top: "10px", 
+  cursor: "pointer",
+};
+
 export default Navbar;
