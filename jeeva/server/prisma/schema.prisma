@@ -37,3 +37,11 @@ model CoinStock {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
+model Goldsmith{
+  id          Int     @id @default(autoincrement())
+  name        String
+  phone String?
+  address     String?
+  createdAt   DateTime @default(now())
+
+}

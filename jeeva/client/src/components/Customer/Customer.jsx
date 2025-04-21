@@ -38,12 +38,17 @@ const Customer = () => {
     fetchCustomers();
   }, []);
 
-  const filteredCustomers = customers.filter(
-    (customer) =>
-      customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      customer.phone.includes(searchTerm) ||
-      customer.address.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredCustomers = customers.filter((customer) => {
+    const nameMatch =
+      customer.name &&
+      customer.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const phoneMatch = customer.phone && customer.phone.includes(searchTerm);
+    const addressMatch =
+      customer.address &&
+      customer.address.toLowerCase().includes(searchTerm.toLowerCase());
+
+    return nameMatch || phoneMatch || addressMatch;
+  });
 
   return (
     <Container maxWidth="lg">

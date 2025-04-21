@@ -3,6 +3,7 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 const authRoutes = require("./Routes/auth.routes");
 const customerRoutes = require("./Routes/customer.routes");
+const goldsmithRoutes = require("./Routes/goldsmith.routes");
 const masterItemRoutes = require("./Routes/masteritem.routes");
 const stockRoutes = require("./Routes/coinstock.routes");
 require("dotenv").config();
@@ -20,6 +21,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/customers", customerRoutes);
 app.use("/api/master-items", masterItemRoutes);
 app.use("/api/v1/stocks", stockRoutes);
+app.use("/api/goldsmith", goldsmithRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
