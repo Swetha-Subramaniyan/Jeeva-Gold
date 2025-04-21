@@ -9,6 +9,10 @@ import {
   TextField,
   Paper,
 } from "@mui/material";
+import axios from "axios";
+import { BACKEND_SERVER_URL } from "../../Config/Config";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function Mastergoldsmith() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -28,22 +32,31 @@ function Mastergoldsmith() {
     setIsModalOpen(false);
   };
 
-const handleSaveGoldsmith = () => {
-  if (goldsmithName && phoneNumber && address) {
-    const newGoldsmith = {
-      name: goldsmithName,
-      phone: phoneNumber,
-      address: address,
-    };
-    const updatedGoldsmith = [...goldsmith, newGoldsmith];
+  const handleSaveGoldsmith = async () => {
+    if (goldsmithName.trim()) {
+      const newGoldsmith = {
+        name: goldsmithName,
+        phonenumber: phoneNumber || null,
+        address: address || null,
+      };
 
-    setGoldsmith(updatedGoldsmith);
-    localStorage.setItem("goldsmith", JSON.stringify(updatedGoldsmith));
-    closeModal();
-  } else {
-    alert("Please fill in all goldsmith details.");
-  }
-};
+      try {
+        const response = await axios.post(
+          `${BACKEND_SERVER_URL}/api/goldsmith`,
+          newGoldsmith
+        );
+
+        setGoldsmith([...goldsmith, response.data]);
+        closeModal();
+        toast.success("Goldsmith added successfully!");
+      } catch (error) {
+        console.error("Error creating goldsmith:", error);
+        toast.error("Failed to add goldsmith. Please try again.");
+      }
+    } else {
+      toast.warn("Please enter the goldsmith's name.");
+    }
+  };
 
   return (
     <div className="customer-container">
@@ -101,6 +114,17 @@ const handleSaveGoldsmith = () => {
           </Button>
         </DialogActions>
       </Dialog>
+      <ToastContainer
+        position="top-right" 
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
 
       {goldsmith.length > 0 && (
         <Paper className="customer-table">
