@@ -3,13 +3,12 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 exports.createItem = async (req, res) => {
-  const { itemName, enamelWeight } = req.body;
+  const { itemName } = req.body;
 
   try {
     const newItem = await prisma.masterItem.create({
       data: {
         itemName,
-        enamelWeight,
       },
     });
     res.status(201).json(newItem);
