@@ -1,9 +1,13 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import "./Jobcard.css";
+import { BACKEND_SERVER_URL } from "../../Config/Config";
 
 const Jobcard = () => {
   const today = new Date().toISOString().split("T")[0];
+
+  const [items, setItems] = useState([]);
   const [formData, setFormData] = useState({
     date: today,
     givenWeight: "",
@@ -27,6 +31,21 @@ const Jobcard = () => {
   const [popupEstimateWeight, setPopupEstimateWeight] = useState("");
   const [popupWastage, setPopupWastage] = useState("");
 
+
+  const fetchItems = async () => {
+    try {
+      const res = await axios.get(`${BACKEND_SERVER_URL}/api/master-items`);
+      console.log("Fetched items:", res.data);
+      setItems(res.data);
+    } catch (err) {
+      console.error("Failed to fetch items", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchItems();
+  }, []);
+
   const calculatePurityWeight = (weight, touch) => {
     const givenWeight = parseFloat(weight) || 0;
     const touchValue = parseFloat(touch) || 0;
@@ -39,7 +58,11 @@ const Jobcard = () => {
   );
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
   };
 
   const handleAddItem = () => {
@@ -159,6 +182,7 @@ const Jobcard = () => {
           value={formData.date}
           onChange={handleChange}
         />
+
         <label>Given Weight * Touch:</label>
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
           <div style={{ display: "flex", alignItems: "center" }}>
@@ -201,9 +225,11 @@ const Jobcard = () => {
           onChange={handleChange}
         >
           <option value="">Select an Item</option>
-          <option value="Ring">Ring</option>
-          <option value="Chain">Chain</option>
-          <option value="Bracelet">Bracelet</option>
+          {items.map((item) => (
+            <option key={item._id} value={item.itemName}>
+              {item.itemName}
+            </option>
+          ))}
         </select>
 
         <label>Description:</label>
@@ -335,10 +361,12 @@ const Jobcard = () => {
             )}
           </p>
         </div>
+
         <div className="job-card-footer">
           <p>jeevagoldcoins@gmail.com</p>
         </div>
       </div>
+
       {showPopup && (
         <div className="popup-overlay">
           <div className="popup-content">

@@ -23,7 +23,6 @@ model Customer {
 model MasterItem {
   id           Int      @id @default(autoincrement())
   itemName     String
-  enamelWeight String
   createdAt    DateTime @default(now())
 }
 model CoinStock {
