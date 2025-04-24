@@ -1,28 +1,16 @@
 
-import React, { useState, useEffect } from "react";
-import axios from "axios";
+import React, { useState } from "react";
 import "./Jobcard.css";
-import { BACKEND_SERVER_URL } from "../../Config/Config";
+import JobcardForm from "./Jobcardform";
+import EditItemPopup from "./Edititempopup";
 
 const Jobcard = () => {
   const today = new Date().toISOString().split("T")[0];
-
-  const [items, setItems] = useState([]);
-  const [formData, setFormData] = useState({
-    date: today,
-    givenWeight: "",
-    touch: "",
-    estimateWeight: "",
-    selectedItem: "",
-    description: "",
-  });
-
   const [jobDetails, setJobDetails] = useState({
     date: today,
     items: [],
     description: "",
   });
-
   const [finalWeight, setFinalWeight] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(null);
   const [showPopup, setShowPopup] = useState(false);
@@ -31,76 +19,30 @@ const Jobcard = () => {
   const [popupEstimateWeight, setPopupEstimateWeight] = useState("");
   const [popupWastage, setPopupWastage] = useState("");
 
-
-  const fetchItems = async () => {
-    try {
-      const res = await axios.get(`${BACKEND_SERVER_URL}/api/master-items`);
-      console.log("Fetched items:", res.data);
-      setItems(res.data);
-    } catch (err) {
-      console.error("Failed to fetch items", err);
-    }
-  };
-
-  useEffect(() => {
-    fetchItems();
-  }, []);
-
-  const calculatePurityWeight = (weight, touch) => {
-    const givenWeight = parseFloat(weight) || 0;
-    const touchValue = parseFloat(touch) || 0;
-    return (givenWeight * touchValue) / 100;
-  };
-
-  const purityWeight = calculatePurityWeight(
-    formData.givenWeight,
-    formData.touch
-  );
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
-  };
-
-  const handleAddItem = () => {
-    if (
-      !formData.selectedItem ||
-      !formData.givenWeight ||
-      !formData.touch ||
-      !formData.estimateWeight
-    ) {
-      alert("Please fill all item fields before adding.");
-      return;
-    }
-
+  const handleAddItem = (newItem) => {
     setJobDetails((prev) => ({
       ...prev,
-      date: formData.date,
-      description: formData.description,
+      date: newItem.date,
+      description: newItem.description,
       items: [
         ...prev.items,
         {
-          selectedItem: formData.selectedItem,
-          givenWeight: purityWeight.toFixed(2),
-          originalGivenWeight: formData.givenWeight,
-          touch: formData.touch,
-          estimateWeight: formData.estimateWeight,
+          selectedItem: newItem.selectedItem,
+          givenWeight: newItem.givenWeight,
+          originalGivenWeight: newItem.originalGivenWeight,
+          touch: newItem.touch,
+          estimateWeight: newItem.estimateWeight,
           finalWeight: "",
           wastage: "",
         },
       ],
     }));
+  };
 
-    setFormData((prev) => ({
-      ...prev,
-      selectedItem: "",
-      givenWeight: "",
-      touch: "",
-      estimateWeight: "",
-    }));
+  const calculatePurityWeight = (weight, touch) => {
+    const givenWeight = parseFloat(weight) || 0;
+    const touchValue = parseFloat(touch) || 0;
+    return (givenWeight * touchValue) / 100;
   };
 
   const handleOpenPopup = (index) => {
@@ -111,6 +53,12 @@ const Jobcard = () => {
     setPopupEstimateWeight(jobDetails.items[index].estimateWeight);
     setPopupWastage(jobDetails.items[index].wastage || "");
     setShowPopup(true);
+  };
+
+  const handleClosePopup = () => {
+    setShowPopup(false);
+    setFinalWeight("");
+    setPopupWastage("");
   };
 
   const handleSaveFinalWeight = () => {
@@ -139,9 +87,7 @@ const Jobcard = () => {
       return { ...prev, items: updatedItems };
     });
 
-    setShowPopup(false);
-    setFinalWeight("");
-    setPopupWastage("");
+    handleClosePopup();
   };
 
   const handleDeleteItem = (indexToDelete) => {
@@ -172,77 +118,7 @@ const Jobcard = () => {
 
   return (
     <div className="job-card-container">
-      <div className="job-card-form">
-        <h3>Job Card Details</h3>
-
-        <label>Date:</label>
-        <input
-          type="date"
-          name="date"
-          value={formData.date}
-          onChange={handleChange}
-        />
-
-        <label>Given Weight * Touch:</label>
-        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          <div style={{ display: "flex", alignItems: "center" }}>
-            <input
-              type="text"
-              name="givenWeight"
-              value={formData.givenWeight}
-              onChange={handleChange}
-              style={{ width: "80px" }}
-            />
-            <span> * </span>
-            <input
-              type="text"
-              name="touch"
-              value={formData.touch}
-              onChange={handleChange}
-              style={{ width: "80px" }}
-            />
-          </div>
-          <span>=</span>
-          <div style={{ minWidth: "80px" }}>
-            {!isNaN(purityWeight) && purityWeight > 0
-              ? purityWeight.toFixed(2) + " g"
-              : ""}
-          </div>
-        </div>
-
-        <label>Estimate Weight:</label>
-        <input
-          type="text"
-          name="estimateWeight"
-          value={formData.estimateWeight}
-          onChange={handleChange}
-        />
-
-        <label>Select Item:</label>
-        <select
-          name="selectedItem"
-          value={formData.selectedItem}
-          onChange={handleChange}
-        >
-          <option value="">Select an Item</option>
-          {items.map((item) => (
-            <option key={item._id} value={item.itemName}>
-              {item.itemName}
-            </option>
-          ))}
-        </select>
-
-        <label>Description:</label>
-        <textarea
-          name="description"
-          value={formData.description}
-          onChange={handleChange}
-          rows="4"
-          cols="33"
-        ></textarea>
-
-        <button onClick={handleAddItem}>Add Item</button>
-      </div>
+      <JobcardForm onAddItem={handleAddItem} />
 
       <div className="job-card">
         <div className="job-card-header">
@@ -295,7 +171,7 @@ const Jobcard = () => {
             <thead>
               <tr>
                 <th>SI.No</th>
-                <th>Item Description</th>
+                <th>Item</th>
                 <th>Given Weight (Gross)</th>
                 <th>Touch</th>
                 <th>Given Weight (Purity)</th>
@@ -367,64 +243,22 @@ const Jobcard = () => {
         </div>
       </div>
 
-      {showPopup && (
-        <div className="popup-overlay">
-          <div className="popup-content">
-            <h3>Edit Item Details</h3>
-
-            <label>
-              Given Weight:
-              <input
-                type="text"
-                value={popupGivenWeight}
-                onChange={(e) => setPopupGivenWeight(e.target.value)}
-                style={{ width: "60px", marginLeft: "5px" }}
-              />
-            </label>
-
-            <label>
-              Touch:
-              <input
-                type="text"
-                value={popupTouch}
-                onChange={(e) => setPopupTouch(e.target.value)}
-                style={{ width: "60px", marginLeft: "5px" }}
-              />
-            </label>
-
-            <label>Purity Weight:</label>
-            <div>
-              {calculatePurityWeight(popupGivenWeight, popupTouch).toFixed(2)} g
-            </div>
-
-            <label>Estimate Weight:</label>
-            <input
-              type="text"
-              value={popupEstimateWeight}
-              onChange={(e) => setPopupEstimateWeight(e.target.value)}
-            />
-
-            <label>Final Weight:</label>
-            <input
-              type="text"
-              value={finalWeight}
-              onChange={(e) => setFinalWeight(e.target.value)}
-            />
-
-            <label>Wastage:</label>
-            <input
-              type="text"
-              value={popupWastage}
-              onChange={(e) => setPopupWastage(e.target.value)}
-            />
-
-            <div className="popup-buttons">
-              <button onClick={handleSaveFinalWeight}>Save</button>
-              <button onClick={() => setShowPopup(false)}>Cancel</button>
-            </div>
-          </div>
-        </div>
-      )}
+      <EditItemPopup
+        isOpen={showPopup}
+        onClose={handleClosePopup}
+        givenWeight={popupGivenWeight}
+        touch={popupTouch}
+        estimateWeight={popupEstimateWeight}
+        finalWeight={finalWeight}
+        wastage={popupWastage}
+        onGivenWeightChange={(e) => setPopupGivenWeight(e.target.value)}
+        onTouchChange={(e) => setPopupTouch(e.target.value)}
+        onEstimateWeightChange={(e) => setPopupEstimateWeight(e.target.value)}
+        onFinalWeightChange={(e) => setFinalWeight(e.target.value)}
+        onWastageChange={(e) => setPopupWastage(e.target.value)}
+        onSave={handleSaveFinalWeight}
+        calculatePurityWeight={calculatePurityWeight}
+      />
     </div>
   );
 };
