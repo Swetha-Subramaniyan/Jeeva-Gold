@@ -21,7 +21,6 @@ import { BACKEND_SERVER_URL } from "../../Config/Config";
 const Goldsmith = () => {
   const [goldsmith, setGoldsmith] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -34,19 +33,18 @@ const Goldsmith = () => {
         console.error("Error fetching goldsmith data:", error);
       }
     };
-
     fetchGoldsmiths();
   }, []);
 
- const filteredGoldsmith = goldsmith.filter((gs) => {
-   const nameMatch =
-     gs.name && gs.name.toLowerCase().includes(searchTerm.toLowerCase());
-   const phoneMatch = gs.phone && gs.phone.includes(searchTerm);
-   const addressMatch =
-     gs.address && gs.address.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredGoldsmith = goldsmith.filter((gs) => {
+    const nameMatch =
+      gs.name && gs.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const phoneMatch = gs.phone && gs.phone.includes(searchTerm);
+    const addressMatch =
+      gs.address && gs.address.toLowerCase().includes(searchTerm.toLowerCase());
+    return nameMatch || phoneMatch || addressMatch;
+  });
 
-   return nameMatch || phoneMatch || addressMatch;
- });
   return (
     <Container maxWidth="md">
       <Paper className="customer-details-container" elevation={3} sx={{ p: 3 }}>
@@ -105,7 +103,21 @@ const Goldsmith = () => {
                   <TableCell>{goldsmith.phone}</TableCell>
                   <TableCell>{goldsmith.address}</TableCell>
                   <TableCell>
-                    <VisibilityIcon onClick={() => navigate("/jobcard")} />
+                    <VisibilityIcon
+                      onClick={() =>
+                        navigate(
+                          `/jobcard/${goldsmith.id}/${goldsmith.name}`,
+                          {
+                            state: {
+                              goldsmithId:goldsmith.id,
+                              goldsmithName: goldsmith.name,
+                              goldsmithPhone: goldsmith.phone,
+                              goldsmithAddress: goldsmith.address,
+                            },
+                          }
+                        )
+                      }
+                    />
                   </TableCell>
                 </TableRow>
               ))

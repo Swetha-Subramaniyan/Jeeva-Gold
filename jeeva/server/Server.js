@@ -6,7 +6,7 @@ const customerRoutes = require("./Routes/customer.routes");
 const goldsmithRoutes = require("./Routes/goldsmith.routes");
 const masterItemRoutes = require("./Routes/masteritem.routes");
 const stockRoutes = require("./Routes/coinstock.routes");
-const jobCardRoutes = require("./Routes/jobcard.routes")
+const jobCardRoutes = require("./Routes/jobcard.routes");
 require("dotenv").config();
 
 const app = express();

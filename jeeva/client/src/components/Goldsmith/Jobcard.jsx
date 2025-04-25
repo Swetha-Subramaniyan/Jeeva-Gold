@@ -1,15 +1,24 @@
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import axios from "axios";
+import { BACKEND_SERVER_URL } from "../../Config/Config";
 import "./Jobcard.css";
-import JobcardForm from "./Jobcardform";
 import EditItemPopup from "./Edititempopup";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const Jobcard = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { goldsmithName, goldsmithPhone, goldsmithAddress, goldsmithId } =
+    location.state || {};
+
   const today = new Date().toISOString().split("T")[0];
   const [jobDetails, setJobDetails] = useState({
     date: today,
     items: [],
     description: "",
+    goldsmithId: goldsmithId || "",
   });
   const [finalWeight, setFinalWeight] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(null);
@@ -18,31 +27,128 @@ const Jobcard = () => {
   const [popupTouch, setPopupTouch] = useState("");
   const [popupEstimateWeight, setPopupEstimateWeight] = useState("");
   const [popupWastage, setPopupWastage] = useState("");
+  const [itemsList, setItemsList] = useState([]);
+  const [formData, setFormData] = useState({
+    date: today,
+    givenWeight: "",
+    touch: "",
+    estimateWeight: "",
+    selectedItem: "",
+    description: "",
+  });
 
-  const handleAddItem = (newItem) => {
-    setJobDetails((prev) => ({
-      ...prev,
-      date: newItem.date,
-      description: newItem.description,
-      items: [
-        ...prev.items,
-        {
-          selectedItem: newItem.selectedItem,
-          givenWeight: newItem.givenWeight,
-          originalGivenWeight: newItem.originalGivenWeight,
-          touch: newItem.touch,
-          estimateWeight: newItem.estimateWeight,
-          finalWeight: "",
-          wastage: "",
-        },
-      ],
-    }));
+  const fetchItems = async () => {
+    try {
+      const res = await axios.get(`${BACKEND_SERVER_URL}/api/master-items`);
+      console.log("Fetched items:", res.data);
+      setItemsList(res.data);
+    } catch (err) {
+      console.error("Failed to fetch items", err);
+      toast.error("Failed to fetch items");
+    }
   };
+
+  useEffect(() => {
+    fetchItems();
+  }, []);
 
   const calculatePurityWeight = (weight, touch) => {
     const givenWeight = parseFloat(weight) || 0;
     const touchValue = parseFloat(touch) || 0;
     return (givenWeight * touchValue) / 100;
+  };
+
+  const purityWeight = calculatePurityWeight(
+    formData.givenWeight,
+    formData.touch
+  );
+
+  const handleFormChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = async () => {
+    if (
+      !formData.selectedItem ||
+      !formData.givenWeight ||
+      !formData.touch ||
+      !formData.estimateWeight
+    ) {
+      toast.error("Please fill all item fields before submitting.");
+      return;
+    }
+
+    const selectedItemObj = itemsList.find(
+      (item) => item.itemName === formData.selectedItem
+    );
+
+    if (!selectedItemObj) {
+      toast.error("Selected item not found");
+      return;
+    }
+
+    const newItem = {
+      selectedItem: selectedItemObj.id,
+      selectedItemName: formData.selectedItem,
+      givenWeight: purityWeight.toFixed(2),
+      originalGivenWeight: formData.givenWeight,
+      touch: formData.touch,
+      estimateWeight: formData.estimateWeight,
+      finalWeight: "",
+      wastage: "",
+    };
+
+    const updatedJobDetails = {
+      ...jobDetails,
+      date: formData.date,
+      description: formData.description,
+      items: [...jobDetails.items, newItem],
+    };
+
+    try {
+      const payload = {
+        date: updatedJobDetails.date,
+        description: updatedJobDetails.description,
+        goldsmithId: updatedJobDetails.goldsmithId,
+        items: updatedJobDetails.items.map((item) => ({
+          selectedItem: item.selectedItem,
+          originalGivenWeight: item.originalGivenWeight,
+          givenWeight: item.givenWeight,
+          touch: item.touch,
+          estimateWeight: item.estimateWeight,
+          finalWeight: item.finalWeight || null,
+          wastage: item.wastage || null,
+        })),
+      };
+
+      const response = await axios.post(
+        `${BACKEND_SERVER_URL}/api/job-cards`,
+        payload
+      );
+
+      setJobDetails(updatedJobDetails);
+      setFormData({
+        date: today,
+        givenWeight: "",
+        touch: "",
+        estimateWeight: "",
+        selectedItem: "",
+        description: "",
+      });
+
+      toast.success("Job card created successfully!");
+    } catch (error) {
+      console.error("Error creating job card:", error);
+      toast.error(
+        `Failed to create job card: ${
+          error.response?.data?.message || error.message
+        }`
+      );
+    }
   };
 
   const handleOpenPopup = (index) => {
@@ -63,12 +169,12 @@ const Jobcard = () => {
 
   const handleSaveFinalWeight = () => {
     if (!finalWeight) {
-      alert("Please enter the final weight.");
+      toast.error("Please enter the final weight.");
       return;
     }
 
     if (popupWastage === "") {
-      alert("Please enter wastage.");
+      toast.error("Please enter wastage.");
       return;
     }
 
@@ -87,6 +193,7 @@ const Jobcard = () => {
       return { ...prev, items: updatedItems };
     });
 
+    toast.success("Item updated successfully!");
     handleClosePopup();
   };
 
@@ -95,6 +202,7 @@ const Jobcard = () => {
       ...prev,
       items: prev.items.filter((_, index) => index !== indexToDelete),
     }));
+    toast.success("Item deleted successfully!");
   };
 
   const totalGivenWeight = jobDetails.items.reduce(
@@ -117,149 +225,233 @@ const Jobcard = () => {
   const balance = totalGivenWeight - (totalFinalWeight + totalWastage);
 
   return (
-    <div className="job-card-container">
-      <JobcardForm onAddItem={handleAddItem} />
+    <>
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
+      <div className="job-card-container">
+        <div className="job-card-form">
+          <h3>Job Card Details</h3>
 
-      <div className="job-card">
-        <div className="job-card-header">
-          <div className="job-card-logo">JEEVA GOLD COINS</div>
-          <div className="job-card-contact">
-            <p>Town Hall 458 Road</p>
-            <p>Coimbatore</p>
-            <p>9875637456</p>
+          <label>Date:</label>
+          <input
+            type="date"
+            name="date"
+            value={formData.date}
+            onChange={handleFormChange}
+          />
+
+          <label>Given Weight * Touch:</label>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <div style={{ display: "flex", alignItems: "center" }}>
+              <input
+                type="text"
+                name="givenWeight"
+                value={formData.givenWeight}
+                onChange={handleFormChange}
+                style={{ width: "80px" }}
+              />
+              <span> * </span>
+              <input
+                type="text"
+                name="touch"
+                value={formData.touch}
+                onChange={handleFormChange}
+                style={{ width: "80px" }}
+              />
+            </div>
+            <span>=</span>
+            <div style={{ minWidth: "80px" }}>
+              {!isNaN(purityWeight) && purityWeight > 0
+                ? purityWeight.toFixed(2) + " g"
+                : ""}
+            </div>
           </div>
+
+          <label>Estimate Weight:</label>
+          <input
+            type="text"
+            name="estimateWeight"
+            value={formData.estimateWeight}
+            onChange={handleFormChange}
+          />
+
+          <label>Select Item:</label>
+          <select
+            name="selectedItem"
+            value={formData.selectedItem}
+            onChange={handleFormChange}
+          >
+            <option value="">Select an Item</option>
+            {itemsList.map((item) => (
+              <option key={item._id} value={item.itemName}>
+                {item.itemName}
+              </option>
+            ))}
+          </select>
+
+          <label>Description:</label>
+          <textarea
+            name="description"
+            value={formData.description}
+            onChange={handleFormChange}
+            rows="4"
+            cols="33"
+          ></textarea>
+
+          <button
+            onClick={handleSubmit}
+            style={{ backgroundColor: "#4CAF50", marginTop: "20px" }}
+          >
+            Save Job Card
+          </button>
         </div>
 
-        <div className="job-card-details">
-          <div className="job-card-number">
+        <div className="job-card">
+          <div className="job-card-header">
+            <div className="job-card-logo">JEEVA GOLD COINS</div>
+            <div className="job-card-contact">
+              <p>Town Hall 458 Road</p>
+              <p>Coimbatore</p>
+              <p>9875637456</p>
+            </div>
+          </div>
+
+          <div className="job-card-details">
+            <div className="job-card-number">
+              <p>
+                <strong>No:</strong> {goldsmithId}
+              </p>
+              <p style={{ marginLeft: "12rem" }}>
+                <strong>Date:</strong> {jobDetails.date}
+              </p>
+            </div>
+          </div>
+          <hr className="divider" />
+
+          <div className="job-card-customer">
+            <h3>Goldsmith Information</h3>
+            <br />
             <p>
-              <strong>No:</strong> JC20-001
+              <strong>Name:</strong> {goldsmithName}
             </p>
-            <p style={{ marginLeft: "7rem" }}>
-              <strong>Date:</strong> {jobDetails.date}
+            <p>
+              <strong>Address:</strong> {goldsmithAddress}
+            </p>
+            <p>
+              <strong>Phone:</strong> {goldsmithPhone}
             </p>
           </div>
-        </div>
+          <hr className="divider" />
 
-        <hr className="divider" />
+          <div className="job-card-description">
+            <h3>Description</h3>
+            <p>{jobDetails.description}</p>
+          </div>
+          <hr className="divider" />
 
-        <div className="job-card-customer">
-          <h3>Goldsmith Information</h3>
-          <br />
-          <p>
-            <strong>Name:</strong>
-          </p>
-          <p>
-            <strong>Address:</strong>
-          </p>
-          <p>
-            <strong>Phone:</strong>
-          </p>
-        </div>
-
-        <hr className="divider" />
-
-        <div className="job-card-description">
-          <h3>Description</h3>
-          <p>{jobDetails.description}</p>
-        </div>
-
-        <hr className="divider" />
-
-        <div className="job-card-items">
-          <table>
-            <thead>
-              <tr>
-                <th>SI.No</th>
-                <th>Item</th>
-                <th>Given Weight (Gross)</th>
-                <th>Touch</th>
-                <th>Given Weight (Purity)</th>
-                <th>Estimate Weight</th>
-                <th>Final Weight</th>
-                <th>Wastage</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {jobDetails.items.length > 0 ? (
-                jobDetails.items.map((item, index) => (
-                  <tr key={index}>
-                    <td>{index + 1}</td>
-                    <td>{item.selectedItem}</td>
-                    <td>{item.originalGivenWeight} g</td>
-                    <td>{item.touch}</td>
-                    <td>{item.givenWeight} g</td>
-                    <td>{item.estimateWeight} g</td>
-                    <td>
-                      {item.finalWeight ? `${item.finalWeight} g` : "Pending"}
-                    </td>
-                    <td>{item.wastage} g</td>
-                    <td>
-                      <button onClick={() => handleOpenPopup(index)}>
-                        &#128065;
-                      </button>
-                      <button onClick={() => handleDeleteItem(index)}>
-                        &#128465;
-                      </button>
+          <div className="job-card-items">
+            <table>
+              <thead>
+                <tr>
+                  <th>SI.No</th>
+                  <th>Item</th>
+                  <th>Given Weight (Gross)</th>
+                  <th>Touch</th>
+                  <th>Given Weight (Purity)</th>
+                  <th>Estimate Weight</th>
+                  <th>Final Weight</th>
+                  <th>Wastage</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {jobDetails.items.length > 0 ? (
+                  jobDetails.items.map((item, index) => (
+                    <tr key={index}>
+                      <td>{index + 1}</td>
+                      <td>{item.selectedItemName}</td>
+                      <td>{item.originalGivenWeight} g</td>
+                      <td>{item.touch}</td>
+                      <td>{item.givenWeight} g</td>
+                      <td>{item.estimateWeight} g</td>
+                      <td>
+                        {item.finalWeight ? `${item.finalWeight} g` : "Pending"}
+                      </td>
+                      <td>{item.wastage} g</td>
+                      <td>
+                        <button onClick={() => handleOpenPopup(index)}>
+                          &#128065;
+                        </button>
+                        <button onClick={() => handleDeleteItem(index)}>
+                          &#128465;
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="9" style={{ textAlign: "center" }}>
+                      No items added
                     </td>
                   </tr>
-                ))
+                )}
+              </tbody>
+            </table>
+          </div>
+          <hr className="divider" />
+
+          <div className="job-card-totals">
+            <h3>Balance</h3>
+            <p>
+              <strong>Balance:</strong> {balance.toFixed(2)} g
+            </p>
+            <p>
+              {balance > 0 ? (
+                <span style={{ color: "green" }}>
+                  Owner should give {balance.toFixed(2)} g
+                </span>
+              ) : balance < 0 ? (
+                <span style={{ color: "red" }}>
+                  Goldsmith should give {Math.abs(balance).toFixed(2)} g
+                </span>
               ) : (
-                <tr>
-                  <td colSpan="9" style={{ textAlign: "center" }}>
-                    No items added
-                  </td>
-                </tr>
+                <span style={{ color: "blue" }}>No balance to be given</span>
               )}
-            </tbody>
-          </table>
+            </p>
+          </div>
+
+          <div className="job-card-footer">
+            <p>jeevagoldcoins@gmail.com</p>
+          </div>
         </div>
 
-        <hr className="divider" />
-
-        <div className="job-card-totals">
-          <h3>Balance</h3>
-          <p>
-            <strong>Balance:</strong> {balance.toFixed(2)} g
-          </p>
-          <p>
-            {balance > 0 ? (
-              <span style={{ color: "green" }}>
-                Owner should give {balance.toFixed(2)} g
-              </span>
-            ) : balance < 0 ? (
-              <span style={{ color: "red" }}>
-                Goldsmith should give {Math.abs(balance).toFixed(2)} g
-              </span>
-            ) : (
-              <span style={{ color: "blue" }}>No balance to be given</span>
-            )}
-          </p>
-        </div>
-
-        <div className="job-card-footer">
-          <p>jeevagoldcoins@gmail.com</p>
-        </div>
+        <EditItemPopup
+          isOpen={showPopup}
+          onClose={handleClosePopup}
+          givenWeight={popupGivenWeight}
+          touch={popupTouch}
+          estimateWeight={popupEstimateWeight}
+          finalWeight={finalWeight}
+          wastage={popupWastage}
+          onGivenWeightChange={(e) => setPopupGivenWeight(e.target.value)}
+          onTouchChange={(e) => setPopupTouch(e.target.value)}
+          onEstimateWeightChange={(e) => setPopupEstimateWeight(e.target.value)}
+          onFinalWeightChange={(e) => setFinalWeight(e.target.value)}
+          onWastageChange={(e) => setPopupWastage(e.target.value)}
+          onSave={handleSaveFinalWeight}
+          calculatePurityWeight={calculatePurityWeight}
+        />
       </div>
-
-      <EditItemPopup
-        isOpen={showPopup}
-        onClose={handleClosePopup}
-        givenWeight={popupGivenWeight}
-        touch={popupTouch}
-        estimateWeight={popupEstimateWeight}
-        finalWeight={finalWeight}
-        wastage={popupWastage}
-        onGivenWeightChange={(e) => setPopupGivenWeight(e.target.value)}
-        onTouchChange={(e) => setPopupTouch(e.target.value)}
-        onEstimateWeightChange={(e) => setPopupEstimateWeight(e.target.value)}
-        onFinalWeightChange={(e) => setFinalWeight(e.target.value)}
-        onWastageChange={(e) => setPopupWastage(e.target.value)}
-        onSave={handleSaveFinalWeight}
-        calculatePurityWeight={calculatePurityWeight}
-      />
-    </div>
+    </>
   );
 };
 
