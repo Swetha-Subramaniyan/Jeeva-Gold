@@ -69,7 +69,7 @@ function App() {
           }
         ></Route>
         <Route
-          path="/jobcard"
+          path="/jobcard/:id/:name"
           element={
             <PageWithNavbar>
               <Jobcard />
