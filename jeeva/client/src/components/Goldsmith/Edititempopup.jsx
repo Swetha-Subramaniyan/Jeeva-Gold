@@ -26,6 +26,7 @@ const EditItemPopup = ({
     initialFinalWeight || ""
   );
   const [finalWeightPart2, setFinalWeightPart2] = useState("");
+
   const finalPurity = calculatePurityWeight(
     parseFloat(finalWeightPart1) || 0,
     parseFloat(finalWeightPart2) || 0
@@ -56,17 +57,17 @@ const EditItemPopup = ({
     parseFloat(finalTouch) || 0
   ).toFixed(2);
 
-  const [wastageOperation, setWastageOperation] = useState("*"); 
+  const [wastageOperation, setWastageOperation] = useState("%"); 
   const [wastageValue, setWastageValue] = useState("");
   const [wastage, setWastage] = useState(initialWastage || "");
 
   useEffect(() => {
     let calculatedWastage = 0;
-    const purity = parseFloat(derivedPurity) || 0;
+    const purity = parseFloat(derivedPurity1) || 0;
     const value = parseFloat(wastageValue) || 0;
 
-    if (wastageOperation === "*") {
-      calculatedWastage = purity * value;
+    if (wastageOperation === "%") {
+      calculatedWastage = purity % value;
     } else if (wastageOperation === "+") {
       calculatedWastage = purity + value;
     }
@@ -76,7 +77,10 @@ const EditItemPopup = ({
       onWastageChange({ target: { value: calculatedWastage.toFixed(2) } });
     }
   }, [derivedPurity, wastageOperation, wastageValue, onWastageChange]);
-
+  const derivedPurity1 = calculatePurityWeight(
+    derivedFinalWeight,
+    parseFloat(finalWeightPart2) || 0 
+  ).toFixed(2);
   return (
     <div className="popup-overlay">
       <div className="popup-content">
@@ -177,24 +181,24 @@ const EditItemPopup = ({
             <span style={{ marginLeft: "10px", marginRight: "5px" }}> x </span>
             <input
               type="text"
-              value={finalTouch}
-              onChange={(e) => setFinalTouch(e.target.value)}
+              value={finalWeightPart2}
+              onChange={(e) => setFinalWeightPart2(e.target.value)}
               style={{ width: "60px" }}
             />
-            <span style={{ marginLeft: "5px" }}>= {derivedPurity} g</span>
+            <span style={{ marginLeft: "5px" }}>= {derivedPurity1} g</span>
           </div>
         </label>
 
         <label style={{ marginTop: "10px" }}>
           Wastage:
           <div style={{ display: "flex", alignItems: "center" }}>
-            <span>{derivedPurity} g</span>
+            <span>{derivedPurity1} g</span>
             <select
               value={wastageOperation}
               onChange={(e) => setWastageOperation(e.target.value)}
               style={{ marginLeft: "10px", marginRight: "5px" }}
             >
-              <option value="*">*</option>
+              <option value="*">%</option>
               <option value="+">+</option>
             </select>
             <input
@@ -217,3 +221,6 @@ const EditItemPopup = ({
 };
 
 export default EditItemPopup;
+
+
+

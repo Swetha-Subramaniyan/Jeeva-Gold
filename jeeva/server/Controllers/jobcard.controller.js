@@ -84,22 +84,29 @@ const updateJobCardItem = async (req, res) => {
 
 const getJobCardById = async (req, res) => {
   const { id } = req.params;
+
+  if (!id || isNaN(parseInt(id))) {
+    return res.status(400).json({ error: "Invalid job card ID" });
+  }
+
   try {
     const jobCard = await prisma.jobCard.findUnique({
       where: { id: parseInt(id) },
       include: {
         goldsmith: true,
-        items: {
-          include: {
-            masterItem: true,
-            additionalWeights: true,
-          },
-        },
+        items: { include: { masterItem: true, additionalWeights: true } },
       },
     });
+
     if (!jobCard) {
       return res.status(404).json({ error: "Job card not found" });
     }
+    console.log("Fetched Job Card:", {
+      id: jobCard.id,
+      goldsmithId: jobCard.goldsmithId,
+      goldsmithName: jobCard.goldsmith?.name,
+    });
+
     res.json(jobCard);
   } catch (error) {
     console.error("Error fetching job card:", error);
