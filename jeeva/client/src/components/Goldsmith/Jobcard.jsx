@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import { BACKEND_SERVER_URL } from "../../Config/Config";
 import "./Jobcard.css";
 import EditItemPopup from "./Edititempopup";
 import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import "react-toastify/dist/ReactToastify.css"; 
 
 const Jobcard = () => {
+  const { id } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
   const { goldsmithName, goldsmithPhone, goldsmithAddress, goldsmithId } =
@@ -28,6 +29,7 @@ const Jobcard = () => {
   const [popupEstimateWeight, setPopupEstimateWeight] = useState("");
   const [popupWastage, setPopupWastage] = useState("");
   const [itemsList, setItemsList] = useState([]);
+    const [selectedItemId, setSelectedItemId] = useState(null);
   const [formData, setFormData] = useState({
     date: today,
     givenWeight: "",
@@ -37,20 +39,74 @@ const Jobcard = () => {
     description: "",
   });
 
-  const fetchItems = async () => {
-    try {
-      const res = await axios.get(`${BACKEND_SERVER_URL}/api/master-items`);
-      console.log("Fetched items:", res.data);
-      setItemsList(res.data);
-    } catch (err) {
-      console.error("Failed to fetch items", err);
-      toast.error("Failed to fetch items");
-    }
-  };
-
   useEffect(() => {
-    fetchItems();
-  }, []);
+    const fetchData = async () => {
+      try {
+        const itemsRes = await axios.get(
+          `${BACKEND_SERVER_URL}/api/master-items`
+        );
+        setItemsList(itemsRes.data);
+
+        if (id) {
+          const jobRes = await axios.get(
+            `${BACKEND_SERVER_URL}/api/job-cards/${id}`
+          );
+          const jobCard = jobRes.data;
+
+          setJobDetails({
+            date: jobCard.date.split("T")[0],
+            description: jobCard.description,
+            goldsmithId: jobCard.goldsmithId.toString(),
+            items: jobCard.items.map((item) => ({
+              id: item.id,
+              selectedItem: item.masterItem.id.toString(),
+              selectedItemName: item.masterItem.itemName,
+              givenWeight: item.givenWeight.toString(),
+              originalGivenWeight: item.originalGivenWeight.toString(),
+              touch: item.touch.toString(),
+              estimateWeight: item.estimateWeight.toString(),
+              finalWeight: item.finalWeight?.toString() || "",
+              wastage: item.wastage?.toString() || "",
+              purity: item.purity,
+              additionalWeights: item.additionalWeights || [],
+              // For backward compatibility with old structure
+              stone:
+                item.additionalWeights?.find((aw) => aw.name === "Stone")
+                  ?.weight || null,
+              enamel:
+                item.additionalWeights?.find((aw) => aw.name === "Enamel")
+                  ?.weight || null,
+              beads:
+                item.additionalWeights?.find((aw) => aw.name === "Beads")
+                  ?.weight || null,
+            })),
+          });
+
+          setFormData({
+            date: jobCard.date.split("T")[0],
+            description: jobCard.description,
+          });
+        } else {
+          setJobDetails({
+            date: new Date().toISOString().split("T")[0],
+            description: "",
+            goldsmithId: "",
+            items: [],
+          });
+
+          setFormData({
+            date: new Date().toISOString().split("T")[0],
+            description: "",
+          });
+        }
+      } catch (err) {
+        console.error("Failed to fetch data", err);
+        toast.error("Failed to load data");
+      }
+    };
+
+    fetchData();
+  }, [id]);
 
   const calculatePurityWeight = (weight, touch) => {
     const givenWeight = parseFloat(weight) || 0;
@@ -100,6 +156,10 @@ const Jobcard = () => {
       estimateWeight: formData.estimateWeight,
       finalWeight: "",
       wastage: "",
+      purityWeight,
+      stone: null,
+      enamel: null,
+      beads: null,
     };
 
     const updatedJobDetails = {
@@ -122,13 +182,15 @@ const Jobcard = () => {
           estimateWeight: item.estimateWeight,
           finalWeight: item.finalWeight || null,
           wastage: item.wastage || null,
+          purityWeight: item.purityWeight,
+          stone: item.weight || null,
+          enamel: item.weight || null,
+          beads: item.weight || null,
         })),
       };
 
-      const response = await axios.post(
-        `${BACKEND_SERVER_URL}/api/job-cards`,
-        payload
-      );
+      const response = id;
+      axios.post(`${BACKEND_SERVER_URL}/api/job-cards`, payload);
 
       setJobDetails(updatedJobDetails);
       setFormData({
@@ -140,11 +202,18 @@ const Jobcard = () => {
         description: "",
       });
 
-      toast.success("Job card created successfully!");
+      if (!id) {
+        navigate(`/job-cards/${response.data.id}`, {
+          state: location.state,
+          replace: true,
+        });
+      }
+
+      toast.success(`Job card ${id ? "updated" : "created"} successfully!`);
     } catch (error) {
-      console.error("Error creating job card:", error);
+      console.error("Error saving job card:", error);
       toast.error(
-        `Failed to create job card: ${
+        `Failed to save job card: ${
           error.response?.data?.message || error.message
         }`
       );
@@ -158,6 +227,7 @@ const Jobcard = () => {
     setPopupTouch(jobDetails.items[index].touch);
     setPopupEstimateWeight(jobDetails.items[index].estimateWeight);
     setPopupWastage(jobDetails.items[index].wastage || "");
+  setSelectedItemId(jobDetails.items[index].id);
     setShowPopup(true);
   };
 
@@ -167,7 +237,7 @@ const Jobcard = () => {
     setPopupWastage("");
   };
 
-  const handleSaveFinalWeight = () => {
+  const handleSaveFinalWeight = (updatedItemData) => {
     if (!finalWeight) {
       toast.error("Please enter the final weight.");
       return;
@@ -192,6 +262,7 @@ const Jobcard = () => {
 
       return { ...prev, items: updatedItems };
     });
+    const itemToUpdate = { ...updatedItems[selectedIndex], ...updatedItemData };
 
     toast.success("Item updated successfully!");
     handleClosePopup();
@@ -311,7 +382,7 @@ const Jobcard = () => {
             onClick={handleSubmit}
             style={{ backgroundColor: "#4CAF50", marginTop: "20px" }}
           >
-            Save Job Card
+            {id ? "Update Job Card" : "Save Job Card"}
           </button>
         </div>
 
@@ -328,9 +399,9 @@ const Jobcard = () => {
           <div className="job-card-details">
             <div className="job-card-number">
               <p>
-                <strong>No:</strong> {goldsmithId}
+                <strong>No:</strong> {id || "New"}
               </p>
-              <p style={{ marginLeft: "12rem" }}>
+              <p style={{ marginLeft: "17rem" }}>
                 <strong>Date:</strong> {jobDetails.date}
               </p>
             </div>
@@ -367,8 +438,12 @@ const Jobcard = () => {
                   <th>Given Weight (Gross)</th>
                   <th>Touch</th>
                   <th>Given Weight (Purity)</th>
-                  <th>Estimate Weight</th>
-                  <th>Final Weight</th>
+                  {/* <th>E.W</th> */}
+                  <th>Product WT</th>
+                  <th>Stone</th>
+                  <th>Enamel</th>
+                  <th>Beeds</th>
+                  <th>Final WT</th>
                   <th>Wastage</th>
                   <th>Action</th>
                 </tr>
@@ -382,10 +457,14 @@ const Jobcard = () => {
                       <td>{item.originalGivenWeight} g</td>
                       <td>{item.touch}</td>
                       <td>{item.givenWeight} g</td>
-                      <td>{item.estimateWeight} g</td>
+                      {/* <td>{item.estimateWeight} g</td> */}
                       <td>
                         {item.finalWeight ? `${item.finalWeight} g` : "Pending"}
                       </td>
+                      <td>{item.stone ? `${item.stone} g` : "-"}</td>
+                      <td>{item.enamel ? `${item.enamel} g` : "-"}</td>
+                      <td>{item.beads ? `${item.beads} g` : "-"}</td>
+                      <td>{item.purity}</td>
                       <td>{item.wastage} g</td>
                       <td>
                         <button onClick={() => handleOpenPopup(index)}>
@@ -449,6 +528,7 @@ const Jobcard = () => {
           onWastageChange={(e) => setPopupWastage(e.target.value)}
           onSave={handleSaveFinalWeight}
           calculatePurityWeight={calculatePurityWeight}
+          itemId={selectedItemId}
         />
       </div>
     </>
@@ -456,3 +536,12 @@ const Jobcard = () => {
 };
 
 export default Jobcard;
+
+
+
+
+
+
+
+
+
