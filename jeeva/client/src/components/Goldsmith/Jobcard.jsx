@@ -5,7 +5,7 @@ import { BACKEND_SERVER_URL } from "../../Config/Config";
 import "./Jobcard.css";
 import EditItemPopup from "./Edititempopup";
 import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import "react-toastify/dist/ReactToastify.css"; 
 
 const Jobcard = () => {
   const { id } = useParams();
@@ -29,6 +29,7 @@ const Jobcard = () => {
   const [popupEstimateWeight, setPopupEstimateWeight] = useState("");
   const [popupWastage, setPopupWastage] = useState("");
   const [itemsList, setItemsList] = useState([]);
+    const [selectedItemId, setSelectedItemId] = useState(null);
   const [formData, setFormData] = useState({
     date: today,
     givenWeight: "",
@@ -57,6 +58,7 @@ const Jobcard = () => {
             description: jobCard.description,
             goldsmithId: jobCard.goldsmithId.toString(),
             items: jobCard.items.map((item) => ({
+              id: item.id,
               selectedItem: item.masterItem.id.toString(),
               selectedItemName: item.masterItem.itemName,
               givenWeight: item.givenWeight.toString(),
@@ -65,6 +67,18 @@ const Jobcard = () => {
               estimateWeight: item.estimateWeight.toString(),
               finalWeight: item.finalWeight?.toString() || "",
               wastage: item.wastage?.toString() || "",
+              purity: item.purity,
+              additionalWeights: item.additionalWeights || [],
+              // For backward compatibility with old structure
+              stone:
+                item.additionalWeights?.find((aw) => aw.name === "Stone")
+                  ?.weight || null,
+              enamel:
+                item.additionalWeights?.find((aw) => aw.name === "Enamel")
+                  ?.weight || null,
+              beads:
+                item.additionalWeights?.find((aw) => aw.name === "Beads")
+                  ?.weight || null,
             })),
           });
 
@@ -142,6 +156,10 @@ const Jobcard = () => {
       estimateWeight: formData.estimateWeight,
       finalWeight: "",
       wastage: "",
+      purityWeight,
+      stone: null,
+      enamel: null,
+      beads: null,
     };
 
     const updatedJobDetails = {
@@ -164,6 +182,10 @@ const Jobcard = () => {
           estimateWeight: item.estimateWeight,
           finalWeight: item.finalWeight || null,
           wastage: item.wastage || null,
+          purityWeight: item.purityWeight,
+          stone: item.weight || null,
+          enamel: item.weight || null,
+          beads: item.weight || null,
         })),
       };
 
@@ -205,6 +227,7 @@ const Jobcard = () => {
     setPopupTouch(jobDetails.items[index].touch);
     setPopupEstimateWeight(jobDetails.items[index].estimateWeight);
     setPopupWastage(jobDetails.items[index].wastage || "");
+  setSelectedItemId(jobDetails.items[index].id);
     setShowPopup(true);
   };
 
@@ -214,7 +237,7 @@ const Jobcard = () => {
     setPopupWastage("");
   };
 
-  const handleSaveFinalWeight = () => {
+  const handleSaveFinalWeight = (updatedItemData) => {
     if (!finalWeight) {
       toast.error("Please enter the final weight.");
       return;
@@ -239,6 +262,7 @@ const Jobcard = () => {
 
       return { ...prev, items: updatedItems };
     });
+    const itemToUpdate = { ...updatedItems[selectedIndex], ...updatedItemData };
 
     toast.success("Item updated successfully!");
     handleClosePopup();
@@ -377,7 +401,7 @@ const Jobcard = () => {
               <p>
                 <strong>No:</strong> {id || "New"}
               </p>
-              <p style={{ marginLeft: "12rem" }}>
+              <p style={{ marginLeft: "17rem" }}>
                 <strong>Date:</strong> {jobDetails.date}
               </p>
             </div>
@@ -414,11 +438,12 @@ const Jobcard = () => {
                   <th>Given Weight (Gross)</th>
                   <th>Touch</th>
                   <th>Given Weight (Purity)</th>
-                  <th>E.W</th>
-                  <th>Product FW</th>
-                  <th>Charges</th>
-                  <th>C.W</th>
-                  <th>Final PW</th>
+                  {/* <th>E.W</th> */}
+                  <th>Product WT</th>
+                  <th>Stone</th>
+                  <th>Enamel</th>
+                  <th>Beeds</th>
+                  <th>Final WT</th>
                   <th>Wastage</th>
                   <th>Action</th>
                 </tr>
@@ -432,13 +457,14 @@ const Jobcard = () => {
                       <td>{item.originalGivenWeight} g</td>
                       <td>{item.touch}</td>
                       <td>{item.givenWeight} g</td>
-                      <td>{item.estimateWeight} g</td>
+                      {/* <td>{item.estimateWeight} g</td> */}
                       <td>
                         {item.finalWeight ? `${item.finalWeight} g` : "Pending"}
                       </td>
-                      <td>{item.name}</td>
-                      <td>{item.weight}</td>
-                      <td>{item.purityWeight}</td>
+                      <td>{item.stone ? `${item.stone} g` : "-"}</td>
+                      <td>{item.enamel ? `${item.enamel} g` : "-"}</td>
+                      <td>{item.beads ? `${item.beads} g` : "-"}</td>
+                      <td>{item.purity}</td>
                       <td>{item.wastage} g</td>
                       <td>
                         <button onClick={() => handleOpenPopup(index)}>
@@ -458,7 +484,6 @@ const Jobcard = () => {
                   </tr>
                 )}
               </tbody>
-   
             </table>
           </div>
           <hr className="divider" />
@@ -503,6 +528,7 @@ const Jobcard = () => {
           onWastageChange={(e) => setPopupWastage(e.target.value)}
           onSave={handleSaveFinalWeight}
           calculatePurityWeight={calculatePurityWeight}
+          itemId={selectedItemId}
         />
       </div>
     </>
@@ -510,3 +536,12 @@ const Jobcard = () => {
 };
 
 export default Jobcard;
+
+
+
+
+
+
+
+
+
