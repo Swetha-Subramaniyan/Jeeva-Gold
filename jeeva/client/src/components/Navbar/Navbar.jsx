@@ -34,6 +34,11 @@ function Navbar() {
           </a>
         </li>
         <li style={navItemStyle}>
+          <a href="/billingjewel" style={linkStyle}>
+            Jewel Bill
+          </a>
+        </li>
+        <li style={navItemStyle}>
           <a href="/report" style={linkStyle}>
             Report
           </a>
@@ -44,7 +49,7 @@ function Navbar() {
           </a>
         </li>
       </ul>
-  
+
       <button onClick={handleLogout} style={logoutButtonStyle}>
         Logout
       </button>

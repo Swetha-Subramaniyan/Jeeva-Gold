@@ -5,7 +5,7 @@ import { BACKEND_SERVER_URL } from "../../Config/Config";
 import "./Jobcard.css";
 import EditItemPopup from "./Edititempopup";
 import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css"; 
+import "react-toastify/dist/ReactToastify.css";
 
 const Jobcard = () => {
   const { id } = useParams();
@@ -29,7 +29,7 @@ const Jobcard = () => {
   const [popupEstimateWeight, setPopupEstimateWeight] = useState("");
   const [popupWastage, setPopupWastage] = useState("");
   const [itemsList, setItemsList] = useState([]);
-    const [selectedItemId, setSelectedItemId] = useState(null);
+  const [selectedItemId, setSelectedItemId] = useState(null);
   const [formData, setFormData] = useState({
     date: today,
     givenWeight: "",
@@ -227,7 +227,7 @@ const Jobcard = () => {
     setPopupTouch(jobDetails.items[index].touch);
     setPopupEstimateWeight(jobDetails.items[index].estimateWeight);
     setPopupWastage(jobDetails.items[index].wastage || "");
-  setSelectedItemId(jobDetails.items[index].id);
+    setSelectedItemId(jobDetails.items[index].id);
     setShowPopup(true);
   };
 
@@ -536,12 +536,3 @@ const Jobcard = () => {
 };
 
 export default Jobcard;
-
-
-
-
-
-
-
-
-

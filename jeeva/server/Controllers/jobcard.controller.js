@@ -50,11 +50,18 @@ const createJobCard = async (req, res) => {
 
 const updateJobCardItem = async (req, res) => {
   const { itemId } = req.params;
+
+  if (!itemId || isNaN(itemId)) {
+    return res.status(400).json({ error: "Invalid item ID" });
+  }
+
   const { finalWeight, wastage, purity, additionalWeights } = req.body;
 
   try {
     const updatedItem = await prisma.item.update({
-      where: { id: parseInt(itemId) },
+      where: {
+        id: parseInt(itemId), 
+      },
       data: {
         finalWeight: finalWeight ? parseFloat(finalWeight) : null,
         wastage: wastage ? parseFloat(wastage) : null,
@@ -81,7 +88,6 @@ const updateJobCardItem = async (req, res) => {
     res.status(500).json({ error: "Failed to update job card item" });
   }
 };
-
 const getJobCardById = async (req, res) => {
   const { id } = req.params;
 
