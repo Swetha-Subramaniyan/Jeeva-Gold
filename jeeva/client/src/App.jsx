@@ -1,3 +1,4 @@
+
 import React from "react";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import Home from "./components/Home/Home";
@@ -13,13 +14,14 @@ import Customertrans from "./components/Customer/Customertrans";
 import Jobcard from "./components/Goldsmith/Jobcard";
 import AddCustomer from "./components/Billing/Addcustomer";
 import Register from "./components/Home/Register";
+import Billingjewel from "./components/Billing/Billingjewel";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/register" element={<Register/>}></Route>
+        <Route path="/register" element={<Register />} />
         <Route
           path="/customer"
           element={
@@ -67,7 +69,7 @@ function App() {
               <Customertrans />
             </PageWithNavbar>
           }
-        ></Route>
+        />
         <Route
           path="/jobcard/:id/:name"
           element={
@@ -75,11 +77,18 @@ function App() {
               <Jobcard />
             </PageWithNavbar>
           }
-        ></Route>
-        <Route path="/master" element={<Master />}></Route>
-        <Route path="/mastercustomer" element={<MasterCustomer />}></Route>
-        <Route path="/addcustomer"element={<AddCustomer/>}></Route>
-        
+        />
+        <Route path="/master" element={<Master />} />
+        <Route path="/mastercustomer" element={<MasterCustomer />} />
+        <Route path="/addcustomer" element={<AddCustomer />} />
+        <Route
+          path="/billingjewel"
+          element={
+            <PageWithNavbar>
+              <Billingjewel />
+            </PageWithNavbar>
+          }
+        />
       </Routes>
     </BrowserRouter>
   );
@@ -87,9 +96,13 @@ function App() {
 
 function PageWithNavbar({ children }) {
   const location = useLocation();
-  if (location.pathname === "/") {
+  // Hide navbar for these paths
+  const hideNavbarPaths = ["/", "/register"];
+
+  if (hideNavbarPaths.includes(location.pathname)) {
     return children;
   }
+
   return (
     <>
       <Navbar />
@@ -99,6 +112,3 @@ function PageWithNavbar({ children }) {
 }
 
 export default App;
-
-
-
