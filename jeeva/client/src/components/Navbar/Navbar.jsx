@@ -29,8 +29,8 @@ function Navbar() {
           </a>
         </li>
         <li style={navItemStyle}>
-          <a href="/billing" style={linkStyle}>
-            Billing
+          <a href="/coinbill" style={linkStyle}>
+        Coin Bill
           </a>
         </li>
         <li style={navItemStyle}>

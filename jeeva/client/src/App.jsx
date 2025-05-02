@@ -39,7 +39,7 @@ function App() {
           }
         />
         <Route
-          path="/billing"
+          path="/coinbill"
           element={
             <PageWithNavbar>
               <Billing />
@@ -96,7 +96,7 @@ function App() {
 
 function PageWithNavbar({ children }) {
   const location = useLocation();
-  // Hide navbar for these paths
+ 
   const hideNavbarPaths = ["/", "/register"];
 
   if (hideNavbarPaths.includes(location.pathname)) {

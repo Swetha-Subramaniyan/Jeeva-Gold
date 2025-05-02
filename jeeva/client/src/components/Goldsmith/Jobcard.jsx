@@ -69,15 +69,14 @@ const Jobcard = () => {
               wastage: item.wastage?.toString() || "",
               purity: item.purity,
               additionalWeights: item.additionalWeights || [],
-              // For backward compatibility with old structure
               stone:
-                item.additionalWeights?.find((aw) => aw.name === "Stone")
+                item.additionalWeights?.find((aw) => aw.name === "stone")
                   ?.weight || null,
               enamel:
-                item.additionalWeights?.find((aw) => aw.name === "Enamel")
+                item.additionalWeights?.find((aw) => aw.name === "enamel")
                   ?.weight || null,
               beads:
-                item.additionalWeights?.find((aw) => aw.name === "Beads")
+                item.additionalWeights?.find((aw) => aw.name === "beeds")
                   ?.weight || null,
             })),
           });
@@ -168,6 +167,7 @@ const Jobcard = () => {
       description: formData.description,
       items: [...jobDetails.items, newItem],
     };
+     setJobDetails(updatedJobDetails); 
 
     try {
       const payload = {
@@ -237,38 +237,40 @@ const Jobcard = () => {
     setPopupWastage("");
   };
 
-  const handleSaveFinalWeight = (updatedItemData) => {
-    if (!finalWeight) {
-      toast.error("Please enter the final weight.");
-      return;
+const handleSaveFinalWeight = (updatedItemData) => {
+  setJobDetails((prev) => {
+    const updatedItems = [...prev.items];
+    const index = updatedItems.findIndex(
+      (item) => item.id === updatedItemData.id
+    );
+
+    if (index !== -1) {
+      updatedItems[index] = {
+        ...updatedItems[index],
+        finalWeight: updatedItemData.finalWeight,
+        wastage: updatedItemData.wastage,
+        purity: updatedItemData.purity,
+        additionalWeights: updatedItemData.additionalWeights,
+        stone:
+          updatedItemData.additionalWeights?.find((aw) => aw.name === "stone")
+            ?.weight || null,
+        enamel:
+          updatedItemData.additionalWeights?.find((aw) => aw.name === "enamel")
+            ?.weight || null,
+        beads:
+          updatedItemData.additionalWeights?.find((aw) => aw.name === "beeds")
+            ?.weight || null,
+      };
     }
 
-    if (popupWastage === "") {
-      toast.error("Please enter wastage.");
-      return;
-    }
+    return { ...prev, items: updatedItems };
+  });
 
-    setJobDetails((prev) => {
-      const updatedItems = [...prev.items];
-      updatedItems[selectedIndex].finalWeight = finalWeight;
-      updatedItems[selectedIndex].givenWeight = calculatePurityWeight(
-        popupGivenWeight,
-        popupTouch
-      ).toFixed(2);
-      updatedItems[selectedIndex].originalGivenWeight = popupGivenWeight;
-      updatedItems[selectedIndex].touch = popupTouch;
-      updatedItems[selectedIndex].estimateWeight = popupEstimateWeight;
-      updatedItems[selectedIndex].wastage = popupWastage;
+  toast.success("Item updated successfully!");
+};
+ 
 
-      return { ...prev, items: updatedItems };
-    });
-    const itemToUpdate = { ...updatedItems[selectedIndex], ...updatedItemData };
-
-    toast.success("Item updated successfully!");
-    handleClosePopup();
-  };
-
-  const handleDeleteItem = (indexToDelete) => {
+const handleDeleteItem = (indexToDelete) => {
     setJobDetails((prev) => ({
       ...prev,
       items: prev.items.filter((_, index) => index !== indexToDelete),
@@ -401,7 +403,7 @@ const Jobcard = () => {
               <p>
                 <strong>No:</strong> {id || "New"}
               </p>
-              <p style={{ marginLeft: "17rem" }}>
+              <p style={{ marginLeft: "19rem" }}>
                 <strong>Date:</strong> {jobDetails.date}
               </p>
             </div>
