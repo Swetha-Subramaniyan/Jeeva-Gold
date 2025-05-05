@@ -60,7 +60,7 @@ const updateJobCardItem = async (req, res) => {
   try {
     const updatedItem = await prisma.item.update({
       where: {
-        id: parseInt(itemId), 
+        id: parseInt(itemId),
       },
       data: {
         finalWeight: finalWeight ? parseFloat(finalWeight) : null,

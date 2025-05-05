@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import "./EditItemPopup.css";
 
@@ -25,12 +26,12 @@ const EditItemPopup = ({
   const [finalWeightPart1, setFinalWeightPart1] = useState(
     initialFinalWeight || ""
   );
-
   const [finalWeightPart2, setFinalWeightPart2] = useState("");
+
+  const additionalWeightOptions = ["stone", "enamel", "beeds", "Other"];
 
   const finalPurity = calculatePurityWeight(
     parseFloat(finalWeightPart1) || 0,
-
     parseFloat(finalWeightPart2) || 0
   ).toFixed(2);
 
@@ -42,15 +43,12 @@ const EditItemPopup = ({
 
   const handleAdditionalWeightChange = (index, field, value) => {
     const updatedWeights = [...additionalWeights];
-
     updatedWeights[index][field] = value;
-
     setAdditionalWeights(updatedWeights);
   };
 
   const totalAdditionalWeight = additionalWeights.reduce(
     (sum, item) => sum + parseFloat(item.weight || 0),
-
     0
   );
 
@@ -61,21 +59,16 @@ const EditItemPopup = ({
 
   const derivedPurity = calculatePurityWeight(
     derivedFinalWeight,
-
     parseFloat(finalTouch) || 0
   ).toFixed(2);
 
   const [wastageOperation, setWastageOperation] = useState("%");
-
   const [wastageValue, setWastageValue] = useState("");
-
   const [wastage, setWastage] = useState(initialWastage || "");
 
   useEffect(() => {
     let calculatedWastage = 0;
-
     const purity = parseFloat(derivedPurity1) || 0;
-
     const value = parseFloat(wastageValue) || 0;
 
     if (wastageOperation === "%") {
@@ -93,51 +86,49 @@ const EditItemPopup = ({
 
   const derivedPurity1 = calculatePurityWeight(
     derivedFinalWeight,
-
     parseFloat(finalWeightPart2) || 0
   ).toFixed(2);
 
-const handleSave = async () => {
-  try {
-    const payload = {
-      finalWeight: parseFloat(finalWeightPart1) || 0,
-      wastage: parseFloat(wastage) || 0,
-      purity: parseFloat(derivedPurity1) || 0,
-      additionalWeights: additionalWeights.map((item) => ({
-        name: item.name,
-        weight: parseFloat(item.weight) || 0,
-        operators: wastageOperation,
-      })),
-    };
+  const handleSave = async () => {
+    try {
+      const payload = {
+        finalWeight: parseFloat(finalWeightPart1) || 0,
+        wastage: parseFloat(wastage) || 0,
+        purity: parseFloat(derivedPurity1) || 0,
+        additionalWeights: additionalWeights.map((item) => ({
+          name: item.name,
+          weight: parseFloat(item.weight) || 0,
+          operators: wastageOperation,
+        })),
+      };
 
-    console.log("Updating item with ID:", itemId); 
-    console.log("Payload:", payload); 
+      console.log("Updating item with ID:", itemId);
+      console.log("Payload:", payload);
 
-    const response = await fetch(
-      `http://localhost:5000/api/job-cards/items/${itemId}`,
-      {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      }
-    );
-if (!response.ok) {
+      const response = await fetch(
+        `http://localhost:5000/api/job-cards/items/${itemId}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+      if (!response.ok) {
         throw new Error("Failed to update item");
       }
 
       const updatedItem = await response.json();
-
       console.log("Item updated:", updatedItem);
+      onSave(updatedItem);
+      onClose();
+    } catch (error) {
+      console.error("Error updating item:", error);
+      alert("Error updating item.");
+    }
+  };
 
-       onSave();
- 
-  } catch (error) {
-    console.error("Error updating item:", error);
-    alert("Error updating item.");
-  }
-};
   return (
     <div className="popup-overlay">
       <div className="popup-content">
@@ -207,14 +198,20 @@ if (!response.ok) {
           >
             <label style={{ marginRight: "10px" }}>
               Name:
-              <input
-                type="text"
+              <select
                 value={item.name}
                 onChange={(e) =>
                   handleAdditionalWeightChange(index, "name", e.target.value)
                 }
-                style={{ marginLeft: "5px", width: "80px" }}
-              />
+                style={{ marginLeft: "5px", width: "100px" }}
+              >
+                <option value="">Select</option>
+                {additionalWeightOptions.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
             </label>
 
             <label>
