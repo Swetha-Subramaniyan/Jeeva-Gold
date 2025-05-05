@@ -1,6 +1,6 @@
 
 .container {
-  width: 50%; 
+  width: 60%; 
   margin: 10px auto;
   padding: 20px;
   border: 1px solid #ddd;
@@ -47,6 +47,7 @@
 
 .smallAutocomplete {
   width: 100%;
+  width: 37%;
 }
 
 .customerDetails {
@@ -159,6 +160,19 @@ top: 5rem;
   background-color: #333 !important;
 }
 
+.flex {
+  display: flex;
+  justify-content: space-around;
+}
+
+.add{
+  display: flex;
+  justify-content:flex-start;
+}
+
+.bill{
+  display: flex;
+}
 
 @media print {
   .action-buttons {

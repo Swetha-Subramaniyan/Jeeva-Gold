@@ -15,6 +15,9 @@ import AddIcon from "@mui/icons-material/Add";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import "./Billing.css";
 import AddCustomer from "./Addcustomer";
+import { MdDeleteForever } from "react-icons/md";
+
+
 
 const Billing = () => {
   const [selectedCustomer, setSelectedCustomer] = useState(null);
@@ -51,6 +54,28 @@ const Billing = () => {
   const [cashBalance, setCashBalance] = useState(0);
   const [showAdditionalReceived, setShowAdditionalReceived] = useState(false);
   const [additionalReceivedPurity, setAdditionalReceivedPurity] = useState("");
+  const [rows, setRows] = useState([]);
+
+  const handleAddRow = () => {
+    setRows([
+      ...rows,
+      {
+        date: "",
+        rate: "",
+        givenGold: "",
+        touch: "",
+        purityWeight: "",
+        amount: "",
+        hallmark: "",
+      },
+    ]);
+  };
+
+  const handleDeleteRow = (index) => {
+    const updatedRows = rows.filter((_, i) => i !== index);
+    setRows(updatedRows);
+  };
+
 
   useEffect(() => {
     const updateTime = () => {
@@ -188,8 +213,10 @@ const Billing = () => {
 
   const handleAdditionalReceivedPurityChange = (e) => {
     setAdditionalReceivedPurity(e.target.value);
+    
   };
 
+  
   return (
     <>
       <Box className="action-buttons">
@@ -235,6 +262,7 @@ const Billing = () => {
                 label="Select Customer"
                 variant="outlined"
                 size="small"
+                
               />
             )}
             className="smallAutocomplete"
@@ -257,7 +285,10 @@ const Billing = () => {
         )}
 
         <Box className="itemsSection">
-          <h3>Bill Details:</h3>
+          <div className="bill"> 
+          <h3>Bill Details:</h3>   <b style={{marginLeft:'31.9rem'}}> Gold Rate: <input style={{height:'1.6rem'}}/></b>
+
+          </div>
           <table className="table">
             <thead>
               <tr>
@@ -266,6 +297,7 @@ const Billing = () => {
                 <th className="th">%</th>
                 <th className="th">Weight</th>
                 <th className="th">Purity</th>
+                <th className="th">Amount</th>
               </tr>
             </thead>
             <tbody>
@@ -276,6 +308,8 @@ const Billing = () => {
                   <td className="td">{item.percentage}</td>
                   <td className="td">{item.weight}</td>
                   <td className="td">{item.pure}</td>
+                  <td> </td>
+                  
                 </tr>
               ))}
               <tr>
@@ -292,98 +326,88 @@ const Billing = () => {
                 <td className="td">
                   <strong>{totalPurity.toFixed(3)}</strong>
                 </td>
-              </tr>
-              <tr>
                 <td className="td">
-                  <strong>Received Gold</strong>
-                </td>
-                <td className="td"></td>
-                <td className="td">
-                  <TextField
-                    size="small"
-                    name="percentage"
-                    value={receivedGold.percentage}
-                    onChange={handleReceivedGoldChange}
-                    placeholder="%"
-                    style={{ width: "60px" }}
-                  />
-                </td>
-                <td className="td">
-                  <TextField
-                    size="small"
-                    name="weight"
-                    value={receivedGold.weight}
-                    onChange={handleReceivedGoldChange}
-                    placeholder="Weight"
-                    style={{ width: "80px" }}
-                  />
-                </td>
-                <td className="td">
-                  <strong>{receivedGold.purity}</strong>
+                  <strong>{totalPurity.toFixed(3)}</strong>
                 </td>
               </tr>
-              <tr>
-                <td className="td">
-                  <strong>Balance</strong>
+              <tr>  
+              <td className="td"  colSpan={5}>
+                  <strong>Hallmark or MC Charges</strong>
                 </td>
-                <td className="td"></td>
-                <td className="td"></td>
-                <td className="td"></td>
-                <td className="td">
-                  <strong>{balancePurity.toFixed(3)}</strong>
-                  <Tooltip title="Add Received Purity" arrow>
-                    <IconButton
-                      size="small"
-                      onClick={handleAddAdditionalReceived}
-                    >
-                      <AddCircleOutlineIcon />
-                    </IconButton>
-                  </Tooltip>
+                <td> </td>
+              </tr>
+              <tr>  
+              <td className="td"  colSpan={5} >
+                  <strong>Cash Balance</strong>
                 </td>
               </tr>
-              {showAdditionalReceived && (
-                <tr>
-                  <td className="td">
-                    <strong>Received Purity</strong>
-                  </td>
-                  <td className="td"></td>
-                  <td className="td"></td>
-                  <td className="td"></td>
-                  <td className="td">
-                    <TextField
-                      size="small"
-                      value={additionalReceivedPurity}
-                      onChange={handleAdditionalReceivedPurityChange}
-                      placeholder="Enter Purity"
-                      style={{ width: "120px" }}
-                    />
-                  </td>
-                </tr>
-              )}
+           
             </tbody>
           </table>
-          <Box className="total-calculation">
-            <TextField
-              label="Gold Rate"
-              value={goldRate}
-              onChange={(e) => setGoldRate(e.target.value)}
-              type="number"
-              size="small"
-              className="gold-rate-input"
-            />
-            <TextField
-              label="Hallmark or MC Charges"
-              value={hallmarkCharges}
-              onChange={(e) => setHallmarkCharges(e.target.value)}
-              type="number"
-              size="small"
-              className="hallmark-charges-input"
-            />
-            <Typography variant="h6">
-              Cash Balance: {cashBalance.toFixed(2)}
-            </Typography>
-          </Box>
+       
         </Box>
+
+
+
+
+
+<br/> 
+
+
+
+<Box className="itemsSection">
+
+<div className="add">
+        <h3>Received Details:</h3>
+        <p style={{ marginLeft: "42.4rem" }}>
+          <IconButton size="small" onClick={handleAddRow}>
+            <AddCircleOutlineIcon />
+          </IconButton>
+        </p>
+      </div>
+
+      <table className="table">
+        <thead>
+          <tr>
+            <th className="th">S.No</th>
+            <th className="th">Date</th>
+            <th className="th">Rate</th>
+            <th className="th">Given Gold</th>
+            <th className="th">Touch</th>
+            <th className="th">Purity Weight</th>
+            <th className="th">Amount</th>
+            <th className="th">Hallmark</th>
+            <th className="th">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row, index) => (
+            <tr key={index}>
+              <td className="td">{index + 1}</td>
+              <td className="td"><TextField size="small"  type="date"/></td>
+              <td className="td"><TextField size="small" /></td>
+              <td className="td"><TextField size="small" /></td>
+              <td className="td"><TextField size="small" /></td>
+              <td className="td"><TextField size="small" /></td>
+              <td className="td"><TextField size="small" /></td>
+              <td className="td"><TextField size="small" /></td>
+              <td className="td">
+                <IconButton onClick={() => handleDeleteRow(index)}>
+                  <MdDeleteForever />
+                </IconButton>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      <div className="flex">
+        <b>Amount Balance:  </b>
+        <b>Gold Balance: </b>
+        <b>Hallmark Balance:</b>
+      </div>
+    </Box>
+        
       </Box>
 
       <Modal
