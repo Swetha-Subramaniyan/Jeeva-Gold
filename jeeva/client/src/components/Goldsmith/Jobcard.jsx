@@ -61,6 +61,7 @@ const Jobcard = () => {
               id: item.id,
               selectedItem: item.masterItem.id.toString(),
               selectedItemName: item.masterItem.itemName,
+            
               givenWeight: item.givenWeight.toString(),
               originalGivenWeight: item.originalGivenWeight.toString(),
               touch: item.touch.toString(),
@@ -147,6 +148,7 @@ const Jobcard = () => {
     }
 
     const newItem = {
+      id: Date.now().toString(),
       selectedItem: selectedItemObj.id,
       selectedItemName: formData.selectedItem,
       givenWeight: purityWeight.toFixed(2),
@@ -175,6 +177,7 @@ const Jobcard = () => {
         description: updatedJobDetails.description,
         goldsmithId: updatedJobDetails.goldsmithId,
         items: updatedJobDetails.items.map((item) => ({
+          id: item.id,
           selectedItem: item.selectedItem,
           originalGivenWeight: item.originalGivenWeight,
           givenWeight: item.givenWeight,
@@ -220,6 +223,8 @@ const Jobcard = () => {
     }
   };
 
+
+    
   const handleOpenPopup = (index) => {
     setSelectedIndex(index);
     setFinalWeight(jobDetails.items[index].finalWeight || "");
@@ -538,3 +543,13 @@ const handleDeleteItem = (indexToDelete) => {
 };
 
 export default Jobcard;
+
+
+
+
+
+
+
+
+
+
