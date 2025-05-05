@@ -61,7 +61,6 @@ const Jobcard = () => {
               id: item.id,
               selectedItem: item.masterItem.id.toString(),
               selectedItemName: item.masterItem.itemName,
-            
               givenWeight: item.givenWeight.toString(),
               originalGivenWeight: item.originalGivenWeight.toString(),
               touch: item.touch.toString(),
