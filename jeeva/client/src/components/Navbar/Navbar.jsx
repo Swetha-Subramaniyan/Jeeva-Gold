@@ -45,7 +45,7 @@ function Navbar() {
         </li>
         <li style={navItemStyle}>
           <a href="/stock" style={linkStyle}>
-            Stock
+            Coin Stock
           </a>
         </li>
       </ul>

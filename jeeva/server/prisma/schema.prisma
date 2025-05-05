@@ -67,7 +67,7 @@ model Item {
   masterItem          MasterItem        @relation(fields: [masterItemId], references: [id])
   jobCardId           Int
   jobCard             JobCard           @relation(fields: [jobCardId], references: [id])
-  originalGivenWeight Float
+  origit Float
   givenWeight         Float
   touch               Float
   estimateWeight      Float
