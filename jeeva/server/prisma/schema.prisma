@@ -30,16 +30,31 @@ model MasterItem {
 }
 
 model CoinStock {
-  id          Int      @id @default(autoincrement())
+  id          Int       @id @default(autoincrement())
+  coinType    String    
+  gram        Float   
+  quantity    Int       
+  touch       Float
+  totalWeight Float     
+  purity      Float
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  stockLogs   StockLog[] 
+}
+model StockLog {
+  id          Int       @id @default(autoincrement())
   coinType    String
   gram        Float
-  quantity    Int
-  touch       Float
-  totalWeight Float
-  purity      Float
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  quantity    Int        
+  changeType  String    
+  reason      String?    
+  createdAt   DateTime   @default(now())
+
+  coinStock   CoinStock  @relation(fields: [coinStockId], references: [id])
+  coinStockId Int
 }
+
 
 model Goldsmith {
   id        Int      @id @default(autoincrement())
@@ -67,7 +82,7 @@ model Item {
   masterItem          MasterItem        @relation(fields: [masterItemId], references: [id])
   jobCardId           Int
   jobCard             JobCard           @relation(fields: [jobCardId], references: [id])
-  origit Float
+  origit              Float?
   givenWeight         Float
   touch               Float
   estimateWeight      Float
