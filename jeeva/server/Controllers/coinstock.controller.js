@@ -92,6 +92,12 @@ const deleteStock = async (req, res) => {
 const reduceStock = async (req, res) => {
   try {
     const { coinType, gram, quantity, reason } = req.body;
+    console.log("Received reduce request:", {
+      coinType,
+      gram,
+      quantity,
+      reason,
+    });
 
     const stock = await prisma.coinStock.findFirst({
       where: {
@@ -100,12 +106,20 @@ const reduceStock = async (req, res) => {
       },
     });
 
+    console.log("Found stock:", stock);
+
     if (!stock) {
+      console.log("Stock item not found");
       return res.status(404).json({ message: "Stock item not found" });
     }
 
     if (stock.quantity < parseInt(quantity)) {
-      return res.status(400).json({ message: "Insufficient stock available" });
+      console.log(
+        `Insufficient stock. Requested: ${quantity}, Available: ${stock.quantity}`
+      );
+      return res.status(400).json({
+        message: `Insufficient stock. Available: ${stock.quantity}`,
+      });
     }
 
     const updatedStock = await prisma.coinStock.update({
@@ -125,15 +139,19 @@ const reduceStock = async (req, res) => {
       include: { stockLogs: true },
     });
 
+    console.log("Stock reduced successfully:", updatedStock);
     res.status(200).json({
-      message: "Stock reduced and log created successfully",
+      message: "Stock reduced successfully",
       data: updatedStock,
     });
   } catch (error) {
-    console.error("error", error);
-    res.status(500).json({ message: "Error reducing stock", error });
+    console.error("Error in reduceStock:", error);
+    res
+      .status(500)
+      .json({ message: "Error reducing stock", error: error.message });
   }
 };
+
 const getAllLogs = async (req, res) => {
   try {
     const logs = await prisma.stockLog.findMany({
