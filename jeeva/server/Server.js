@@ -7,6 +7,8 @@ const goldsmithRoutes = require("./Routes/goldsmith.routes");
 const masterItemRoutes = require("./Routes/masteritem.routes");
 const stockRoutes = require("./Routes/coinstock.routes");
 const jobCardRoutes = require("./Routes/jobcard.routes");
+const billRoutes = require("./Routes/bill.routes");
+
 require("dotenv").config();
 
 const app = express();
@@ -24,6 +26,7 @@ app.use("/api/master-items", masterItemRoutes);
 app.use("/api/v1/stocks", stockRoutes);
 app.use("/api/goldsmith", goldsmithRoutes);
 app.use("/api/job-cards", jobCardRoutes);
+app.use("/api/bills", billRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

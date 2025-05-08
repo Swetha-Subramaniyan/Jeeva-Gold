@@ -9,6 +9,7 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   font-family: Arial, sans-serif;
   position: relative;
+  right: 5rem;
 }
 
 .heading {
@@ -101,7 +102,7 @@
   background-color: #A31D1D !important;
   color: white !important;
 top: 5rem;
-right: 4rem;
+right: 5rem;
 }
 
 .add-button:hover {
@@ -183,4 +184,8 @@ top: 5rem;
   .add-customer-container {
     display: none;
   }
-}
+} 
+
+
+
+ 
