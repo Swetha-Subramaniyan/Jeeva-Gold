@@ -60,7 +60,7 @@ const AddCustomer = ({ onAddCustomer }) => {
             },
           }}
         >
-          <PersonAddAlt1Icon fontSize="medium" />{" "}
+          <PersonAddAlt1Icon fontSize="medium" />
         </IconButton>
       </Tooltip>
 

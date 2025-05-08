@@ -20,6 +20,7 @@ model Customer {
   phone     String?
   address   String?
   createdAt DateTime @default(now())
+  bill      Bill[]
 }
 
 model MasterItem {
@@ -98,4 +99,50 @@ model AdditionalWeight {
   itemId Int
   operators String
   item   Item   @relation(fields: [itemId], references: [id])
+}
+
+
+model Bill {
+  id              Int         @id @default(autoincrement())
+  billNo          String      @unique
+  customer        Customer    @relation(fields: [customerId], references: [id])
+  customerId      Int
+  goldRate        Float
+  hallmarkCharges Float       @default(0)
+  totalWeight     Float
+  totalPurity     Float
+  totalAmount     Float
+  date            DateTime    @default(now())
+  items           BillItem[]
+  receivedDetails ReceivedDetail[]
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+}
+
+model BillItem {
+  id          Int     @id @default(autoincrement())
+  bill        Bill    @relation(fields: [billId], references: [id])
+  billId      Int
+  coinValue   Float   
+  quantity    Int
+  percentage  Int     
+  touch       Float?
+  weight      Float   
+  purity      Float  
+  amount      Float   
+  createdAt   DateTime @default(now())
+}
+
+model ReceivedDetail {
+  id           Int     @id @default(autoincrement())
+  bill         Bill    @relation(fields: [billId], references: [id])
+  billId       Int
+  date         DateTime
+  goldRate     Float
+  givenGold    Float
+  touch        Float
+  purityWeight Float   
+  amount       Float   
+  hallmark     Float   @default(0)
+  createdAt    DateTime @default(now())
 }

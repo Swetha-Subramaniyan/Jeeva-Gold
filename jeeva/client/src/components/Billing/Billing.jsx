@@ -11,6 +11,7 @@ import {
   Tooltip,
   MenuItem,
   Alert,
+  Snackbar,
 } from "@mui/material";
 import PrintIcon from "@mui/icons-material/Print";
 import AddIcon from "@mui/icons-material/Add";
@@ -23,7 +24,7 @@ import { BACKEND_SERVER_URL } from "../../Config/Config";
 const Billing = () => {
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [billItems, setBillItems] = useState([]);
-  const [billNo, setBillNo] = useState("001");
+  const [billNo, setBillNo] = useState("");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [isPrinting, setIsPrinting] = useState(false);
@@ -39,34 +40,49 @@ const Billing = () => {
   const [billRef] = useState(useRef(null));
   const [customers, setCustomers] = useState([]);
   const [goldRate, setGoldRate] = useState("");
-  const [hallmarkCharges, setHallmarkCharges] = useState("");
-  const [receivedGold, setReceivedGold] = useState({
-    weight: "",
-    percentage: "",
-    purity: "",
-  });
-  const [balancePurity, setBalancePurity] = useState(0);
-  const [cashBalance, setCashBalance] = useState(0);
-  const [showAdditionalReceived, setShowAdditionalReceived] = useState(false);
-  const [additionalReceivedPurity, setAdditionalReceivedPurity] = useState("");
+  const [hallmarkCharges, setHallmarkCharges] = useState(0);
   const [rows, setRows] = useState([]);
   const [stockData, setStockData] = useState([]);
   const [stockError, setStockError] = useState(null);
   const [availableStock, setAvailableStock] = useState(0);
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
 
- 
+
   useEffect(() => {
-    const fetchStocks = async () => {
+    const fetchInitialData = async () => {
       try {
-        const response = await fetch(`${BACKEND_SERVER_URL}/api/v1/stocks`);
-        const data = await response.json();
-        setStockData(data);
+      
+        const customersResponse = await fetch(
+          `${BACKEND_SERVER_URL}/api/customers`
+        );
+        const customersData = await customersResponse.json();
+        setCustomers(customersData);
+
+    
+        const stocksResponse = await fetch(
+          `${BACKEND_SERVER_URL}/api/v1/stocks`
+        );
+        const stocksData = await stocksResponse.json();
+        setStockData(stocksData);
+
+   
+        const billsResponse = await fetch(`${BACKEND_SERVER_URL}/api/bills`);
+        const billsData = await billsResponse.json();
+        const latestBill = billsData.length > 0 ? billsData[0] : null;
+        setBillNo(
+          latestBill ? `BILL-${parseInt(latestBill.id) + 1}` : "BILL-1"
+        );
       } catch (error) {
-        console.error("Error fetching stocks:", error);
+        console.error("Error fetching initial data:", error);
+        showSnackbar("Failed to load initial data", "error");
       }
     };
 
-    fetchStocks();
+    fetchInitialData();
   }, []);
 
 
@@ -98,12 +114,21 @@ const Billing = () => {
     }
   };
 
+  const showSnackbar = (message, severity = "success") => {
+    setSnackbar({ open: true, message, severity });
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbar({ ...snackbar, open: false });
+  };
+
+
   const handleAddRow = () => {
     setRows([
       ...rows,
       {
         date: new Date().toISOString().slice(0, 10),
-        rate: goldRate,
+        goldRate: goldRate,
         givenGold: "",
         touch: "",
         purityWeight: "",
@@ -128,8 +153,8 @@ const Billing = () => {
       const purityWeight = givenGold * (touch / 100);
       updatedRows[index].purityWeight = purityWeight.toFixed(3);
 
-      if (updatedRows[index].rate) {
-        const amount = purityWeight * parseFloat(updatedRows[index].rate);
+      if (updatedRows[index].goldRate) {
+        const amount = purityWeight * parseFloat(updatedRows[index].goldRate);
         updatedRows[index].amount = amount.toFixed(2);
       }
     }
@@ -137,32 +162,20 @@ const Billing = () => {
     setRows(updatedRows);
   };
 
+
   useEffect(() => {
     if (goldRate) {
       const updatedRows = rows.map((row) => {
         if (row.purityWeight) {
           const amount = parseFloat(row.purityWeight) * parseFloat(goldRate);
-          return { ...row, amount: amount.toFixed(2), rate: goldRate };
+          return { ...row, amount: amount.toFixed(2), goldRate: goldRate };
         }
-        return { ...row, rate: goldRate };
+        return { ...row, goldRate: goldRate };
       });
       setRows(updatedRows);
     }
   }, [goldRate]);
 
-  useEffect(() => {
-    const fetchCustomers = async () => {
-      try {
-        const response = await fetch(`${BACKEND_SERVER_URL}/api/customers`);
-        const data = await response.json();
-        setCustomers(data);
-      } catch (error) {
-        console.error("Error fetching customers:", error);
-      }
-    };
-
-    fetchCustomers();
-  }, []);
 
   useEffect(() => {
     const updateTime = () => {
@@ -181,9 +194,11 @@ const Billing = () => {
     return () => clearInterval(timer);
   }, []);
 
+
   const handleAddCustomer = (newCustomer) => {
     setCustomers((prevCustomers) => [...prevCustomers, newCustomer]);
   };
+
 
   const handleAddItem = () => {
     setOpenAddItem(true);
@@ -210,6 +225,7 @@ const Billing = () => {
     }));
   };
 
+
   const calculateValues = () => {
     const coin = parseFloat(newItem.name) || 0;
     const no = parseFloat(newItem.no) || 0;
@@ -232,125 +248,155 @@ const Billing = () => {
   }, [newItem.name, newItem.no, newItem.percentage]);
 
 
-const handleSaveItem = async () => {
-  if (!newItem.name || !newItem.no || !newItem.percentage) {
-    alert("Please fill all required fields");
-    return;
-  }
-
-  try {
-  
-    const requestData = {
-      coinType: newItem.percentage,
-      gram: parseFloat(newItem.name),
-      quantity: parseInt(newItem.no),
-      reason: `Billed in invoice ${billNo}`,
-    };
-
-    console.log("Sending stock reduction request:", requestData);
-
-    const response = await fetch(`${BACKEND_SERVER_URL}/api/v1/stocks/reduce`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(requestData),
-    });
-
-    const result = await response.json();
-    console.log("Backend response:", result);
-
-    if (!response.ok) {
-      throw new Error(result.message || "Failed to update stock");
+  const handleSaveItem = () => {
+    if (!newItem.name || !newItem.no || !newItem.percentage) {
+      showSnackbar("Please fill all required fields", "error");
+      return;
     }
 
- 
+    if (stockError) {
+      showSnackbar(stockError, "error");
+      return;
+    }
+
     setBillItems((prevItems) => [
       ...prevItems,
       {
         id: Date.now().toString(),
-        name: newItem.name,
-        no: newItem.no,
+        coinValue: parseFloat(newItem.name),
+        quantity: parseInt(newItem.no),
         percentage: newItem.percentage,
         touch: newItem.touch,
         weight: newItem.weight,
-        pure: newItem.pure,
+        purity: newItem.pure,
       },
     ]);
 
     handleCloseAddItem();
-
-  
-    const stockResponse = await fetch(`${BACKEND_SERVER_URL}/api/v1/stocks`);
-    const stockData = await stockResponse.json();
-    setStockData(stockData);
-  } catch (error) {
-    console.error("Error in handleSaveItem:", error);
-    alert(`Error: ${error.message}`);
-
-   
-    const stockResponse = await fetch(`${BACKEND_SERVER_URL}/api/v1/stocks`);
-    const stockData = await stockResponse.json();
-    setStockData(stockData);
-  }
-};
-  const calculateTotals = () => {
-    let totalTouch = 0;
-    let totalWeight = 0;
-    let totalPurity = 0;
-    let totalAmount = 0;
-    let totalNo = 0;
-
-    billItems.forEach((item) => {
-      totalTouch += parseFloat(item.touch) || 0;
-      totalWeight += parseFloat(item.weight) || 0;
-      totalPurity += parseFloat(item.pure) || 0;
-      totalAmount += parseFloat(item.pure) || 0;
-      totalNo += parseFloat(item.no) || 0;
-    });
-
-    return { totalTouch, totalWeight, totalPurity, totalAmount, totalNo };
   };
 
-  const { totalTouch, totalWeight, totalPurity, totalAmount, totalNo } =
-    calculateTotals();
+ 
+  const calculateTotals = () => {
+    let totalWeight = 0;
+    let totalPurity = 0;
 
-  useEffect(() => {
-    const weight = parseFloat(receivedGold.weight) || 0;
-    const percentage = parseFloat(receivedGold.percentage) || 0;
-    const purity = weight * (percentage / 100);
-    setReceivedGold((prev) => ({ ...prev, purity: purity.toFixed(3) }));
-  }, [receivedGold.weight, receivedGold.percentage]);
+    billItems.forEach((item) => {
+      totalWeight += parseFloat(item.weight) || 0;
+      totalPurity += parseFloat(item.purity) || 0;
+    });
 
-  useEffect(() => {
-    setBalancePurity(totalPurity - parseFloat(receivedGold.purity || 0));
-  }, [totalPurity, receivedGold.purity]);
+    return { totalWeight, totalPurity };
+  };
 
-  useEffect(() => {
-    const rate = parseFloat(goldRate) || 0;
-    const additionalPurity = parseFloat(additionalReceivedPurity) || 0;
-    setCashBalance(additionalPurity * rate + parseFloat(hallmarkCharges || 0));
-  }, [goldRate, hallmarkCharges, additionalReceivedPurity]);
+  const { totalWeight, totalPurity } = calculateTotals();
+
+  
+  const handleSubmitBill = async () => {
+    if (!selectedCustomer) {
+      showSnackbar("Please select a customer", "error");
+      return;
+    }
+
+    if (billItems.length === 0) {
+      showSnackbar("Please add at least one item", "error");
+      return;
+    }
+
+    if (!goldRate) {
+      showSnackbar("Please enter gold rate", "error");
+      return;
+    }
+
+    try {
+      const billData = {
+        customerId: selectedCustomer.id,
+        goldRate: parseFloat(goldRate),
+        hallmarkCharges: parseFloat(hallmarkCharges || 0),
+        items: billItems.map((item) => ({
+          coinValue: parseFloat(item.coinValue),
+          quantity: parseInt(item.quantity),
+          percentage: parseInt(item.percentage),
+          touch: parseFloat(item.touch || 0),
+        })),
+        receivedDetails: rows.map((row) => ({
+          date: row.date,
+          goldRate: parseFloat(row.goldRate),
+          givenGold: parseFloat(row.givenGold),
+          touch: parseFloat(row.touch),
+          hallmark: parseFloat(row.hallmark || 0),
+        })),
+      };
+
+      const response = await fetch(`${BACKEND_SERVER_URL}/api/bills`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(billData),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to create bill");
+      }
+
+      showSnackbar("Bill created successfully!", "success");
+
+      setBillItems([]);
+      setRows([]);
+      setSelectedCustomer(null);
+      setGoldRate("");
+      setHallmarkCharges(0);
+
+  
+      const billsResponse = await fetch(`${BACKEND_SERVER_URL}/api/bills`);
+      const billsData = await billsResponse.json();
+      const latestBill = billsData.length > 0 ? billsData[0] : null;
+      setBillNo(latestBill ? `BILL-${parseInt(latestBill.id) + 1}` : "BILL-1");
+    } catch (error) {
+      console.error("Error creating bill:", error);
+      showSnackbar(error.message || "Failed to create bill", "error");
+    }
+  };
 
   return (
     <>
       <Box className="action-buttons">
         <Tooltip title="Add Bill Details" arrow>
-          <IconButton className="add-button" onClick={handleAddItem}>
+          <IconButton
+          
+            className="add-button"
+            onClick={handleAddItem}
+          >
             <AddIcon />
           </IconButton>
         </Tooltip>
 
         <Tooltip title="Print Bill" arrow>
-          <IconButton className="print-button" onClick={() => window.print()}>
+          <IconButton
+            
+            className="print-button"
+            onClick={() => window.print()}
+          >
             <PrintIcon />
           </IconButton>
         </Tooltip>
+
+        <Button
+          style={{ top: "5rem" }}
+          variant="contained"
+          color="primary"
+          onClick={handleSubmitBill}
+          disabled={!selectedCustomer || billItems.length === 0}
+        >
+          Save Bill
+        </Button>
       </Box>
 
-      <Box className="add-customer-container">
-        <AddCustomer onAddCustomer={handleAddCustomer} />
-      </Box>
+      {/* <Box className="add-customer-container">
+        <AddCustomer  onAddCustomer={handleAddCustomer} />
+      </Box> */}
 
       <Box className="container" ref={billRef}>
         <h1 className="heading">Estimate Only</h1>
@@ -371,12 +417,14 @@ const handleSaveItem = async () => {
             options={customers}
             getOptionLabel={(option) => option.name || ""}
             onChange={(event, newValue) => setSelectedCustomer(newValue)}
+            value={selectedCustomer}
             renderInput={(params) => (
               <TextField
                 {...params}
                 label="Select Customer"
                 variant="outlined"
                 size="small"
+                required
               />
             )}
             className="smallAutocomplete"
@@ -408,6 +456,8 @@ const handleSaveItem = async () => {
                 }}
                 value={goldRate}
                 onChange={(e) => setGoldRate(e.target.value)}
+                type="number"
+                required
               />
             </b>
           </div>
@@ -426,17 +476,17 @@ const handleSaveItem = async () => {
             <tbody>
               {billItems.map((item, index) => (
                 <tr key={index}>
-                  <td className="td">{item.name}</td>
-                  <td className="td">{item.no}</td>
+                  <td className="td">{item.coinValue}</td>
+                  <td className="td">{item.quantity}</td>
                   <td className="td">{item.percentage}</td>
                   <td className="td">{item.touch}</td>
                   <td className="td">{item.weight}</td>
-                  <td className="td">{item.pure}</td>
+                  <td className="td">{item.purity}</td>
                   <td className="td">
                     {goldRate
-                      ? (parseFloat(item.pure) * parseFloat(goldRate)).toFixed(
-                          2
-                        )
+                      ? (
+                          parseFloat(item.purity) * parseFloat(goldRate)
+                        ).toFixed(2)
                       : "-"}
                   </td>
                 </tr>
@@ -446,14 +496,17 @@ const handleSaveItem = async () => {
                   <strong>Total</strong>
                 </td>
                 <td className="td">
-                  <strong>{totalNo}</strong>
+                  <strong>
+                    {billItems.reduce(
+                      (sum, item) => sum + parseInt(item.quantity),
+                      0
+                    )}
+                  </strong>
                 </td>
                 <td className="td"></td>
+                <td className="td"></td>
                 <td className="td">
-                  <strong>{totalTouch.toFixed(1)}</strong>
-                </td>
-                <td className="td">
-                  <strong>{Math.round(totalWeight)}</strong>
+                  <strong>{totalWeight.toFixed(3)}</strong>
                 </td>
                 <td className="td">
                   <strong>{totalPurity.toFixed(3)}</strong>
@@ -462,7 +515,7 @@ const handleSaveItem = async () => {
                   <strong>
                     {goldRate
                       ? (totalPurity * parseFloat(goldRate)).toFixed(2)
-                      : totalAmount.toFixed(2)}
+                      : "0.00"}
                   </strong>
                 </td>
               </tr>
@@ -477,19 +530,19 @@ const handleSaveItem = async () => {
                     style={{ width: "100px" }}
                     value={hallmarkCharges}
                     onChange={(e) => setHallmarkCharges(e.target.value)}
+                    type="number"
                   />
                 </td>
               </tr>
               <tr>
                 <td className="td" colSpan={6}>
-                  <strong>Cash Balance</strong>
+                  <strong>Total Amount</strong>
                 </td>
                 <td className="td">
                   <strong>
-                    {parseFloat(
-                      (goldRate
-                        ? totalPurity * parseFloat(goldRate)
-                        : totalAmount) + parseFloat(hallmarkCharges || 0)
+                    {(
+                      totalPurity * parseFloat(goldRate || 0) +
+                      parseFloat(hallmarkCharges || 0)
                     ).toFixed(2)}
                   </strong>
                 </td>
@@ -542,10 +595,11 @@ const handleSaveItem = async () => {
                   <td className="td">
                     <TextField
                       size="small"
-                      value={row.rate}
+                      value={row.goldRate}
                       onChange={(e) =>
-                        handleRowChange(index, "rate", e.target.value)
+                        handleRowChange(index, "goldRate", e.target.value)
                       }
+                      type="number"
                     />
                   </td>
                   <td className="td">
@@ -555,6 +609,7 @@ const handleSaveItem = async () => {
                       onChange={(e) =>
                         handleRowChange(index, "givenGold", e.target.value)
                       }
+                      type="number"
                     />
                   </td>
                   <td className="td">
@@ -564,6 +619,7 @@ const handleSaveItem = async () => {
                       onChange={(e) =>
                         handleRowChange(index, "touch", e.target.value)
                       }
+                      type="number"
                     />
                   </td>
                   <td className="td">
@@ -587,6 +643,7 @@ const handleSaveItem = async () => {
                       onChange={(e) =>
                         handleRowChange(index, "hallmark", e.target.value)
                       }
+                      type="number"
                     />
                   </td>
                   <td className="td">
@@ -626,6 +683,7 @@ const handleSaveItem = async () => {
               margin="normal"
               type="number"
               inputProps={{ step: "0.01" }}
+              required
             />
             <TextField
               fullWidth
@@ -635,6 +693,7 @@ const handleSaveItem = async () => {
               onChange={handleInputChange}
               margin="normal"
               type="number"
+              required
             />
             <TextField
               select
@@ -644,6 +703,7 @@ const handleSaveItem = async () => {
               value={newItem.percentage}
               onChange={handleInputChange}
               margin="normal"
+              required
             >
               <MenuItem value="916">916 (22K)</MenuItem>
               <MenuItem value="999">999 (24K)</MenuItem>
@@ -703,6 +763,13 @@ const handleSaveItem = async () => {
           </Box>
         </Box>
       </Modal>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+        message={snackbar.message}
+      />
     </>
   );
 };
