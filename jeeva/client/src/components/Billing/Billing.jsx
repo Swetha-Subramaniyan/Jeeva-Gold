@@ -51,25 +51,21 @@ const Billing = () => {
     severity: "success",
   });
 
-
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
-      
         const customersResponse = await fetch(
           `${BACKEND_SERVER_URL}/api/customers`
         );
         const customersData = await customersResponse.json();
         setCustomers(customersData);
 
-    
         const stocksResponse = await fetch(
           `${BACKEND_SERVER_URL}/api/v1/stocks`
         );
         const stocksData = await stocksResponse.json();
         setStockData(stocksData);
 
-   
         const billsResponse = await fetch(`${BACKEND_SERVER_URL}/api/bills`);
         const billsData = await billsResponse.json();
         const latestBill = billsData.length > 0 ? billsData[0] : null;
@@ -85,32 +81,33 @@ const Billing = () => {
     fetchInitialData();
   }, []);
 
-
   useEffect(() => {
-    if (newItem.name && newItem.percentage) {
+    if (newItem.percentage) {
       checkStockAvailability();
     }
-  }, [newItem.name, newItem.percentage, newItem.no]);
+  }, [newItem.percentage, newItem.name, newItem.no]);
 
   const checkStockAvailability = () => {
+    if (!newItem.percentage) return;
+
     const selectedCoin = stockData.find(
       (item) =>
-        item.gram === parseFloat(newItem.name) &&
+        item.gram === parseFloat(newItem.name || 0) &&
         item.coinType === newItem.percentage
     );
 
     if (selectedCoin) {
       setAvailableStock(selectedCoin.quantity);
-      if (selectedCoin.quantity < (parseInt(newItem.no) || 0)) {
-        setStockError(
-          `Insufficient stock. Available: ${selectedCoin.quantity}`
-        );
+      if (newItem.no && selectedCoin.quantity < parseInt(newItem.no)) {
+        setStockError(`Insufficient stock Available: ${selectedCoin.quantity}`);
       } else {
         setStockError(null);
       }
     } else {
       setAvailableStock(0);
-      setStockError("No stock available for this combination");
+      if (newItem.name) {
+        setStockError("No stock available for this combination");
+      }
     }
   };
 
@@ -121,7 +118,6 @@ const Billing = () => {
   const handleCloseSnackbar = () => {
     setSnackbar({ ...snackbar, open: false });
   };
-
 
   const handleAddRow = () => {
     setRows([
@@ -143,26 +139,49 @@ const Billing = () => {
     setRows(updatedRows);
   };
 
-  const handleRowChange = (index, field, value) => {
-    const updatedRows = [...rows];
-    updatedRows[index][field] = value;
+const handleRowChange = (index, field, value) => {
+  const updatedRows = [...rows];
+  updatedRows[index][field] = value;
 
-    if (field === "givenGold" || field === "touch") {
+  if (field === "givenGold" || field === "touch") {
+    const givenGold = parseFloat(updatedRows[index].givenGold) || 0;
+    const touch = parseFloat(updatedRows[index].touch) || 0;
+    const purityWeight = givenGold * (touch / 100);
+    updatedRows[index].purityWeight = purityWeight.toFixed(3);
+
+    if (updatedRows[index].goldRate) {
+      const amount = purityWeight * parseFloat(updatedRows[index].goldRate);
+      updatedRows[index].amount = amount.toFixed(2);
+    }
+  } else if (field === "amount") {
+
+    const amount = parseFloat(value) || 0;
+    const goldRate = parseFloat(updatedRows[index].goldRate) || 1;
+    const purityWeight = amount / goldRate;
+    updatedRows[index].purityWeight = purityWeight.toFixed(3);
+
+    updatedRows[index].givenGold = "";
+    updatedRows[index].touch = "";
+  } else if (field === "goldRate") {
+
+    const goldRate = parseFloat(value) || 0;
+    if (updatedRows[index].givenGold && updatedRows[index].touch) {
       const givenGold = parseFloat(updatedRows[index].givenGold) || 0;
       const touch = parseFloat(updatedRows[index].touch) || 0;
       const purityWeight = givenGold * (touch / 100);
+      const amount = purityWeight * goldRate;
+      updatedRows[index].amount = amount.toFixed(2);
       updatedRows[index].purityWeight = purityWeight.toFixed(3);
-
-      if (updatedRows[index].goldRate) {
-        const amount = purityWeight * parseFloat(updatedRows[index].goldRate);
-        updatedRows[index].amount = amount.toFixed(2);
-      }
+    } else if (updatedRows[index].amount) {
+  
+      const amount = parseFloat(updatedRows[index].amount) || 0;
+      const purityWeight = amount / goldRate;
+      updatedRows[index].purityWeight = purityWeight.toFixed(3);
     }
+  }
 
-    setRows(updatedRows);
-  };
-
-
+  setRows(updatedRows);
+};
   useEffect(() => {
     if (goldRate) {
       const updatedRows = rows.map((row) => {
@@ -175,7 +194,6 @@ const Billing = () => {
       setRows(updatedRows);
     }
   }, [goldRate]);
-
 
   useEffect(() => {
     const updateTime = () => {
@@ -194,11 +212,9 @@ const Billing = () => {
     return () => clearInterval(timer);
   }, []);
 
-
   const handleAddCustomer = (newCustomer) => {
     setCustomers((prevCustomers) => [...prevCustomers, newCustomer]);
   };
-
 
   const handleAddItem = () => {
     setOpenAddItem(true);
@@ -225,19 +241,20 @@ const Billing = () => {
     }));
   };
 
-
   const calculateValues = () => {
     const coin = parseFloat(newItem.name) || 0;
     const no = parseFloat(newItem.no) || 0;
     const percentage = parseFloat(newItem.percentage) || 0;
 
     const weight = coin * no;
-    const pure = weight * (percentage / 100);
+    const purityFactor = percentage / 1000;
+    const pure = weight * purityFactor;
 
     setNewItem((prev) => ({
       ...prev,
       weight: weight.toString(),
       pure: pure % 1 === 0 ? pure.toString() : pure.toFixed(3),
+      touch: (percentage / 10).toString(),
     }));
   };
 
@@ -246,7 +263,6 @@ const Billing = () => {
       calculateValues();
     }
   }, [newItem.name, newItem.no, newItem.percentage]);
-
 
   const handleSaveItem = () => {
     if (!newItem.name || !newItem.no || !newItem.percentage) {
@@ -275,7 +291,6 @@ const Billing = () => {
     handleCloseAddItem();
   };
 
- 
   const calculateTotals = () => {
     let totalWeight = 0;
     let totalPurity = 0;
@@ -290,7 +305,41 @@ const Billing = () => {
 
   const { totalWeight, totalPurity } = calculateTotals();
 
-  
+  const calculateReceivedTotals = () => {
+    const receivedAmount = rows.reduce(
+      (sum, row) => sum + parseFloat(row.amount || 0),
+      0
+    );
+    const receivedHallmark = rows.reduce(
+      (sum, row) => sum + parseFloat(row.hallmark || 0),
+      0
+    );
+    const receivedPurity = rows.reduce(
+      (sum, row) => sum + parseFloat(row.purityWeight || 0),
+      0
+    );
+
+    return { receivedAmount, receivedHallmark, receivedPurity };
+  };
+
+  const { receivedAmount, receivedHallmark, receivedPurity } =
+    calculateReceivedTotals();
+
+  const calculateBalances = () => {
+    const billAmount = totalPurity * parseFloat(goldRate || 0);
+    const cashBalance = billAmount - receivedAmount;
+    const hallmarkBalance = parseFloat(hallmarkCharges || 0) - receivedHallmark;
+    const pureBalance = totalPurity - receivedPurity;
+
+    return {
+      cashBalance: cashBalance.toFixed(2),
+      pureBalance: pureBalance.toFixed(3),
+      hallmarkBalance: hallmarkBalance.toFixed(2),
+    };
+  };
+
+  const { cashBalance, pureBalance, hallmarkBalance } = calculateBalances();
+
   const handleSubmitBill = async () => {
     if (!selectedCustomer) {
       showSnackbar("Please select a customer", "error");
@@ -349,7 +398,6 @@ const Billing = () => {
       setGoldRate("");
       setHallmarkCharges(0);
 
-  
       const billsResponse = await fetch(`${BACKEND_SERVER_URL}/api/bills`);
       const billsData = await billsResponse.json();
       const latestBill = billsData.length > 0 ? billsData[0] : null;
@@ -364,21 +412,13 @@ const Billing = () => {
     <>
       <Box className="action-buttons">
         <Tooltip title="Add Bill Details" arrow>
-          <IconButton
-          
-            className="add-button"
-            onClick={handleAddItem}
-          >
+          <IconButton className="add-button" onClick={handleAddItem}>
             <AddIcon />
           </IconButton>
         </Tooltip>
 
         <Tooltip title="Print Bill" arrow>
-          <IconButton
-            
-            className="print-button"
-            onClick={() => window.print()}
-          >
+          <IconButton className="print-button" onClick={() => window.print()}>
             <PrintIcon />
           </IconButton>
         </Tooltip>
@@ -393,10 +433,6 @@ const Billing = () => {
           Save Bill
         </Button>
       </Box>
-
-      {/* <Box className="add-customer-container">
-        <AddCustomer  onAddCustomer={handleAddCustomer} />
-      </Box> */}
 
       <Box className="container" ref={billRef}>
         <h1 className="heading">Estimate Only</h1>
@@ -569,7 +605,7 @@ const Billing = () => {
                 <th className="th">S.No</th>
                 <th className="th">Date</th>
                 <th className="th">Gold Rate</th>
-                <th className="th">Given Gold</th>
+                <th className="th">Gold</th>
                 <th className="th">Touch</th>
                 <th className="th">Purity WT</th>
                 <th className="th">Amount</th>
@@ -633,7 +669,10 @@ const Billing = () => {
                     <TextField
                       size="small"
                       value={row.amount}
-                      InputProps={{ readOnly: true }}
+                      onChange={(e) =>
+                        handleRowChange(index, "amount", e.target.value)
+                      }
+                      type="number"
                     />
                   </td>
                   <td className="td">
@@ -657,9 +696,9 @@ const Billing = () => {
           </table>
 
           <div className="flex">
-            <b>Gold Amount Balance: </b>
-            <b>Gold Balance: {totalPurity.toFixed(3)}</b>
-            <b>Hallmark Balance:{hallmarkCharges}</b>
+            <b>Cash Balance: {cashBalance}</b>
+            <b>Pure Balance: {pureBalance}</b>
+            <b>Hallmark Balance: {hallmarkBalance}</b>
           </div>
         </Box>
       </Box>
@@ -675,27 +714,6 @@ const Billing = () => {
           </Typography>
           <Box component="form" className="modal-form">
             <TextField
-              fullWidth
-              label="Coin Value (grams)"
-              name="name"
-              value={newItem.name}
-              onChange={handleInputChange}
-              margin="normal"
-              type="number"
-              inputProps={{ step: "0.01" }}
-              required
-            />
-            <TextField
-              fullWidth
-              label="No of Coins"
-              name="no"
-              value={newItem.no}
-              onChange={handleInputChange}
-              margin="normal"
-              type="number"
-              required
-            />
-            <TextField
               select
               fullWidth
               label="Percentage (%)"
@@ -709,27 +727,62 @@ const Billing = () => {
               <MenuItem value="999">999 (24K)</MenuItem>
             </TextField>
 
-            {newItem.name && newItem.percentage && (
+            <TextField
+              fullWidth
+              label="Coin Value (grams)"
+              name="name"
+              value={newItem.name}
+              onChange={handleInputChange}
+              margin="normal"
+              type="number"
+              inputProps={{ step: "0.01" }}
+              required
+            />
+
+            {newItem.percentage && (
               <Box>
-                <Typography variant="body2">
-                  Available Stock: {availableStock}
-                </Typography>
-                {stockError && (
-                  <Alert severity="error" sx={{ mt: 1 }}>
-                    {stockError}
-                  </Alert>
+                {newItem.name ? (
+                  <>
+                    <Typography variant="body2">
+                      Available Stock: {availableStock}
+                    </Typography>
+                    {stockError && (
+                      <Alert severity="error" sx={{ mt: 1 }}>
+                        {stockError}
+                      </Alert>
+                    )}
+                  </>
+                ) : (
+                  <Typography variant="body2">
+                    Available coins for {newItem.percentage}:{" "}
+                    {stockData
+                      .filter((item) => item.coinType === newItem.percentage)
+                      .map((item) => item.gram)
+                      .join(", ")}
+                  </Typography>
                 )}
               </Box>
             )}
 
             <TextField
               fullWidth
-              label="Touch"
-              name="touch"
-              value={newItem.touch}
+              label="No of Coins"
+              name="no"
+              value={newItem.no}
               onChange={handleInputChange}
               margin="normal"
               type="number"
+              required
+            />
+            <TextField
+              fullWidth
+              label="Touch"
+              name="touch"
+              value={newItem.touch || ""}
+              onChange={handleInputChange}
+              margin="normal"
+              type="number"
+              required
             />
             <TextField
               fullWidth

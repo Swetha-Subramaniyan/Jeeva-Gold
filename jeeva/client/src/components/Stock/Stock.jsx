@@ -42,70 +42,213 @@ const Stock = () => {
     setFormData(updatedData);
   };
 
+  // const handleSubmit = async () => {
+  //   if (editIndex !== null) {
+  //     const updatedItem = formData;
+  //     const itemId = stockItems[editIndex].id;
+
+  //     try {
+  //       const response = await fetch(
+  //         `${BACKEND_SERVER_URL}/api/v1/stocks/${itemId}`,
+  //         {
+  //           method: "PUT",
+  //           headers: { "Content-Type": "application/json" },
+  //           body: JSON.stringify(updatedItem),
+  //         }
+  //       );
+
+  //       if (!response.ok) throw new Error("Failed to update stock item");
+
+  //       const result = await response.json();
+
+  //       const updatedItems = [...stockItems];
+  //       updatedItems[editIndex] = result.data;
+  //       setStockItems(updatedItems);
+  //     } catch (err) {
+  //       console.error("Error updating stock:", err);
+  //       toast.error("Failed to update stock item!");
+  //     }
+
+  //     toast.success("Stock item updated successfully!");
+  //     setEditIndex(null);
+  //     setShowPopup(false);
+  //     return;
+  //   }
+
+  //   try {
+  //     const response = await fetch(
+  //       `${BACKEND_SERVER_URL}/api/v1/stocks/create`,
+  //       {
+  //         method: "POST",
+  //         headers: { "Content-Type": "application/json" },
+  //         body: JSON.stringify(formData),
+  //       }
+  //     );
+
+  //     if (!response.ok) throw new Error("Failed to create stock item");
+
+  //     const result = await response.json();
+  //     setStockItems([result.data, ...stockItems]);
+  //     toast.success("Stock item created successfully!");
+  //   } catch (err) {
+  //     console.error("Error adding stock:", err);
+  //     toast.error("Failed to create stock item!");
+  //   }
+
+  //   setFormData({
+  //     coinType: "",
+  //     gram: "",
+  //     quantity: "",
+  //     touch: "",
+  //     totalWeight: "",
+  //     purity: "",
+  //   });
+  //   setShowPopup(false);
+  // };
+
+
   const handleSubmit = async () => {
-    if (editIndex !== null) {
+
+  if (
+    !formData.coinType ||
+    !formData.gram ||
+    !formData.quantity ||
+    !formData.touch
+  ) {
+    toast.error("Please fill in all required fields!");
+    return;
+  }
+
+ 
+  if (editIndex !== null) {
+    try {
       const updatedItem = formData;
       const itemId = stockItems[editIndex].id;
 
-      try {
-        const response = await fetch(
-          `${BACKEND_SERVER_URL}/api/v1/stocks/${itemId}`,
-          {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(updatedItem),
-          }
-        );
-
-        if (!response.ok) throw new Error("Failed to update stock item");
-
-        const result = await response.json();
-
-        const updatedItems = [...stockItems];
-        updatedItems[editIndex] = result.data;
-        setStockItems(updatedItems);
-      } catch (err) {
-        console.error("Error updating stock:", err);
-        toast.error("Failed to update stock item!");
-      }
-
-      toast.success("Stock item updated successfully!");
-      setEditIndex(null);
-      setShowPopup(false);
-      return;
-    }
-
-    try {
       const response = await fetch(
-        `${BACKEND_SERVER_URL}/api/v1/stocks/create`,
+        `${BACKEND_SERVER_URL}/api/v1/stocks/${itemId}`,
         {
-          method: "POST",
+          method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(formData),
+          body: JSON.stringify(updatedItem),
         }
       );
 
-      if (!response.ok) throw new Error("Failed to create stock item");
+      if (!response.ok) throw new Error("Failed to update stock item");
 
       const result = await response.json();
-      setStockItems([result.data, ...stockItems]);
-      toast.success("Stock item created successfully!");
+
+      const updatedItems = [...stockItems];
+      updatedItems[editIndex] = result.data;
+      setStockItems(updatedItems);
+      toast.success("Stock item updated successfully!");
+
+      setFormData({
+        coinType: "",
+        gram: "",
+        quantity: "",
+        touch: "",
+        totalWeight: "",
+        purity: "",
+      });
+      setEditIndex(null);
+      setShowPopup(false);
+      return;
     } catch (err) {
-      console.error("Error adding stock:", err);
-      toast.error("Failed to create stock item!");
+      console.error("Error updating stock:", err);
+      toast.error("Failed to update stock item!");
+      return;
     }
+  }
 
-    setFormData({
-      coinType: "",
-      gram: "",
-      quantity: "",
-      touch: "",
-      totalWeight: "",
-      purity: "",
+  const existingItemIndex = stockItems.findIndex(
+    (item) =>
+      item.coinType === formData.coinType &&
+      parseFloat(item.gram) === parseFloat(formData.gram)
+  );
+
+  if (existingItemIndex !== -1) {
+  
+    const updatedItem = {
+      ...stockItems[existingItemIndex],
+      quantity: (
+        parseInt(stockItems[existingItemIndex].quantity) +
+        parseInt(formData.quantity)
+      ).toString(),
+      totalWeight: (
+        parseFloat(stockItems[existingItemIndex].totalWeight) +
+        parseFloat(formData.totalWeight)
+      ).toFixed(2),
+      purity: (
+        parseFloat(stockItems[existingItemIndex].purity) +
+        parseFloat(formData.purity)
+      ).toFixed(3),
+    };
+
+    try {
+      const response = await fetch(
+        `${BACKEND_SERVER_URL}/api/v1/stocks/${stockItems[existingItemIndex].id}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(updatedItem),
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to update stock item");
+
+      const result = await response.json();
+
+      const updatedItems = [...stockItems];
+      updatedItems[existingItemIndex] = result.data;
+      setStockItems(updatedItems);
+      toast.success("Existing stock item updated successfully!");
+
+      setFormData({
+        coinType: "",
+        gram: "",
+        quantity: "",
+        touch: "",
+        totalWeight: "",
+        purity: "",
+      });
+      setShowPopup(false);
+      return;
+    } catch (err) {
+      console.error("Error updating stock:", err);
+      toast.error("Failed to update stock item!");
+      return;
+    }
+  }
+
+
+  try {
+    const response = await fetch(`${BACKEND_SERVER_URL}/api/v1/stocks/create`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(formData),
     });
-    setShowPopup(false);
-  };
 
+    if (!response.ok) throw new Error("Failed to create stock item");
+
+    const result = await response.json();
+    setStockItems([result.data, ...stockItems]);
+    toast.success("New stock item created successfully!");
+  } catch (err) {
+    console.error("Error adding stock:", err);
+    toast.error("Failed to create stock item!");
+  }
+
+  setFormData({
+    coinType: "",
+    gram: "",
+    quantity: "",
+    touch: "",
+    totalWeight: "",
+    purity: "",
+  });
+  setShowPopup(false);
+};
   const handleEdit = (index) => {
     setFormData(stockItems[index]);
     setEditIndex(index);

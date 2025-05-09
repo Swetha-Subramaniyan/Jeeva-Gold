@@ -1,9 +1,79 @@
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
+// const createStock = async (req, res) => {
+//   try {
+//     const { coinType, gram, quantity, touch, totalWeight, purity } = req.body;
+
+//     const newStock = await prisma.coinStock.create({
+//       data: {
+//         coinType,
+//         gram: parseFloat(gram),
+//         quantity: parseInt(quantity),
+//         touch: parseFloat(touch),
+//         totalWeight: parseFloat(totalWeight),
+//         purity: parseFloat(purity),
+//         stockLogs: {
+//           create: {
+//             coinType,
+//             gram: parseFloat(gram),
+//             quantity: parseInt(quantity),
+//             changeType: "ADD",
+//             reason: "Initial stock added",
+//           },
+//         },
+//       },
+//       include: { stockLogs: true },
+//     });
+
+//     res
+//       .status(201)
+//       .json({ message: "Stock item added successfully", data: newStock });
+//   } catch (error) {
+//     console.error("error", error);
+//     res.status(500).json({ message: "Error adding stock item", error });
+//   }
+// };
 const createStock = async (req, res) => {
   try {
     const { coinType, gram, quantity, touch, totalWeight, purity } = req.body;
+
+  
+    const existingStock = await prisma.coinStock.findFirst({
+      where: {
+        coinType,
+        gram: parseFloat(gram),
+      },
+    });
+
+    if (existingStock) {
+ 
+      const updatedStock = await prisma.coinStock.update({
+        where: { id: existingStock.id },
+        data: {
+          quantity: existingStock.quantity + parseInt(quantity),
+          totalWeight:
+            parseFloat(existingStock.totalWeight) + parseFloat(totalWeight),
+          purity: parseFloat(existingStock.purity) + parseFloat(purity),
+          stockLogs: {
+            create: {
+              coinType,
+              gram: parseFloat(gram),
+              quantity: parseInt(quantity),
+              changeType: "ADD",
+              reason: "Additional stock added",
+            },
+          },
+        },
+        include: { stockLogs: true },
+      });
+
+      return res.status(200).json({
+        message: "Existing stock item updated successfully",
+        data: updatedStock,
+      });
+    }
+
 
     const newStock = await prisma.coinStock.create({
       data: {
@@ -26,15 +96,15 @@ const createStock = async (req, res) => {
       include: { stockLogs: true },
     });
 
-    res
-      .status(201)
-      .json({ message: "Stock item added successfully", data: newStock });
+    res.status(201).json({
+      message: "New stock item added successfully",
+      data: newStock,
+    });
   } catch (error) {
     console.error("error", error);
     res.status(500).json({ message: "Error adding stock item", error });
   }
 };
-
 const getAllStocks = async (req, res) => {
   try {
     const stocks = await prisma.coinStock.findMany({
