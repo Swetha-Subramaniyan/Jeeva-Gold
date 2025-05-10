@@ -1,13 +1,13 @@
 
 import React from "react";
-import { useNavigate } from "react-router-dom"; 
+import { useNavigate } from "react-router-dom";
+import { FiLogOut } from "react-icons/fi";
 
 function Navbar() {
   const navigate = useNavigate();
 
   const handleLogout = () => {
- 
-    navigate("/"); 
+    navigate("/");
   };
 
   return (
@@ -30,7 +30,7 @@ function Navbar() {
         </li>
         <li style={navItemStyle}>
           <a href="/coinbill" style={linkStyle}>
-        Coin Bill
+            Coin Bill
           </a>
         </li>
         <li style={navItemStyle}>
@@ -40,7 +40,12 @@ function Navbar() {
         </li>
         <li style={navItemStyle}>
           <a href="/report" style={linkStyle}>
-            Report
+            Daily Sales Report
+          </a>
+        </li>
+        <li style={navItemStyle}>
+          <a href="/customerreport" style={linkStyle}>
+            Customer Report
           </a>
         </li>
         <li style={navItemStyle}>
@@ -50,13 +55,12 @@ function Navbar() {
         </li>
       </ul>
 
-      <button onClick={handleLogout} style={logoutButtonStyle}>
-        Logout
+      <button onClick={handleLogout} style={logoutButtonStyle} title="Logout">
+        <FiLogOut size={20} /> 
       </button>
     </nav>
   );
 }
-
 
 const navbarStyle = {
   background: "#A31D1D",
@@ -86,7 +90,6 @@ const linkStyle = {
   transition: "background-color 0.3s ease",
 };
 
-
 const logoutButtonStyle = {
   backgroundColor: "#A31D1D",
   color: "white",
@@ -94,8 +97,8 @@ const logoutButtonStyle = {
   padding: "8px 12px",
   borderRadius: "4px",
   position: "absolute",
-  right: "10px", 
-  top: "10px", 
+  right: "10px",
+  top: "10px",
   cursor: "pointer",
 };
 

@@ -17,7 +17,6 @@ import PrintIcon from "@mui/icons-material/Print";
 import AddIcon from "@mui/icons-material/Add";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import "./Billing.css";
-import AddCustomer from "./Addcustomer";
 import { MdDeleteForever } from "react-icons/md";
 import { BACKEND_SERVER_URL } from "../../Config/Config";
 
@@ -27,7 +26,14 @@ const Billing = () => {
   const [billNo, setBillNo] = useState("");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
-  const [isPrinting, setIsPrinting] = useState(false);
+  const [goldRate, setGoldRate] = useState("");
+  const [hallmarkCharges, setHallmarkCharges] = useState(0);
+  const [rows, setRows] = useState([]);
+
+  const [viewMode, setViewMode] = useState(false);
+  const [fetchedBills, setFetchedBills] = useState([]);
+  const [selectedBill, setSelectedBill] = useState(null);
+
   const [openAddItem, setOpenAddItem] = useState(false);
   const [newItem, setNewItem] = useState({
     name: "",
@@ -37,19 +43,19 @@ const Billing = () => {
     pure: "",
     touch: "",
   });
-  const [billRef] = useState(useRef(null));
+
   const [customers, setCustomers] = useState([]);
-  const [goldRate, setGoldRate] = useState("");
-  const [hallmarkCharges, setHallmarkCharges] = useState(0);
-  const [rows, setRows] = useState([]);
   const [stockData, setStockData] = useState([]);
   const [stockError, setStockError] = useState(null);
   const [availableStock, setAvailableStock] = useState(0);
+  const [latestBill, setLatestBill] = useState(null);
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
     severity: "success",
   });
+
+  const billRef = useRef(null);
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -68,10 +74,9 @@ const Billing = () => {
 
         const billsResponse = await fetch(`${BACKEND_SERVER_URL}/api/bills`);
         const billsData = await billsResponse.json();
-        const latestBill = billsData.length > 0 ? billsData[0] : null;
-        setBillNo(
-          latestBill ? `BILL-${parseInt(latestBill.id) + 1}` : "BILL-1"
-        );
+        const latest = billsData.length > 0 ? billsData[0] : null;
+        setLatestBill(latest);
+        setBillNo(latest ? `BILL-${parseInt(latest.id) + 1}` : "BILL-1");
       } catch (error) {
         console.error("Error fetching initial data:", error);
         showSnackbar("Failed to load initial data", "error");
@@ -86,6 +91,52 @@ const Billing = () => {
       checkStockAvailability();
     }
   }, [newItem.percentage, newItem.name, newItem.no]);
+
+  const fetchBills = async () => {
+    try {
+      const response = await fetch(`${BACKEND_SERVER_URL}/api/bills`);
+      const data = await response.json();
+      setFetchedBills(data);
+      showSnackbar("Bills fetched successfully", "success");
+    } catch (error) {
+      console.error("Error fetching bills:", error);
+      showSnackbar("Failed to fetch bills", "error");
+    }
+  };
+
+  const viewBill = (bill) => {
+    setViewMode(true);
+    setSelectedBill(bill);
+    setSelectedCustomer(customers.find((c) => c.id === bill.customerId));
+    setGoldRate(bill.goldRate.toString());
+    setHallmarkCharges(bill.hallmarkCharges.toString());
+
+    setBillItems(
+      bill.items.map((item) => ({
+        id: item.id || Date.now().toString(),
+        coinValue: item.coinValue,
+        quantity: item.quantity,
+        percentage: item.percentage,
+        touch: item.touch,
+        weight: item.weight,
+        purity: item.purity,
+      }))
+    );
+
+    setRows(
+      bill.receivedDetails.map((detail) => ({
+        date: detail.date,
+        goldRate: detail.goldRate.toString(),
+        givenGold: detail.givenGold?.toString() || "",
+        touch: detail.touch?.toString() || "",
+        purityWeight: detail.purityWeight.toString(),
+        amount: detail.amount.toString(),
+        hallmark: detail.hallmark?.toString() || "",
+      }))
+    );
+
+    setBillNo(`BILL-${bill.id}`);
+  };
 
   const checkStockAvailability = () => {
     if (!newItem.percentage) return;
@@ -139,49 +190,46 @@ const Billing = () => {
     setRows(updatedRows);
   };
 
-const handleRowChange = (index, field, value) => {
-  const updatedRows = [...rows];
-  updatedRows[index][field] = value;
+  const handleRowChange = (index, field, value) => {
+    const updatedRows = [...rows];
+    updatedRows[index][field] = value;
 
-  if (field === "givenGold" || field === "touch") {
-    const givenGold = parseFloat(updatedRows[index].givenGold) || 0;
-    const touch = parseFloat(updatedRows[index].touch) || 0;
-    const purityWeight = givenGold * (touch / 100);
-    updatedRows[index].purityWeight = purityWeight.toFixed(3);
-
-    if (updatedRows[index].goldRate) {
-      const amount = purityWeight * parseFloat(updatedRows[index].goldRate);
-      updatedRows[index].amount = amount.toFixed(2);
-    }
-  } else if (field === "amount") {
-
-    const amount = parseFloat(value) || 0;
-    const goldRate = parseFloat(updatedRows[index].goldRate) || 1;
-    const purityWeight = amount / goldRate;
-    updatedRows[index].purityWeight = purityWeight.toFixed(3);
-
-    updatedRows[index].givenGold = "";
-    updatedRows[index].touch = "";
-  } else if (field === "goldRate") {
-
-    const goldRate = parseFloat(value) || 0;
-    if (updatedRows[index].givenGold && updatedRows[index].touch) {
+    if (field === "givenGold" || field === "touch") {
       const givenGold = parseFloat(updatedRows[index].givenGold) || 0;
       const touch = parseFloat(updatedRows[index].touch) || 0;
       const purityWeight = givenGold * (touch / 100);
-      const amount = purityWeight * goldRate;
-      updatedRows[index].amount = amount.toFixed(2);
       updatedRows[index].purityWeight = purityWeight.toFixed(3);
-    } else if (updatedRows[index].amount) {
-  
-      const amount = parseFloat(updatedRows[index].amount) || 0;
+
+      if (updatedRows[index].goldRate) {
+        const amount = purityWeight * parseFloat(updatedRows[index].goldRate);
+        updatedRows[index].amount = amount.toFixed(2);
+      }
+    } else if (field === "amount") {
+      const amount = parseFloat(value) || 0;
+      const goldRate = parseFloat(updatedRows[index].goldRate) || 1;
       const purityWeight = amount / goldRate;
       updatedRows[index].purityWeight = purityWeight.toFixed(3);
+      updatedRows[index].givenGold = "";
+      updatedRows[index].touch = "";
+    } else if (field === "goldRate") {
+      const goldRate = parseFloat(value) || 0;
+      if (updatedRows[index].givenGold && updatedRows[index].touch) {
+        const givenGold = parseFloat(updatedRows[index].givenGold) || 0;
+        const touch = parseFloat(updatedRows[index].touch) || 0;
+        const purityWeight = givenGold * (touch / 100);
+        const amount = purityWeight * goldRate;
+        updatedRows[index].amount = amount.toFixed(2);
+        updatedRows[index].purityWeight = purityWeight.toFixed(3);
+      } else if (updatedRows[index].amount) {
+        const amount = parseFloat(updatedRows[index].amount) || 0;
+        const purityWeight = amount / goldRate;
+        updatedRows[index].purityWeight = purityWeight.toFixed(3);
+      }
     }
-  }
 
-  setRows(updatedRows);
-};
+    setRows(updatedRows);
+  };
+
   useEffect(() => {
     if (goldRate) {
       const updatedRows = rows.map((row) => {
@@ -211,10 +259,6 @@ const handleRowChange = (index, field, value) => {
     const timer = setInterval(updateTime, 60000);
     return () => clearInterval(timer);
   }, []);
-
-  const handleAddCustomer = (newCustomer) => {
-    setCustomers((prevCustomers) => [...prevCustomers, newCustomer]);
-  };
 
   const handleAddItem = () => {
     setOpenAddItem(true);
@@ -340,19 +384,53 @@ const handleRowChange = (index, field, value) => {
 
   const { cashBalance, pureBalance, hallmarkBalance } = calculateBalances();
 
+  const handleUpdateBill = async () => {
+    if (!selectedBill || !selectedCustomer || !goldRate) {
+      showSnackbar("Invalid bill data", "error");
+      return;
+    }
+
+    try {
+      const updatedBill = {
+        ...selectedBill,
+        receivedDetails: [
+          ...selectedBill.receivedDetails,
+          ...rows.slice(selectedBill.receivedDetails.length).map((row) => ({
+            date: row.date || new Date().toISOString().split("T")[0],
+            goldRate: parseFloat(row.goldRate || goldRate),
+            givenGold: parseFloat(row.givenGold || 0),
+            touch: parseFloat(row.touch || 0),
+            purityWeight: parseFloat(row.purityWeight || 0),
+            amount: parseFloat(row.amount || 0),
+            hallmark: parseFloat(row.hallmark || 0),
+          })),
+        ],
+      };
+
+      const response = await fetch(
+        `${BACKEND_SERVER_URL}/api/bills/${selectedBill.id}/receive`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(updatedBill),
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to update bill");
+
+      const data = await response.json();
+      setSelectedBill(data);
+      showSnackbar("Bill updated successfully!", "success");
+      fetchBills();
+    } catch (error) {
+      console.error("Error:", error);
+      showSnackbar(error.message || "Failed to update bill", "error");
+    }
+  };
+
   const handleSubmitBill = async () => {
-    if (!selectedCustomer) {
-      showSnackbar("Please select a customer", "error");
-      return;
-    }
-
-    if (billItems.length === 0) {
-      showSnackbar("Please add at least one item", "error");
-      return;
-    }
-
-    if (!goldRate) {
-      showSnackbar("Please enter gold rate", "error");
+    if (!selectedCustomer || !goldRate || billItems.length === 0) {
+      showSnackbar("Please fill all required fields", "error");
       return;
     }
 
@@ -366,342 +444,508 @@ const handleRowChange = (index, field, value) => {
           quantity: parseInt(item.quantity),
           percentage: parseInt(item.percentage),
           touch: parseFloat(item.touch || 0),
+          weight: parseFloat(item.weight || 0),
+          purity: parseFloat(item.purity || 0),
         })),
         receivedDetails: rows.map((row) => ({
-          date: row.date,
-          goldRate: parseFloat(row.goldRate),
-          givenGold: parseFloat(row.givenGold),
-          touch: parseFloat(row.touch),
+          date: row.date || new Date().toISOString().split("T")[0],
+          goldRate: parseFloat(row.goldRate || goldRate),
+          givenGold: parseFloat(row.givenGold || 0),
+          touch: parseFloat(row.touch || 0),
+          purityWeight: parseFloat(row.purityWeight || 0),
+          amount: parseFloat(row.amount || 0),
           hallmark: parseFloat(row.hallmark || 0),
         })),
       };
 
       const response = await fetch(`${BACKEND_SERVER_URL}/api/bills`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(billData),
       });
 
-      const result = await response.json();
+      if (!response.ok) throw new Error("Failed to create bill");
 
-      if (!response.ok) {
-        throw new Error(result.error || "Failed to create bill");
-      }
-
+      const newBill = await response.json();
+      setLatestBill(newBill);
       showSnackbar("Bill created successfully!", "success");
 
-      setBillItems([]);
-      setRows([]);
-      setSelectedCustomer(null);
-      setGoldRate("");
-      setHallmarkCharges(0);
+      await fetchBills();
 
-      const billsResponse = await fetch(`${BACKEND_SERVER_URL}/api/bills`);
-      const billsData = await billsResponse.json();
-      const latestBill = billsData.length > 0 ? billsData[0] : null;
-      setBillNo(latestBill ? `BILL-${parseInt(latestBill.id) + 1}` : "BILL-1");
+      resetForm();
     } catch (error) {
-      console.error("Error creating bill:", error);
+      console.error("Error:", error);
       showSnackbar(error.message || "Failed to create bill", "error");
     }
   };
 
+  const resetForm = () => {
+    setBillItems([]);
+    setRows([]);
+    setSelectedCustomer(null);
+    setGoldRate("");
+    setHallmarkCharges(0);
+    setSelectedBill(null);
+    setViewMode(false);
+
+    const newBillNo = latestBill
+      ? `BILL-${parseInt(latestBill.id) + 1}`
+      : "BILL-1";
+    setBillNo(newBillNo);
+  };
+
   return (
     <>
-      <Box className="action-buttons">
-        <Tooltip title="Add Bill Details" arrow>
-          <IconButton className="add-button" onClick={handleAddItem}>
+      <Box className="sidebar">
+        <Tooltip title="Add Bill Details" arrow placement="right">
+          <div className="sidebar-button" onClick={handleAddItem}>
             <AddIcon />
-          </IconButton>
+            <span>Add</span>
+          </div>
         </Tooltip>
 
-        <Tooltip title="Print Bill" arrow>
-          <IconButton className="print-button" onClick={() => window.print()}>
+        <Tooltip title="Print Bill" arrow placement="right">
+          <div className="sidebar-button" onClick={() => window.print()}>
             <PrintIcon />
-          </IconButton>
+            <span>Print</span>
+          </div>
         </Tooltip>
 
-        <Button
-          style={{ top: "5rem" }}
-          variant="contained"
-          color="primary"
-          onClick={handleSubmitBill}
-          disabled={!selectedCustomer || billItems.length === 0}
+        <Tooltip
+          title={viewMode ? "Create New Bill" : "View Saved Bills"}
+          arrow
+          placement="right"
         >
-          Save Bill
-        </Button>
-      </Box>
+          <div
+            className="sidebar-button"
+            onClick={() => {
+              if (viewMode) {
+                setViewMode(false);
+                resetForm();
+              } else {
+                fetchBills();
+                setViewMode(true);
+              }
+            }}
+          >
+            <span>{viewMode ? "New" : "View"}</span>
+          </div>
+        </Tooltip>
 
-      <Box className="container" ref={billRef}>
-        <h1 className="heading">Estimate Only</h1>
-
-        <Box className="billInfo">
-          <p>
-            <strong>Bill No:</strong> {billNo}
-          </p>
-          <p className="date-time">
-            <strong>Date:</strong> {date} <br />
-            <br />
-            <strong>Time:</strong> {time}
-          </p>
-        </Box>
-
-        <Box className="searchSection">
-          <Autocomplete
-            options={customers}
-            getOptionLabel={(option) => option.name || ""}
-            onChange={(event, newValue) => setSelectedCustomer(newValue)}
-            value={selectedCustomer}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Select Customer"
-                variant="outlined"
-                size="small"
-                required
-              />
-            )}
-            className="smallAutocomplete"
-          />
-        </Box>
-
-        {selectedCustomer && (
-          <Box className="customerDetails">
-            <h3>Customer Details:</h3>
-            <br />
-            <p>
-              <strong>Name:</strong> {selectedCustomer?.name || "-"}
-            </p>
-          </Box>
+        {selectedBill && (
+          <Tooltip title="Exit View Mode" arrow placement="right">
+            <div
+              className="sidebar-button"
+              onClick={() => {
+                setSelectedBill(null);
+                setViewMode(false);
+                resetForm();
+              }}
+            >
+              <span>Exit</span>
+            </div>
+          </Tooltip>
         )}
 
-        <Box className="itemsSection">
-          <div className="bill">
-            <h3>Bill Details:</h3>
-            <b style={{ marginLeft: "41rem" }}>
-              Gold Rate:
-              <TextField
-                size="small"
-                style={{
-                  width: "120px",
-                  height: "1rem",
-                  bottom: "18px",
-                  left: "5px",
-                }}
-                value={goldRate}
-                onChange={(e) => setGoldRate(e.target.value)}
-                type="number"
-                required
-              />
-            </b>
-          </div>
+        {!viewMode && (
+          <Tooltip title="Save Bill" arrow placement="right">
+            <div
+              className="sidebar-button"
+              onClick={handleSubmitBill}
+              style={{
+                opacity: !selectedCustomer || billItems.length === 0 ? 0.5 : 1,
+                pointerEvents:
+                  !selectedCustomer || billItems.length === 0 ? "none" : "auto",
+              }}
+            >
+              <span>Save</span>
+            </div>
+          </Tooltip>
+        )}
+
+        {viewMode && selectedBill && (
+          <Tooltip title="Update Bill" arrow placement="right">
+            <div
+              className="sidebar-button"
+              onClick={handleUpdateBill}
+              style={{
+                opacity: rows.length === 0 ? 0.5 : 1,
+                pointerEvents: rows.length === 0 ? "none" : "auto",
+              }}
+            >
+              <span>Update</span>
+            </div>
+          </Tooltip>
+        )}
+      </Box>
+
+      <Modal
+        open={viewMode && !selectedBill}
+        onClose={() => setViewMode(false)}
+        aria-labelledby="view-bills-modal"
+      >
+        <Box
+          className="modal-container"
+          style={{ maxHeight: "80vh", overflowY: "auto" }}
+        >
+          <Typography variant="h6" gutterBottom>
+            Select a Bill to View
+          </Typography>
           <table className="table">
             <thead>
               <tr>
-                <th className="th">Coin</th>
-                <th className="th">No</th>
-                <th className="th">%</th>
-                <th className="th">Touch</th>
-                <th className="th">Weight</th>
-                <th className="th">Purity</th>
-                <th className="th">Amount</th>
-              </tr>
-            </thead>
-            <tbody>
-              {billItems.map((item, index) => (
-                <tr key={index}>
-                  <td className="td">{item.coinValue}</td>
-                  <td className="td">{item.quantity}</td>
-                  <td className="td">{item.percentage}</td>
-                  <td className="td">{item.touch}</td>
-                  <td className="td">{item.weight}</td>
-                  <td className="td">{item.purity}</td>
-                  <td className="td">
-                    {goldRate
-                      ? (
-                          parseFloat(item.purity) * parseFloat(goldRate)
-                        ).toFixed(2)
-                      : "-"}
-                  </td>
-                </tr>
-              ))}
-              <tr>
-                <td className="td">
-                  <strong>Total</strong>
-                </td>
-                <td className="td">
-                  <strong>
-                    {billItems.reduce(
-                      (sum, item) => sum + parseInt(item.quantity),
-                      0
-                    )}
-                  </strong>
-                </td>
-                <td className="td"></td>
-                <td className="td"></td>
-                <td className="td">
-                  <strong>{totalWeight.toFixed(3)}</strong>
-                </td>
-                <td className="td">
-                  <strong>{totalPurity.toFixed(3)}</strong>
-                </td>
-                <td className="td">
-                  <strong>
-                    {goldRate
-                      ? (totalPurity * parseFloat(goldRate)).toFixed(2)
-                      : "0.00"}
-                  </strong>
-                </td>
-              </tr>
-
-              <tr>
-                <td className="td" colSpan={6}>
-                  <strong>Hallmark or MC Charges</strong>
-                </td>
-                <td className="td">
-                  <TextField
-                    size="small"
-                    style={{ width: "100px" }}
-                    value={hallmarkCharges}
-                    onChange={(e) => setHallmarkCharges(e.target.value)}
-                    type="number"
-                  />
-                </td>
-              </tr>
-              <tr>
-                <td className="td" colSpan={6}>
-                  <strong>Total Amount</strong>
-                </td>
-                <td className="td">
-                  <strong>
-                    {(
-                      totalPurity * parseFloat(goldRate || 0) +
-                      parseFloat(hallmarkCharges || 0)
-                    ).toFixed(2)}
-                  </strong>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </Box>
-
-        <br />
-
-        <Box className="itemsSection">
-          <div className="add">
-            <h3>Received Details:</h3>
-            <p style={{ marginLeft: "42.4rem" }}>
-              <IconButton size="small" onClick={handleAddRow}>
-                <AddCircleOutlineIcon />
-              </IconButton>
-            </p>
-          </div>
-
-          <table className="table">
-            <thead>
-              <tr>
-                <th className="th">S.No</th>
+                <th className="th">Bill No</th>
+                <th className="th">Customer</th>
                 <th className="th">Date</th>
-                <th className="th">Gold Rate</th>
-                <th className="th">Gold</th>
-                <th className="th">Touch</th>
-                <th className="th">Purity WT</th>
-                <th className="th">Amount</th>
-                <th className="th">Hallmark</th>
+                <th className="th">Total Amount</th>
                 <th className="th">Action</th>
               </tr>
             </thead>
             <tbody>
-              {rows.map((row, index) => (
-                <tr key={index}>
-                  <td className="td">{index + 1}</td>
+              {fetchedBills.map((bill) => (
+                <tr key={bill.id}>
+                  <td className="td">BILL-{bill.id}</td>
                   <td className="td">
-                    <TextField
-                      style={{ right: "17px" }}
-                      size="small"
-                      type="date"
-                      value={row.date}
-                      onChange={(e) =>
-                        handleRowChange(index, "date", e.target.value)
-                      }
-                    />
+                    {customers.find((c) => c.id === bill.customerId)?.name ||
+                      "Unknown"}
                   </td>
                   <td className="td">
-                    <TextField
-                      size="small"
-                      value={row.goldRate}
-                      onChange={(e) =>
-                        handleRowChange(index, "goldRate", e.target.value)
-                      }
-                      type="number"
-                    />
+                    {new Date(bill.createdAt).toLocaleDateString()}
                   </td>
                   <td className="td">
-                    <TextField
-                      size="small"
-                      value={row.givenGold}
-                      onChange={(e) =>
-                        handleRowChange(index, "givenGold", e.target.value)
-                      }
-                      type="number"
-                    />
+                    {(
+                      bill.items.reduce(
+                        (sum, item) => sum + item.purity * bill.goldRate,
+                        0
+                      ) + (bill.hallmarkCharges || 0)
+                    ).toFixed(2)}
                   </td>
                   <td className="td">
-                    <TextField
-                      size="small"
-                      value={row.touch}
-                      onChange={(e) =>
-                        handleRowChange(index, "touch", e.target.value)
-                      }
-                      type="number"
-                    />
-                  </td>
-                  <td className="td">
-                    <TextField
-                      size="small"
-                      value={row.purityWeight}
-                      InputProps={{ readOnly: true }}
-                    />
-                  </td>
-                  <td className="td">
-                    <TextField
-                      size="small"
-                      value={row.amount}
-                      onChange={(e) =>
-                        handleRowChange(index, "amount", e.target.value)
-                      }
-                      type="number"
-                    />
-                  </td>
-                  <td className="td">
-                    <TextField
-                      size="small"
-                      value={row.hallmark}
-                      onChange={(e) =>
-                        handleRowChange(index, "hallmark", e.target.value)
-                      }
-                      type="number"
-                    />
-                  </td>
-                  <td className="td">
-                    <IconButton onClick={() => handleDeleteRow(index)}>
-                      <MdDeleteForever />
-                    </IconButton>
+                    <Button variant="outlined" onClick={() => viewBill(bill)}>
+                      View
+                    </Button>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-
-          <div className="flex">
-            <b>Cash Balance: {cashBalance}</b>
-            <b>Pure Balance: {pureBalance}</b>
-            <b>Hallmark Balance: {hallmarkBalance}</b>
-          </div>
+          <Button
+            onClick={() => setViewMode(false)}
+            style={{ marginTop: "1rem" }}
+            variant="contained"
+          >
+            Close
+          </Button>
         </Box>
-      </Box>
+      </Modal>
+
+      {(!viewMode || selectedBill) && (
+        <Box className="container" ref={billRef}>
+          <h1 className="heading">Estimate Only</h1>
+
+          <Box className="billInfo">
+            <p>
+              <strong>Bill No:</strong> {billNo}
+            </p>
+            <p className="date-time">
+              <strong>Date:</strong> {date} <br />
+              <br />
+              <strong>Time:</strong> {time}
+            </p>
+          </Box>
+
+          <Box className="searchSection">
+            <Autocomplete
+              options={customers}
+              getOptionLabel={(option) => option.name || ""}
+              onChange={(event, newValue) => setSelectedCustomer(newValue)}
+              value={selectedCustomer}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Select Customer"
+                  variant="outlined"
+                  size="small"
+                  required
+                  disabled={viewMode && selectedBill}
+                />
+              )}
+              className="smallAutocomplete"
+              disabled={viewMode && selectedBill}
+            />
+          </Box>
+
+          {selectedCustomer && (
+            <Box className="customerDetails">
+              <h3>Customer Details:</h3>
+              <br />
+              <p>
+                <strong>Name:</strong> {selectedCustomer?.name || "-"}
+              </p>
+            </Box>
+          )}
+
+          <Box className="itemsSection">
+            <div className="bill">
+              <h3>Bill Details:</h3>
+              <b style={{ marginLeft: "41rem" }}>
+                Gold Rate:
+                <TextField
+                  size="small"
+                  style={{
+                    width: "120px",
+                    height: "1rem",
+                    bottom: "18px",
+                    left: "5px",
+                  }}
+                  value={goldRate}
+                  onChange={(e) => setGoldRate(e.target.value)}
+                  type="number"
+                  required
+                  disabled={viewMode && selectedBill}
+                />
+              </b>
+            </div>
+            <table className="table">
+              <thead>
+                <tr>
+                  <th className="th">Coin</th>
+                  <th className="th">No</th>
+                  <th className="th">%</th>
+                  <th className="th">Touch</th>
+                  <th className="th">Weight</th>
+                  <th className="th">Purity</th>
+                  <th className="th">Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                {billItems.map((item, index) => (
+                  <tr key={index}>
+                    <td className="td">{item.coinValue}</td>
+                    <td className="td">{item.quantity}</td>
+                    <td className="td">{item.percentage}</td>
+                    <td className="td">{item.touch}</td>
+                    <td className="td">{item.weight}</td>
+                    <td className="td">{item.purity}</td>
+                    <td className="td">
+                      {goldRate
+                        ? (
+                            parseFloat(item.purity) * parseFloat(goldRate)
+                          ).toFixed(2)
+                        : "-"}
+                    </td>
+                  </tr>
+                ))}
+                <tr>
+                  <td className="td">
+                    <strong>Total</strong>
+                  </td>
+                  <td className="td">
+                    <strong>
+                      {billItems.reduce(
+                        (sum, item) => sum + parseInt(item.quantity),
+                        0
+                      )}
+                    </strong>
+                  </td>
+                  <td className="td"></td>
+                  <td className="td"></td>
+                  <td className="td">
+                    <strong>{totalWeight.toFixed(3)}</strong>
+                  </td>
+                  <td className="td">
+                    <strong>{totalPurity.toFixed(3)}</strong>
+                  </td>
+                  <td className="td">
+                    <strong>
+                      {goldRate
+                        ? (totalPurity * parseFloat(goldRate)).toFixed(2)
+                        : "0.00"}
+                    </strong>
+                  </td>
+                </tr>
+
+                <tr>
+                  <td className="td" colSpan={6}>
+                    <strong>Hallmark or MC Charges</strong>
+                  </td>
+                  <td className="td">
+                    <TextField
+                      size="small"
+                      style={{ width: "100px" }}
+                      value={hallmarkCharges}
+                      onChange={(e) => setHallmarkCharges(e.target.value)}
+                      type="number"
+                      disabled={viewMode && selectedBill}
+                    />
+                  </td>
+                </tr>
+                <tr>
+                  <td className="td" colSpan={6}>
+                    <strong>Total Amount</strong>
+                  </td>
+                  <td className="td">
+                    <strong>
+                      {(
+                        totalPurity * parseFloat(goldRate || 0) +
+                        parseFloat(hallmarkCharges || 0)
+                      ).toFixed(2)}
+                    </strong>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </Box>
+
+          <br />
+
+          <Box className="itemsSection">
+            <div className="add">
+              <h3>Received Details:</h3>
+              {(!viewMode || selectedBill) && (
+                <p style={{ marginLeft: "42.4rem" }}>
+                  <IconButton size="small" onClick={handleAddRow}>
+                    <AddCircleOutlineIcon />
+                  </IconButton>
+                </p>
+              )}
+            </div>
+
+            <table className="table">
+              <thead>
+                <tr>
+                  <th className="th">S.No</th>
+                  <th className="th">Date</th>
+                  <th className="th">Gold Rate</th>
+                  <th className="th">Gold</th>
+                  <th className="th">Touch</th>
+                  <th className="th">Purity WT</th>
+                  <th className="th">Amount</th>
+                  <th className="th">Hallmark</th>
+                  {(!viewMode || selectedBill) && (
+                    <th className="th">Action</th>
+                  )}
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((row, index) => (
+                  <tr key={index}>
+                    <td className="td">{index + 1}</td>
+                    <td className="td">
+                      <TextField
+                        style={{ right: "17px" }}
+                        size="small"
+                        type="date"
+                        value={row.date}
+                        onChange={(e) =>
+                          handleRowChange(index, "date", e.target.value)
+                        }
+                        disabled={
+                          viewMode &&
+                          index < selectedBill?.receivedDetails?.length
+                        }
+                      />
+                    </td>
+                    <td className="td">
+                      <TextField
+                        size="small"
+                        value={row.goldRate}
+                        onChange={(e) =>
+                          handleRowChange(index, "goldRate", e.target.value)
+                        }
+                        type="number"
+                        disabled={
+                          viewMode &&
+                          index < selectedBill?.receivedDetails?.length
+                        }
+                      />
+                    </td>
+                    <td className="td">
+                      <TextField
+                        size="small"
+                        value={row.givenGold}
+                        onChange={(e) =>
+                          handleRowChange(index, "givenGold", e.target.value)
+                        }
+                        type="number"
+                        disabled={
+                          viewMode &&
+                          index < selectedBill?.receivedDetails?.length
+                        }
+                      />
+                    </td>
+                    <td className="td">
+                      <TextField
+                        size="small"
+                        value={row.touch}
+                        onChange={(e) =>
+                          handleRowChange(index, "touch", e.target.value)
+                        }
+                        type="number"
+                        disabled={
+                          viewMode &&
+                          index < selectedBill?.receivedDetails?.length
+                        }
+                      />
+                    </td>
+                    <td className="td">
+                      <TextField
+                        size="small"
+                        value={row.purityWeight}
+                        InputProps={{ readOnly: true }}
+                      />
+                    </td>
+                    <td className="td">
+                      <TextField
+                        size="small"
+                        value={row.amount}
+                        onChange={(e) =>
+                          handleRowChange(index, "amount", e.target.value)
+                        }
+                        type="number"
+                        disabled={
+                          viewMode &&
+                          index < selectedBill?.receivedDetails?.length
+                        }
+                      />
+                    </td>
+                    <td className="td">
+                      <TextField
+                        size="small"
+                        value={row.hallmark}
+                        onChange={(e) =>
+                          handleRowChange(index, "hallmark", e.target.value)
+                        }
+                        type="number"
+                        disabled={
+                          viewMode &&
+                          index < selectedBill?.receivedDetails?.length
+                        }
+                      />
+                    </td>
+                    {(!viewMode || selectedBill) && (
+                      <td className="td">
+                        {(!viewMode ||
+                          index >= selectedBill?.receivedDetails?.length) && (
+                          <IconButton onClick={() => handleDeleteRow(index)}>
+                            <MdDeleteForever />
+                          </IconButton>
+                        )}
+                      </td>
+                    )}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            <div className="flex">
+              <b>Cash Balance: {cashBalance}</b>
+              <b>Pure Balance: {pureBalance}</b>
+              <b>Hallmark Balance: {hallmarkBalance}</b>
+            </div>
+          </Box>
+        </Box>
+      )}
 
       <Modal
         open={openAddItem}
@@ -722,6 +966,7 @@ const handleRowChange = (index, field, value) => {
               onChange={handleInputChange}
               margin="normal"
               required
+              disabled={viewMode && selectedBill}
             >
               <MenuItem value="916">916 (22K)</MenuItem>
               <MenuItem value="999">999 (24K)</MenuItem>
@@ -737,6 +982,7 @@ const handleRowChange = (index, field, value) => {
               type="number"
               inputProps={{ step: "0.01" }}
               required
+              disabled={viewMode && selectedBill}
             />
 
             {newItem.percentage && (
@@ -773,6 +1019,7 @@ const handleRowChange = (index, field, value) => {
               margin="normal"
               type="number"
               required
+              disabled={viewMode && selectedBill}
             />
             <TextField
               fullWidth
@@ -783,6 +1030,7 @@ const handleRowChange = (index, field, value) => {
               margin="normal"
               type="number"
               required
+              disabled={viewMode && selectedBill}
             />
             <TextField
               fullWidth
@@ -808,7 +1056,7 @@ const handleRowChange = (index, field, value) => {
                 variant="contained"
                 onClick={handleSaveItem}
                 className="save-button"
-                disabled={!!stockError}
+                disabled={!!stockError || (viewMode && selectedBill)}
               >
                 Save
               </Button>
@@ -821,8 +1069,15 @@ const handleRowChange = (index, field, value) => {
         open={snackbar.open}
         autoHideDuration={6000}
         onClose={handleCloseSnackbar}
-        message={snackbar.message}
-      />
+      >
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbar.severity}
+          sx={{ width: "100%" }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </>
   );
 };
