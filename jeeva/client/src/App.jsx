@@ -15,6 +15,8 @@ import Jobcard from "./components/Goldsmith/Jobcard";
 import AddCustomer from "./components/Billing/Addcustomer";
 import Register from "./components/Home/Register";
 import Billingjewel from "./components/Billing/Billingjewel";
+import CustomerReport from "./components/Report/customer.report";
+
 
 function App() {
   return (
@@ -38,6 +40,7 @@ function App() {
             </PageWithNavbar>
           }
         />
+
         <Route
           path="/coinbill"
           element={
@@ -54,6 +57,14 @@ function App() {
             </PageWithNavbar>
           }
         />
+        <Route
+          path="/customerreport"
+          element={
+            <PageWithNavbar>
+              <CustomerReport />
+            </PageWithNavbar>
+          }
+        ></Route>
         <Route
           path="/stock"
           element={
@@ -78,6 +89,7 @@ function App() {
             </PageWithNavbar>
           }
         />
+
         <Route path="/master" element={<Master />} />
         <Route path="/mastercustomer" element={<MasterCustomer />} />
         <Route path="/addcustomer" element={<AddCustomer />} />
