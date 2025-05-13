@@ -25,7 +25,9 @@ const DailySalesReport = () => {
   useEffect(() => {
     const fetchBills = async () => {
       try {
-        const response = await fetch(`${BACKEND_SERVER_URL}/api/bills`);
+        const response = await fetch(
+          `${BACKEND_SERVER_URL}/api/bills?_embed=receivedDetails`
+        );
         const data = await response.json();
         setBills(data);
         setFilteredBills(data);
@@ -51,6 +53,70 @@ const DailySalesReport = () => {
     setPage(0);
   }, [date, bills]);
 
+
+  const calculateMetrics = () => {
+    return filteredBills.reduce(
+      (acc, bill) => {
+       
+        const billTotal =
+          bill.items.reduce(
+            (sum, item) => sum + item.purity * bill.goldRate,
+            0
+          ) + (bill.hallmarkCharges || 0);
+
+      
+        const received = bill.receivedDetails?.reduce(
+          (sum, detail) => ({
+            pure: sum.pure + (detail.purityWeight || 0),
+            cash: sum.cash + (detail.amount || 0),
+            hallmark: sum.hallmark + (detail.hallmark || 0),
+          }),
+          { pure: 0, cash: 0, hallmark: 0 }
+        ) || { pure: 0, cash: 0, hallmark: 0 };
+
+       
+        const pureBalance =
+          bill.items.reduce((sum, item) => sum + item.purity, 0) -
+          received.pure;
+        const cashBalance = billTotal - received.cash;
+        const hallmarkBalance = (bill.hallmarkCharges || 0) - received.hallmark;
+
+        return {
+          totalSales: acc.totalSales + billTotal,
+          totalWeight:
+            acc.totalWeight +
+            bill.items.reduce((sum, item) => sum + item.weight, 0),
+          totalPurity:
+            acc.totalPurity +
+            bill.items.reduce((sum, item) => sum + item.purity, 0),
+          pureReceived: acc.pureReceived + received.pure,
+          cashReceived: acc.cashReceived + received.cash,
+          cashPaid: acc.cashPaid, 
+          outstandingPure:
+            acc.outstandingPure + (pureBalance > 0 ? pureBalance : 0),
+          outstandingCash:
+            acc.outstandingCash + (cashBalance > 0 ? cashBalance : 0),
+          outstandingHallmark:
+            acc.outstandingHallmark +
+            (hallmarkBalance > 0 ? hallmarkBalance : 0),
+        };
+      },
+      {
+        totalSales: 0,
+        totalWeight: 0,
+        totalPurity: 0,
+        pureReceived: 0,
+        cashReceived: 0,
+        cashPaid: 0,
+        outstandingPure: 0,
+        outstandingCash: 0,
+        outstandingHallmark: 0,
+      }
+    );
+  };
+
+  const metrics = calculateMetrics();
+
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
@@ -60,28 +126,6 @@ const DailySalesReport = () => {
     setPage(0);
   };
 
-  const calculateDailyTotal = () => {
-    return filteredBills.reduce((total, bill) => {
-      const billTotal = bill.items.reduce(
-        (sum, item) => sum + item.purity * bill.goldRate,
-        0
-      );
-      return total + billTotal + (bill.hallmarkCharges || 0);
-    }, 0);
-  };
-
-  const calculateTotalWeight = () => {
-    return filteredBills.reduce((total, bill) => {
-      return total + bill.items.reduce((sum, item) => sum + item.weight, 0);
-    }, 0);
-  };
-
-  const calculateTotalPurity = () => {
-    return filteredBills.reduce((total, bill) => {
-      return total + bill.items.reduce((sum, item) => sum + item.purity, 0);
-    }, 0);
-  };
-
   const handleReset = () => {
     setDate("");
     setFilteredBills(bills);
@@ -89,7 +133,7 @@ const DailySalesReport = () => {
 
   return (
     <Box sx={{ p: 3 }}>
-      <Typography style={{textAlign:"center"}} variant="h5" gutterBottom>
+      <Typography style={{ textAlign: "center" }} variant="h5" gutterBottom>
         Daily Sales Report
       </Typography>
 
@@ -121,13 +165,22 @@ const DailySalesReport = () => {
         }}
       >
         <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-          Total Sales: ₹{calculateDailyTotal().toFixed(2)}
+          Total Sales: ₹{metrics.totalSales.toFixed(2)}
         </Typography>
         <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-          Total Weight: {calculateTotalWeight().toFixed(3)} g
+          Total Weight: {metrics.totalWeight.toFixed(3)} g
         </Typography>
         <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-          Total Purity: {calculateTotalPurity().toFixed(3)} g
+          Total Purity: {metrics.totalPurity.toFixed(3)} g
+        </Typography>
+        <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+          Pure Received: {metrics.pureReceived.toFixed(3)} g
+        </Typography>
+        <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+          Cash Received: ₹{metrics.cashReceived.toFixed(2)}
+        </Typography>
+        <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+          Outstanding Cash: ₹{metrics.outstandingCash.toFixed(2)}
         </Typography>
         <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
           Number of Bills: {filteredBills.length}
@@ -140,11 +193,13 @@ const DailySalesReport = () => {
             <TableRow>
               <TableCell>Bill No</TableCell>
               <TableCell>Customer</TableCell>
-              <TableCell>Time</TableCell>
-              <TableCell>Gold Rate</TableCell>
               <TableCell>Total Weight</TableCell>
               <TableCell>Total Purity</TableCell>
               <TableCell>Total Amount</TableCell>
+              <TableCell>Cash Received</TableCell>
+              <TableCell>Pure Received</TableCell>
+              <TableCell>Cash Balance</TableCell>
+              <TableCell>Pure Balance</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -159,25 +214,45 @@ const DailySalesReport = () => {
                   (sum, item) => sum + item.purity,
                   0
                 );
-                const totalAmount = bill.items.reduce(
-                  (sum, item) => sum + item.purity * bill.goldRate,
-                  0
-                );
+                const totalAmount =
+                  bill.items.reduce(
+                    (sum, item) => sum + item.purity * bill.goldRate,
+                    0
+                  ) + (bill.hallmarkCharges || 0);
+
+                const received = bill.receivedDetails?.reduce(
+                  (sum, detail) => ({
+                    cash: sum.cash + (detail.amount || 0),
+                    pure: sum.pure + (detail.purityWeight || 0),
+                  }),
+                  { cash: 0, pure: 0 }
+                ) || { cash: 0, pure: 0 };
+
+                const cashBalance = totalAmount - received.cash;
+                const pureBalance = totalPurity - received.pure;
 
                 return (
                   <TableRow key={bill.id}>
                     <TableCell>BILL-{bill.id}</TableCell>
-                    <TableCell>
-                      {bill.customerId || "Unknown Customer"}
-                    </TableCell>
-                    <TableCell>
-                      {new Date(bill.createdAt).toLocaleTimeString()}
-                    </TableCell>
-                    <TableCell>{bill.goldRate}</TableCell>
+                    <TableCell>{bill.customerId || "Unknown"}</TableCell>
                     <TableCell>{totalWeight.toFixed(3)}</TableCell>
                     <TableCell>{totalPurity.toFixed(3)}</TableCell>
-                    <TableCell>
-                      {(totalAmount + (bill.hallmarkCharges || 0)).toFixed(2)}
+                    <TableCell>₹{totalAmount.toFixed(2)}</TableCell>
+                    <TableCell>₹{received.cash.toFixed(2)}</TableCell>
+                    <TableCell>{received.pure.toFixed(3)} g</TableCell>
+                    <TableCell
+                      sx={{
+                        color: cashBalance > 0 ? "error.main" : "success.main",
+                      }}
+                    >
+                      ₹{cashBalance.toFixed(2)}
+                    </TableCell>
+                    <TableCell
+                      sx={{
+                        color: pureBalance > 0 ? "error.main" : "success.main",
+                      }}
+                    >
+                      {pureBalance.toFixed(3)} g
                     </TableCell>
                   </TableRow>
                 );
