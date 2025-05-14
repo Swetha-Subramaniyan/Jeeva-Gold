@@ -49,6 +49,11 @@ function Navbar() {
           </a>
         </li>
         <li style={navItemStyle}>
+          <a href="/overallreport" style={linkStyle}>
+          Overall Report
+          </a>
+        </li>
+        <li style={navItemStyle}>
           <a href="/stock" style={linkStyle}>
             Coin Stock
           </a>

@@ -109,7 +109,15 @@ const Customer = () => {
                     <TableCell align="center">{customer.phone}</TableCell>
                     <TableCell align="center">{customer.address}</TableCell>
                     <TableCell align="center">
-                      <IconButton onClick={() => navigate("/customertrans")}>
+                      <IconButton
+                        onClick={() =>
+                          navigate(
+                            `/customertrans?id=${
+                              customer.id
+                            }&name=${encodeURIComponent(customer.name)}`
+                          )
+                        }
+                      >
                         <PreviewIcon color="primary" />
                       </IconButton>
                     </TableCell>

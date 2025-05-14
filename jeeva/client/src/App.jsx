@@ -16,6 +16,7 @@ import AddCustomer from "./components/Billing/Addcustomer";
 import Register from "./components/Home/Register";
 import Billingjewel from "./components/Billing/Billingjewel";
 import CustomerReport from "./components/Report/customer.report";
+import Overallreport from "./components/Report/overallreport";
 
 
 function App() {
@@ -62,6 +63,14 @@ function App() {
           element={
             <PageWithNavbar>
               <CustomerReport />
+            </PageWithNavbar>
+          }
+        ></Route>
+        <Route
+          path="/overallreport"
+          element={
+            <PageWithNavbar>
+            <Overallreport/>
             </PageWithNavbar>
           }
         ></Route>

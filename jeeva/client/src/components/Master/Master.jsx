@@ -1,44 +1,50 @@
-
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom"; 
+import { useNavigate } from "react-router-dom";
 import MasterCustomer from "./Mastercustomer";
 import "./Master.css";
 import Mastergoldsmith from "./Mastergoldsmith";
 import Masteradditems from "./Masteradditems";
+import Masterjewelstock from "./Masterjewelstock";
+import { FiLogOut } from "react-icons/fi";
 
 const Master = () => {
   const [showCustomerDetails, setShowCustomerDetails] = useState(false);
   const [showGoldsmithDetails, setShowGoldsmithDetails] = useState(false);
   const [showAddItemsDetails, setShowAddItemsDetails] = useState(false);
+  const [showJewelStock, setShowJewelStock] = useState(false);
 
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
 
   const handleAddCustomerClick = () => {
     setShowCustomerDetails(true);
     setShowGoldsmithDetails(false);
     setShowAddItemsDetails(false);
+    setShowJewelStock(false);
   };
 
   const handleAddGoldsmithClick = () => {
     setShowGoldsmithDetails(true);
     setShowCustomerDetails(false);
     setShowAddItemsDetails(false);
+    setShowJewelStock(false);
   };
 
   const handleAddItemsClick = () => {
     setShowAddItemsDetails(true);
     setShowCustomerDetails(false);
     setShowGoldsmithDetails(false);
+    setShowJewelStock(false);
   };
 
   const handleStockClick = () => {
+    setShowJewelStock(true);
     setShowCustomerDetails(false);
     setShowGoldsmithDetails(false);
+    setShowAddItemsDetails(false);
   };
 
   const handleLogout = () => {
- 
-    navigate("/"); 
+    navigate("/");
   };
 
   return (
@@ -105,7 +111,7 @@ const Master = () => {
                 (e.target.style.backgroundColor = "transparent")
               }
             >
-              Stock
+              Jewel Stock
             </button>
           </li>
         </ul>
@@ -113,27 +119,22 @@ const Master = () => {
       {showCustomerDetails && <MasterCustomer />}
       {showGoldsmithDetails && <Mastergoldsmith />}
       {showAddItemsDetails && <Masteradditems />}
-
-      <button
-        onClick={handleLogout}
-        style={{
-          backgroundColor: "#A31D1D",
-          color: "white",
-          border: "none",
-          padding: "8px 12px",
-          borderRadius: "4px",
-          position: "absolute",
-          top: "15px", 
-          right: "15px", 
-          cursor: "pointer",
-          fontWeight: "bold",
-          fontSize:"1rem"
-        }}
-      >
-        Logout
+      {showJewelStock && <Masterjewelstock />}
+      <button onClick={handleLogout} style={logoutButtonStyle} title="Logout">
+        <FiLogOut size={20} />
       </button>
     </div>
   );
+};
+
+const logoutButtonStyle = {
+  position: "absolute",
+  top: "15px",
+  right: "15px",
+  backgroundColor: "transparent",
+  border: "none",
+  color: "#fff",
+  cursor: "pointer",
 };
 
 export default Master;
