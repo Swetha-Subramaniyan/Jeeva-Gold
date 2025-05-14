@@ -21,6 +21,7 @@ model Customer {
   address   String?
   createdAt DateTime @default(now())
   bill      Bill[]
+  transactions Transaction[] 
 }
 
 model MasterItem {
@@ -146,3 +147,25 @@ model ReceivedDetail {
   hallmark     Float   @default(0)
   createdAt    DateTime @default(now())
 }
+model JewelStock {
+  id           Int      @id @default(autoincrement())
+  jewelName    String
+  weight       Float
+  stoneWeight  Float
+  finalWeight  Float
+  touch        Float
+  purityValue  Float
+  createdAt    DateTime @default(now())
+}
+model Transaction {
+  id         Int       @id @default(autoincrement())
+  date       DateTime
+  value      Float
+  type       String 
+  touch      Float?
+  purity     Float?
+  customer   Customer  @relation(fields: [customerId], references: [id])
+  customerId Int
+  createdAt  DateTime  @default(now())
+}
+
