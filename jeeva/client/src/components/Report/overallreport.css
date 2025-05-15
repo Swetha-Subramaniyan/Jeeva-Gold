@@ -1,0 +1,60 @@
+.overall-report-container {
+    padding: 20px;
+    font-family: Arial, sans-serif;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    max-width: 600px;
+    margin: 20px auto;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .overall-report-container h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #333;
+  }
+  
+  .overall-report-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .overall-report-table th,
+  .overall-report-table td {
+    border: 1px solid #ddd;
+    padding: 12px;
+    text-align: left;
+  }
+  
+  .overall-report-table th {
+    background-color: #f0f0f0;
+    color: #333;
+  }
+  
+  .overall-report-table tr:nth-child(even) {
+    background-color: #fafafa;
+  }
+  .date-filter-form {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+    align-items: center;
+  }
+  
+  .date-filter-form label {
+    display: flex;
+    flex-direction: column;
+    font-weight: bold;
+  }
+  
+  .date-filter-form input {
+    padding: 5px;
+    margin-top: 5px;
+  }
+  
+  .date-filter-form button {
+    padding: 8px 16px;
+    margin-top: 20px;
+    height: fit-content;
+  }
+  

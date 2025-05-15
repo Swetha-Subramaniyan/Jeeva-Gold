@@ -10,6 +10,7 @@ const jobCardRoutes = require("./Routes/jobcard.routes");
 const billRoutes = require("./Routes/bill.routes");
 const jewelStockRoutes = require("./Routes/jewelstock.routes");
 const transactionRoutes = require("./Routes/transaction.routes");
+const entryRoutes = require("./Routes/cashgold.routes");
 
 require("dotenv").config();
 
@@ -31,6 +32,7 @@ app.use("/api/job-cards", jobCardRoutes);
 app.use("/api/bills", billRoutes);
 app.use("/api/jewel-stock", jewelStockRoutes);
 app.use("/api/transactions", transactionRoutes);
+app.use("/api/entries", entryRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

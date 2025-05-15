@@ -142,11 +142,26 @@ const Customertrans = () => {
   };
 
   const filteredTransactions = transactions.filter((transaction) => {
-    return (
-      (!fromDate || transaction.date >= fromDate) &&
-      (!toDate || transaction.date <= toDate)
-    );
+    const transactionDate = new Date(transaction.date);
+    const from = fromDate ? new Date(fromDate) : null;
+    const to = toDate ? new Date(toDate) : null;
+
+    return (!from || transactionDate >= from) && (!to || transactionDate <= to);
   });
+  
+
+ 
+  const totals = filteredTransactions.reduce(
+    (acc, transaction) => {
+      if (transaction.type === "Cash") {
+        acc.totalCash += parseFloat(transaction.value) || 0;
+      } else if (transaction.type === "Gold") {
+        acc.totalPurity += parseFloat(transaction.purity) || 0;
+      }
+      return acc;
+    },
+    { totalCash: 0, totalPurity: 0 }
+  );
 
   return (
     <div className="customer-transactions">
@@ -333,6 +348,20 @@ const Customertrans = () => {
           )}
         </tbody>
       </table>
+
+      {(totals.totalCash > 0 || totals.totalPurity > 0) && (
+        <div className="transaction-totals">
+          <h3>Transaction Totals</h3>
+          <div className="total-row">
+            <span>Total Cash:</span>
+            <span>₹ {totals.totalCash.toFixed(2)}</span>
+          </div>
+          <div className="total-row">
+            <span>Total Purity:</span>
+            <span>{totals.totalPurity.toFixed(3)} g</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

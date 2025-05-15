@@ -5,6 +5,7 @@ import "./Master.css";
 import Mastergoldsmith from "./Mastergoldsmith";
 import Masteradditems from "./Masteradditems";
 import Masterjewelstock from "./Masterjewelstock";
+import Cashgold from "./Cashgold";
 import { FiLogOut } from "react-icons/fi";
 
 const Master = () => {
@@ -12,6 +13,7 @@ const Master = () => {
   const [showGoldsmithDetails, setShowGoldsmithDetails] = useState(false);
   const [showAddItemsDetails, setShowAddItemsDetails] = useState(false);
   const [showJewelStock, setShowJewelStock] = useState(false);
+  const [showCashGold, setShowCashGold] = useState(false)
 
   const navigate = useNavigate();
 
@@ -20,6 +22,7 @@ const Master = () => {
     setShowGoldsmithDetails(false);
     setShowAddItemsDetails(false);
     setShowJewelStock(false);
+    setShowCashGold(false)
   };
 
   const handleAddGoldsmithClick = () => {
@@ -27,6 +30,7 @@ const Master = () => {
     setShowCustomerDetails(false);
     setShowAddItemsDetails(false);
     setShowJewelStock(false);
+    setShowCashGold(false)
   };
 
   const handleAddItemsClick = () => {
@@ -34,6 +38,7 @@ const Master = () => {
     setShowCustomerDetails(false);
     setShowGoldsmithDetails(false);
     setShowJewelStock(false);
+    setShowCashGold(false)
   };
 
   const handleStockClick = () => {
@@ -41,8 +46,15 @@ const Master = () => {
     setShowCustomerDetails(false);
     setShowGoldsmithDetails(false);
     setShowAddItemsDetails(false);
+    setShowCashGold(false)
   };
-
+const handleCashGold =()=>{
+  setShowCashGold(true);
+  setShowCustomerDetails(false);
+  setShowGoldsmithDetails(false);
+  setShowAddItemsDetails(false)
+  setShowJewelStock(false);
+}
   const handleLogout = () => {
     navigate("/");
   };
@@ -114,12 +126,25 @@ const Master = () => {
               Jewel Stock
             </button>
           </li>
+          <li style={{ marginRight: "20px" }}>
+            <button
+              onClick={handleCashGold}
+              className="nav-button"
+              onMouseOver={(e) => (e.target.style.backgroundColor = "#333")}
+              onMouseOut={(e) =>
+                (e.target.style.backgroundColor = "transparent")
+              }
+            >
+              Cash / Gold
+            </button>
+          </li>
         </ul>
       </nav>
       {showCustomerDetails && <MasterCustomer />}
       {showGoldsmithDetails && <Mastergoldsmith />}
       {showAddItemsDetails && <Masteradditems />}
       {showJewelStock && <Masterjewelstock />}
+      {showCashGold && <Cashgold/>}
       <button onClick={handleLogout} style={logoutButtonStyle} title="Logout">
         <FiLogOut size={20} />
       </button>
