@@ -1,3 +1,4 @@
+
 import { React, useEffect, useState } from "react";
 import "./overallreport.css";
 import { BACKEND_SERVER_URL } from "../../Config/Config";
@@ -14,13 +15,11 @@ const OverallReport = () => {
     fetchReportData();
   }, []);
 
-  
   const fetchReportData = async (from = "", to = "") => {
     setLoading(true);
     setReportData([]);
 
     try {
-  
       const [customersRes, billsRes, jewelRes, coinRes, entriesRes] =
         await Promise.all([
           fetch(`${BACKEND_SERVER_URL}/api/customers`),
@@ -30,7 +29,6 @@ const OverallReport = () => {
           fetch(`${BACKEND_SERVER_URL}/api/entries`),
         ]);
 
-    
       if (!customersRes.ok) throw new Error("Failed to fetch customers");
       if (!billsRes.ok) throw new Error("Failed to fetch bills");
       if (!jewelRes.ok) throw new Error("Failed to fetch jewel stock");
@@ -46,7 +44,6 @@ const OverallReport = () => {
           entriesRes.json(),
         ]);
 
-    
       const customerBalances = customers.map((customer) => {
         const customerBills = bills.filter(
           (bill) => bill.customerId === customer.id
@@ -103,7 +100,6 @@ const OverallReport = () => {
 
       let allTransactions = [];
       try {
-        
         const transRes = await fetch(`${BACKEND_SERVER_URL}/api/transactions`);
         if (transRes.ok) {
           allTransactions = await transRes.json();
@@ -204,7 +200,7 @@ const OverallReport = () => {
       setLoading(false);
     }
   };
-  
+
   const handleSubmit = (e) => {
     e.preventDefault();
     fetchReportData(fromDate, toDate);
@@ -213,47 +209,51 @@ const OverallReport = () => {
   return (
     <div className="overall-report-container">
       <ToastContainer position="top-right" autoClose={3000} />
-      <h2>Overall Report</h2>
+      <div className="report-header">
+        <h2>Overall Report</h2>
+      </div>
 
       <form onSubmit={handleSubmit} className="date-filter-form">
-        <label>
-          From Date:
-          <input
-            type="date"
-            value={fromDate}
-            onChange={(e) => setFromDate(e.target.value)}
-          />
-        </label>
-        <label>
-          To Date:
-          <input
-            type="date"
-            value={toDate}
-            onChange={(e) => setToDate(e.target.value)}
-          />
-        </label>
-        <button type="submit" disabled={loading}>
-          {loading ? "Loading..." : "Filter Report"}
+        <div className="form-group">
+          <label>
+            <span>From Date</span>
+            <input
+              type="date"
+              value={fromDate}
+              onChange={(e) => setFromDate(e.target.value)}
+              className="date-input"
+            />
+          </label>
+        </div>
+        <div className="form-group">
+          <label>
+            <span>To Date</span>
+            <input
+              type="date"
+              value={toDate}
+              onChange={(e) => setToDate(e.target.value)}
+              className="date-input"
+            />
+          </label>
+        </div>
+        <button type="submit" className="filter-btn" disabled={loading}>
+          {loading ? (
+            <span className="loading-spinner"></span>
+          ) : (
+            "Filter Report"
+          )}
         </button>
       </form>
 
       {reportData.length > 0 && (
-        <table className="overall-report-table">
-          <thead>
-            <tr>
-              <th>Category</th>
-              <th>Value</th>
-            </tr>
-          </thead>
-          <tbody>
-            {reportData.map((item, index) => (
-              <tr key={index}>
-                <td>{item.label}</td>
-                <td>{item.value}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <div className="report-cards-container">
+          {reportData.map((item, index) => (
+            <div key={index} className="report-card" title={item.tooltip}>
+              <div className="card-label">{item.label}</div>
+              <div className="card-value">{item.value}</div>
+            </div>
+          ))}
+        </div>
       )}
     </div>
   );
