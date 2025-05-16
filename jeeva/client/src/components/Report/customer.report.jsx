@@ -57,7 +57,7 @@ const CustomerReport = () => {
         const response = await fetch(`${BACKEND_SERVER_URL}/api/bills`);
         const data = await response.json();
         setBills(data);
-        setFilteredBills(data);
+        setFilteredBills(data); 
       } catch (error) {
         console.error("Error fetching bills:", error);
       }
@@ -65,7 +65,7 @@ const CustomerReport = () => {
 
     fetchCustomers();
     fetchBills();
-  }, []);
+  }, []); 
 
   useEffect(() => {
     let result = bills;
@@ -74,6 +74,7 @@ const CustomerReport = () => {
       result = result.filter((bill) => bill.customerId === selectedCustomer.id);
       calculateBalances(selectedCustomer.id);
     } else {
+    
       setOpeningBalance(0);
       setClosingBalance(0);
     }
@@ -92,10 +93,9 @@ const CustomerReport = () => {
 
     setFilteredBills(result);
     setPage(0);
-  }, [selectedCustomer, startDate, endDate, bills]);
+  }, [selectedCustomer, startDate, endDate, bills]); 
 
   const calculateBalances = (customerId) => {
-   
     const openingBills = bills.filter(
       (bill) =>
         bill.customerId === customerId &&
@@ -172,7 +172,7 @@ const CustomerReport = () => {
     setSelectedCustomer(null);
     setStartDate(today);
     setEndDate(today);
-    setFilteredBills(bills);
+    setFilteredBills(bills); 
     setOpeningBalance(0);
     setClosingBalance(0);
   };
@@ -186,7 +186,6 @@ const CustomerReport = () => {
     setViewModalOpen(false);
     setSelectedBill(null);
   };
-
 
   return (
     <Box sx={{ p: 3 }}>
@@ -229,8 +228,6 @@ const CustomerReport = () => {
         <Button variant="outlined" onClick={handleReset}>
           Reset
         </Button>
-
-     
       </Box>
 
       {selectedCustomer && (
@@ -281,6 +278,7 @@ const CustomerReport = () => {
             <TableRow>
               <TableCell>Bill No</TableCell>
               <TableCell>Date</TableCell>
+              <TableCell>Customer Name</TableCell>
               <TableCell>Gold Rate</TableCell>
               <TableCell>Total Weight</TableCell>
               <TableCell>Total Purity</TableCell>
@@ -306,12 +304,19 @@ const CustomerReport = () => {
                   0
                 );
 
+             
+                const customer = customers.find(
+                  (c) => c.id === bill.customerId
+                );
+                const customerName = customer ? customer.name : "Unknown";
+
                 return (
                   <TableRow key={bill.id}>
                     <TableCell>BILL-{bill.id}</TableCell>
                     <TableCell>
                       {new Date(bill.createdAt).toLocaleDateString()}
                     </TableCell>
+                    <TableCell>{customerName}</TableCell>{" "}
                     <TableCell>{bill.goldRate}</TableCell>
                     <TableCell>{totalWeight.toFixed(3)}</TableCell>
                     <TableCell>{totalPurity.toFixed(3)}</TableCell>
