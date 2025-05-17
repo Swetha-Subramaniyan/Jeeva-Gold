@@ -478,7 +478,7 @@ const Billing = () => {
       showSnackbar(error.message || "Failed to create bill", "error");
     }
   };
-
+ 
   const resetForm = () => {
     setBillItems([]);
     setRows([]);

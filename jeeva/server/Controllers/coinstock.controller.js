@@ -1,44 +1,10 @@
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
-// const createStock = async (req, res) => {
-//   try {
-//     const { coinType, gram, quantity, touch, totalWeight, purity } = req.body;
-
-//     const newStock = await prisma.coinStock.create({
-//       data: {
-//         coinType,
-//         gram: parseFloat(gram),
-//         quantity: parseInt(quantity),
-//         touch: parseFloat(touch),
-//         totalWeight: parseFloat(totalWeight),
-//         purity: parseFloat(purity),
-//         stockLogs: {
-//           create: {
-//             coinType,
-//             gram: parseFloat(gram),
-//             quantity: parseInt(quantity),
-//             changeType: "ADD",
-//             reason: "Initial stock added",
-//           },
-//         },
-//       },
-//       include: { stockLogs: true },
-//     });
-
-//     res
-//       .status(201)
-//       .json({ message: "Stock item added successfully", data: newStock });
-//   } catch (error) {
-//     console.error("error", error);
-//     res.status(500).json({ message: "Error adding stock item", error });
-//   }
-// };
 const createStock = async (req, res) => {
   try {
     const { coinType, gram, quantity, touch, totalWeight, purity } = req.body;
 
-  
     const existingStock = await prisma.coinStock.findFirst({
       where: {
         coinType,
@@ -47,7 +13,6 @@ const createStock = async (req, res) => {
     });
 
     if (existingStock) {
- 
       const updatedStock = await prisma.coinStock.update({
         where: { id: existingStock.id },
         data: {
@@ -73,7 +38,6 @@ const createStock = async (req, res) => {
         data: updatedStock,
       });
     }
-
 
     const newStock = await prisma.coinStock.create({
       data: {
@@ -105,6 +69,7 @@ const createStock = async (req, res) => {
     res.status(500).json({ message: "Error adding stock item", error });
   }
 };
+
 const getAllStocks = async (req, res) => {
   try {
     const stocks = await prisma.coinStock.findMany({
@@ -162,63 +127,44 @@ const deleteStock = async (req, res) => {
 const reduceStock = async (req, res) => {
   try {
     const { coinType, gram, quantity, reason } = req.body;
-    console.log("Received reduce request:", {
-      coinType,
-      gram,
-      quantity,
-      reason,
-    });
-
     const stock = await prisma.coinStock.findFirst({
-      where: {
-        coinType,
-        gram: parseFloat(gram),
-      },
+      where: { coinType, gram: parseFloat(gram) },
     });
 
-    console.log("Found stock:", stock);
-
-    if (!stock) {
-      console.log("Stock item not found");
-      return res.status(404).json({ message: "Stock item not found" });
-    }
-
-    if (stock.quantity < parseInt(quantity)) {
-      console.log(
-        `Insufficient stock. Requested: ${quantity}, Available: ${stock.quantity}`
-      );
+    if (!stock) return res.status(404).json({ message: "Stock not found" });
+    if (stock.quantity < quantity)
       return res.status(400).json({
         message: `Insufficient stock. Available: ${stock.quantity}`,
       });
-    }
+
+    const weightToReduce = parseFloat(gram) * parseInt(quantity);
+    const purityToReduce =
+      (parseFloat(stock.touch) * parseFloat(gram) * parseInt(quantity)) / 100;
 
     const updatedStock = await prisma.coinStock.update({
       where: { id: stock.id },
       data: {
-        quantity: stock.quantity - parseInt(quantity),
+        quantity: stock.quantity - quantity,
+        totalWeight: parseFloat(stock.totalWeight) - weightToReduce,
+        purity: parseFloat(stock.purity) - purityToReduce,
         stockLogs: {
           create: {
             coinType,
             gram: parseFloat(gram),
-            quantity: -parseInt(quantity),
+            quantity: -quantity,
             changeType: "REMOVE",
-            reason: reason || "Billed",
+            reason,
           },
         },
       },
-      include: { stockLogs: true },
     });
 
-    console.log("Stock reduced successfully:", updatedStock);
     res.status(200).json({
       message: "Stock reduced successfully",
       data: updatedStock,
     });
   } catch (error) {
-    console.error("Error in reduceStock:", error);
-    res
-      .status(500)
-      .json({ message: "Error reducing stock", error: error.message });
+    res.status(500).json({ message: "Error reducing stock", error });
   }
 };
 

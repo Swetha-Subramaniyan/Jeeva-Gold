@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useEffect } from "react";
 import "./Stock.css";
 import { toast, ToastContainer } from "react-toastify";
@@ -20,12 +21,21 @@ const Stock = () => {
   const [editIndex, setEditIndex] = useState(null);
   const [editingId, setEditingId] = useState(null);
 
+
   useEffect(() => {
-    fetch(`${BACKEND_SERVER_URL}/api/v1/stocks`)
-      .then((res) => res.json())
-      .then((data) => setStockItems(data))
-      .catch((err) => console.error("Error fetching stocks:", err));
+    fetchStockItems();
   }, []);
+
+  const fetchStockItems = async () => {
+    try {
+      const response = await fetch(`${BACKEND_SERVER_URL}/api/v1/stocks`);
+      const data = await response.json();
+      setStockItems(data);
+    } catch (err) {
+      console.error("Error fetching stocks:", err);
+      toast.error("Failed to fetch stock items!");
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -42,21 +52,30 @@ const Stock = () => {
     setFormData(updatedData);
   };
 
-
   const handleSubmit = async () => {
+    if (
+      !formData.coinType ||
+      !formData.gram ||
+      !formData.quantity ||
+      !formData.touch
+    ) {
+      toast.error("Please fill in all required fields!");
+      return;
+    }
 
-  if (
-    !formData.coinType ||
-    !formData.gram ||
-    !formData.quantity ||
-    !formData.touch
-  ) {
-    toast.error("Please fill in all required fields!");
-    return;
-  }
+    try {
+      if (editIndex !== null) {
+        await handleUpdate();
+      } else {
+        await handleCreateOrUpdate();
+      }
+    } catch (error) {
+      console.error("Error in handleSubmit:", error);
+      toast.error("Operation failed!");
+    }
+  };
 
- 
-  if (editIndex !== null) {
+  const handleUpdate = async () => {
     try {
       const updatedItem = formData;
       const itemId = stockItems[editIndex].id;
@@ -73,57 +92,49 @@ const Stock = () => {
       if (!response.ok) throw new Error("Failed to update stock item");
 
       const result = await response.json();
-
       const updatedItems = [...stockItems];
       updatedItems[editIndex] = result.data;
       setStockItems(updatedItems);
       toast.success("Stock item updated successfully!");
-
-      setFormData({
-        coinType: "",
-        gram: "",
-        quantity: "",
-        touch: "",
-        totalWeight: "",
-        purity: "",
-      });
-      setEditIndex(null);
-      setShowPopup(false);
-      return;
+      resetForm();
     } catch (err) {
       console.error("Error updating stock:", err);
       toast.error("Failed to update stock item!");
-      return;
     }
-  }
+  };
 
-  const existingItemIndex = stockItems.findIndex(
-    (item) =>
-      item.coinType === formData.coinType &&
-      parseFloat(item.gram) === parseFloat(formData.gram)
-  );
+  const handleCreateOrUpdate = async () => {
+    const existingItemIndex = stockItems.findIndex(
+      (item) =>
+        item.coinType === formData.coinType &&
+        parseFloat(item.gram) === parseFloat(formData.gram)
+    );
 
-  if (existingItemIndex !== -1) {
-  
-    const updatedItem = {
-      ...stockItems[existingItemIndex],
-      quantity: (
-        parseInt(stockItems[existingItemIndex].quantity) +
-        parseInt(formData.quantity)
-      ).toString(),
-      totalWeight: (
-        parseFloat(stockItems[existingItemIndex].totalWeight) +
-        parseFloat(formData.totalWeight)
-      ).toFixed(2),
-      purity: (
-        parseFloat(stockItems[existingItemIndex].purity) +
-        parseFloat(formData.purity)
-      ).toFixed(3),
-    };
+    if (existingItemIndex !== -1) {
+      await updateExistingItem(existingItemIndex);
+    } else {
+      await createNewItem();
+    }
+  };
 
+  const updateExistingItem = async (index) => {
     try {
+      const updatedItem = {
+        ...stockItems[index],
+        quantity: (
+          parseInt(stockItems[index].quantity) + parseInt(formData.quantity)
+        ).toString(),
+        totalWeight: (
+          parseFloat(stockItems[index].totalWeight) +
+          parseFloat(formData.totalWeight)
+        ).toFixed(2),
+        purity: (
+          parseFloat(stockItems[index].purity) + parseFloat(formData.purity)
+        ).toFixed(3),
+      };
+
       const response = await fetch(
-        `${BACKEND_SERVER_URL}/api/v1/stocks/${stockItems[existingItemIndex].id}`,
+        `${BACKEND_SERVER_URL}/api/v1/stocks/${stockItems[index].id}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -134,61 +145,63 @@ const Stock = () => {
       if (!response.ok) throw new Error("Failed to update stock item");
 
       const result = await response.json();
-
       const updatedItems = [...stockItems];
-      updatedItems[existingItemIndex] = result.data;
+      updatedItems[index] = result.data;
       setStockItems(updatedItems);
       toast.success("Existing stock item updated successfully!");
-
-      setFormData({
-        coinType: "",
-        gram: "",
-        quantity: "",
-        touch: "",
-        totalWeight: "",
-        purity: "",
-      });
-      setShowPopup(false);
-      return;
+      resetForm();
     } catch (err) {
       console.error("Error updating stock:", err);
       toast.error("Failed to update stock item!");
-      return;
     }
-  }
+  };
 
+  const createNewItem = async () => {
+    try {
+      const response = await fetch(
+        `${BACKEND_SERVER_URL}/api/v1/stocks/create`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData),
+        }
+      );
 
-  try {
-    const response = await fetch(`${BACKEND_SERVER_URL}/api/v1/stocks/create`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(formData),
+      if (!response.ok) throw new Error("Failed to create stock item");
+
+      const result = await response.json();
+      setStockItems([result.data, ...stockItems]);
+      toast.success("New stock item created successfully!");
+      resetForm();
+    } catch (err) {
+      console.error("Error adding stock:", err);
+      toast.error("Failed to create stock item!");
+    }
+  };
+
+  const resetForm = () => {
+    setFormData({
+      coinType: "",
+      gram: "",
+      quantity: "",
+      touch: "",
+      totalWeight: "",
+      purity: "",
     });
+    setEditIndex(null);
+    setEditingId(null);
+    setShowPopup(false);
+  };
 
-    if (!response.ok) throw new Error("Failed to create stock item");
-
-    const result = await response.json();
-    setStockItems([result.data, ...stockItems]);
-    toast.success("New stock item created successfully!");
-  } catch (err) {
-    console.error("Error adding stock:", err);
-    toast.error("Failed to create stock item!");
-  }
-
-  setFormData({
-    coinType: "",
-    gram: "",
-    quantity: "",
-    touch: "",
-    totalWeight: "",
-    purity: "",
-  });
-  setShowPopup(false);
-};
   const handleEdit = (index) => {
-    setFormData(stockItems[index]);
+    setFormData({
+      ...stockItems[index],
+      gram: stockItems[index].gram.toString(),
+      quantity: stockItems[index].quantity.toString(),
+      touch: stockItems[index].touch.toString(),
+    });
     setEditIndex(index);
-    setEditingId(stockItems[index]._id);
+    setEditingId(stockItems[index].id);
     setShowPopup(true);
   };
 
@@ -243,7 +256,7 @@ const Stock = () => {
 
   return (
     <div className="stock-container">
-      <ToastContainer />
+      <ToastContainer position="top-right" autoClose={3000} />
       <h2>Coin Stock Report</h2>
       <button className="add-btn" onClick={() => setShowPopup(true)}>
         Add Item
@@ -275,6 +288,7 @@ const Stock = () => {
               placeholder="Coin Type"
               value={formData.coinType}
               onChange={handleChange}
+              required
             />
             <input
               type="number"
@@ -282,6 +296,9 @@ const Stock = () => {
               placeholder="Gram"
               value={formData.gram}
               onChange={handleChange}
+              step="0.01"
+              min="0"
+              required
             />
             <input
               type="number"
@@ -289,6 +306,8 @@ const Stock = () => {
               placeholder="Quantity"
               value={formData.quantity}
               onChange={handleChange}
+              min="1"
+              required
             />
             <input
               type="number"
@@ -296,6 +315,10 @@ const Stock = () => {
               placeholder="Touch"
               value={formData.touch}
               onChange={handleChange}
+              step="0.01"
+              min="0"
+              max="999.9"
+              required
             />
             <input
               type="number"
@@ -309,78 +332,82 @@ const Stock = () => {
               name="purity"
               placeholder="Purity"
               value={formData.purity}
+           
               readOnly
             />
 
-            <button className="save-btn" onClick={handleSubmit}>
-              {editIndex !== null ? "Update" : "Save"}
-            </button>
-            <button
-              className="close-btn"
-              onClick={() => {
-                setShowPopup(false);
-                setEditIndex(null);
-                setEditingId(null);
-              }}
-            >
-              Close
-            </button>
+            <div className="popup-buttons">
+              <button className="save-btn" onClick={handleSubmit}>
+                {editIndex !== null ? "Update" : "Save"}
+              </button>
+              <button className="close-btn" onClick={resetForm}>
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}
 
-      <table>
-        <thead>
-          <tr>
-            <th>Coin Type</th>
-            <th>Gram</th>
-            <th>Quantity</th>
-            <th>%</th>
-            <th>Total Weight</th>
-            <th>Purity</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredStockItems.map((item, index) => (
-            <tr key={item._id || index}>
-              <td>{item.coinType}</td>
-              <td>{item.gram}</td>
-              <td>{item.quantity}</td>
-              <td>{item.touch}</td>
-              <td>{item.totalWeight}</td>
-              <td>{item.purity}</td>
-              <td>
-                <button className="edit-btn" onClick={() => handleEdit(index)}>
-                  Edit
-                </button>
-                <button
-                  className="delete-btn"
-                  onClick={() => handleDelete(index)}
-                >
-                  Delete
-                </button>
-              </td>
+      <div className="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Coin Type</th>
+              <th>Gram</th>
+              <th>Quantity</th>
+              <th>%</th>
+              <th>Total Weight</th>
+              <th>Purity</th>
+              <th>Actions</th>
             </tr>
-          ))}
-        </tbody>
-        <tfoot>
-          <tr>
-            <td colSpan="4" style={{ textAlign: "right" }}>
-              <strong>Totals:</strong>
-            </td>
-            <td>
-              <strong>{totals.totalWeight}</strong>
-            </td>
-            <td>
-              <strong>{totals.purity}</strong>
-            </td>
-            <td></td>
-          </tr>
-        </tfoot>
-      </table>
+          </thead>
+          <tbody>
+            {filteredStockItems.map((item, index) => (
+              <tr key={item.id || index}>
+                <td>{item.coinType}</td>
+                <td>{item.gram}</td>
+                <td>{item.quantity}</td>
+                <td>{item.touch}</td>
+                <td>{parseFloat(item.totalWeight).toFixed(2)}</td>
+                <td>{parseFloat(item.purity).toFixed(3)}</td>
+              
+                <td>
+                  <button
+                    className="edit-btn"
+                    onClick={() => handleEdit(index)}
+                  >
+                    Edit
+                  </button>
+                  <button
+                    className="delete-btn"
+                    onClick={() => handleDelete(index)}
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colSpan="4" style={{ textAlign: "right" }}>
+                <strong>Totals:</strong>
+              </td>
+              <td>
+                <strong>{totals.totalWeight}</strong>
+              </td>
+              <td>
+                <strong>{totals.purity}</strong>
+              </td>
+              <td></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
     </div>
   );
 };
 
 export default Stock;
+
+
