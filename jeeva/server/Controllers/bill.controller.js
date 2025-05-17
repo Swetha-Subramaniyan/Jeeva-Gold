@@ -112,6 +112,7 @@ const createBill = async (req, res) => {
   }
 };
 
+
 const getBillById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -159,7 +160,6 @@ const addReceiveEntry = async (req, res) => {
       return res.status(400).json({ error: "No receive details provided" });
     }
 
-
     const existingBill = await prisma.bill.findUnique({
       where: { id: parseInt(id) },
       include: { receivedDetails: true },
@@ -168,7 +168,6 @@ const addReceiveEntry = async (req, res) => {
     if (!existingBill) {
       return res.status(404).json({ error: "Bill not found" });
     }
-
 
     const validReceivedDetails = receivedDetails
       .filter((detail) => {
@@ -208,14 +207,13 @@ const addReceiveEntry = async (req, res) => {
         };
       });
 
-  
     const updatedBill = await prisma.bill.update({
       where: { id: parseInt(id) },
       data: {
         receivedDetails: {
           create: validReceivedDetails,
         },
-      
+
         totalAmount: {
           increment: validReceivedDetails.reduce(
             (sum, detail) => sum + detail.amount,
