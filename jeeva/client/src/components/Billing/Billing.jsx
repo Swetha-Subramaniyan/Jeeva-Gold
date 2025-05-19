@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from "react";
 import {
   Autocomplete,
@@ -125,7 +124,9 @@ const Billing = () => {
 
     setRows(
       bill.receivedDetails.map((detail) => ({
-        date: detail.date,
+        date: detail.date
+          ? new Date(detail.date).toISOString().split("T")[0]
+          : new Date().toISOString().split("T")[0],
         goldRate: detail.goldRate.toString(),
         givenGold: detail.givenGold?.toString() || "",
         touch: detail.touch?.toString() || "",
@@ -165,6 +166,7 @@ const Billing = () => {
   const showSnackbar = (message, severity = "success") => {
     setSnackbar({ open: true, message, severity });
   };
+
 
   const handleCloseSnackbar = () => {
     setSnackbar({ ...snackbar, open: false });
@@ -428,6 +430,49 @@ const Billing = () => {
     }
   };
 
+
+  const reduceStockForBill = async (items) => {
+    try {
+      const results = await Promise.allSettled(
+        items.map(async (item) => {
+          const response = await fetch(
+            `${BACKEND_SERVER_URL}/api/v1/stocks/reduce`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                coinType: item.percentage.toString(),
+                gram: item.coinValue.toString(),
+                quantity: item.quantity.toString(),
+                reason: `Sold in bill (${item.coinValue}g ${item.percentage})`,
+              }),
+            }
+          );
+
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || "Failed to reduce stock");
+          }
+          return response.json();
+        })
+      );
+
+      const failedReductions = results.filter((r) => r.status === "rejected");
+      if (failedReductions.length > 0) {
+        const errorMessages = failedReductions
+          .map((f) => f.reason.message)
+          .join(", ");
+        throw new Error(`Some items couldn't be reduced: ${errorMessages}`);
+      }
+
+      return results.map((r) => r.value);
+    } catch (error) {
+      console.error("Stock reduction error:", error);
+      throw error;
+    }
+  };
+  
+
   const handleSubmitBill = async () => {
     if (!selectedCustomer || !goldRate || billItems.length === 0) {
       showSnackbar("Please fill all required fields", "error");
@@ -435,10 +480,28 @@ const Billing = () => {
     }
 
     try {
+      
+      await reduceStockForBill(billItems); 
+      const totalWeight = billItems.reduce(
+        (sum, item) => sum + parseFloat(item.weight || 0),
+        0
+      );
+      const totalPurity = billItems.reduce(
+        (sum, item) => sum + parseFloat(item.purity || 0),
+        0
+      );
+      const totalAmount = rows.reduce(
+        (sum, row) => sum + parseFloat(row.amount || 0),
+        0
+      );
+
       const billData = {
         customerId: selectedCustomer.id,
         goldRate: parseFloat(goldRate),
         hallmarkCharges: parseFloat(hallmarkCharges || 0),
+        totalWeight,
+        totalPurity,
+        totalAmount,
         items: billItems.map((item) => ({
           coinValue: parseFloat(item.coinValue),
           quantity: parseInt(item.quantity),
@@ -446,9 +509,10 @@ const Billing = () => {
           touch: parseFloat(item.touch || 0),
           weight: parseFloat(item.weight || 0),
           purity: parseFloat(item.purity || 0),
+          amount: parseFloat(item.amount || 0),
         })),
         receivedDetails: rows.map((row) => ({
-          date: row.date || new Date().toISOString().split("T")[0],
+          date: row.date ? new Date(row.date) : new Date(),
           goldRate: parseFloat(row.goldRate || goldRate),
           givenGold: parseFloat(row.givenGold || 0),
           touch: parseFloat(row.touch || 0),
@@ -471,14 +535,13 @@ const Billing = () => {
       showSnackbar("Bill created successfully!", "success");
 
       await fetchBills();
-
       resetForm();
     } catch (error) {
       console.error("Error:", error);
       showSnackbar(error.message || "Failed to create bill", "error");
     }
   };
- 
+  
   const resetForm = () => {
     setBillItems([]);
     setRows([]);
@@ -493,6 +556,7 @@ const Billing = () => {
       : "BILL-1";
     setBillNo(newBillNo);
   };
+
 
   return (
     <>
@@ -1083,12 +1147,3 @@ const Billing = () => {
 };
 
 export default Billing;
-
-
-
-
-
-
-
-
-

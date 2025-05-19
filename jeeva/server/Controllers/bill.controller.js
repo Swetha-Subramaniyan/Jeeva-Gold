@@ -1,117 +1,86 @@
+
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 const createBill = async (req, res) => {
   try {
-    const { customerId, goldRate, items = [], receivedDetails = [] } = req.body;
+    const {
+      customerId,
+      goldRate,
+      hallmarkCharges = 0,
+      items = [],
+      receivedDetails = [],
+      totalWeight,
+      totalPurity,
+      totalAmount,
+    } = req.body;
 
-    if (!customerId || !goldRate || !items.length) {
-      return res.status(400).json({ error: "Missing required fields" });
+    if (
+      totalWeight === undefined ||
+      totalPurity === undefined ||
+      totalAmount === undefined
+    ) {
+      return res.status(400).json({
+        error:
+          "Missing calculated totals: totalWeight, totalPurity, or totalAmount",
+      });
     }
 
-    const enrichedItems = items.map((item) => {
-      const weight = item.coinValue * item.quantity;
-      const purity = weight * (item.percentage / 100);
-      const amount = purity * goldRate;
-
-      return {
-        ...item,
-        weight,
-        purity,
-        amount,
-      };
+    const latestBill = await prisma.bill.findFirst({
+      orderBy: { id: "desc" },
     });
 
-    const totalWeight = enrichedItems.reduce(
-      (sum, item) => sum + item.weight,
-      0
-    );
-    const totalPurity = enrichedItems.reduce(
-      (sum, item) => sum + item.purity,
-      0
-    );
-    const totalAmount =
-      totalPurity * goldRate + parseFloat(req.body.hallmarkCharges || 0);
-
-    const latestBill = await prisma.bill.findFirst({ orderBy: { id: "desc" } });
     const billNo = `BILL-${(latestBill?.id || 0) + 1}`;
-
-    const validReceivedDetails = receivedDetails
-      .filter((detail) => {
-        return (
-          (detail.givenGold && detail.touch) ||
-          (detail.amount && (detail.goldRate || goldRate))
-        );
-      })
-      .map((detail) => {
-        const goldRateToUse = detail.goldRate || goldRate;
-
-        const givenGold = parseFloat(detail.givenGold) || 0;
-        const touch = parseFloat(detail.touch) || 0;
-        const inputAmount = parseFloat(detail.amount) || 0;
-        const hallmark = parseFloat(detail.hallmark) || 0;
-
-        let amount = inputAmount;
-        let purityWeight = 0;
-
-        if (givenGold > 0 && touch > 0) {
-          purityWeight = givenGold * (touch / 100);
-          amount = purityWeight * goldRateToUse;
-        } else if (inputAmount > 0 && goldRateToUse > 0) {
-          purityWeight = inputAmount / goldRateToUse;
-        }
-
-        return {
-          date: new Date(detail.date || new Date()),
-          goldRate: goldRateToUse,
-          givenGold,
-          touch,
-          purityWeight,
-          amount,
-          hallmark,
-        };
-      });
 
     const bill = await prisma.$transaction(async (tx) => {
       const newBill = await tx.bill.create({
         data: {
           billNo,
-          customerId,
-          goldRate,
-          hallmarkCharges: parseFloat(req.body.hallmarkCharges || 0),
-          totalWeight,
-          totalPurity,
-          totalAmount,
-          items: { create: enrichedItems },
+          customerId: parseInt(customerId),
+          goldRate: parseFloat(goldRate),
+          hallmarkCharges: parseFloat(hallmarkCharges),
+          totalWeight: parseFloat(totalWeight),
+          totalPurity: parseFloat(totalPurity),
+          totalAmount: parseFloat(totalAmount),
+          items: {
+            create: items.map((item) => ({
+              coinValue: parseFloat(item.coinValue),
+              quantity: parseInt(item.quantity),
+              percentage: parseFloat(item.percentage),
+              touch: parseFloat(item.touch),
+              weight: parseFloat(item.weight),
+              purity: parseFloat(item.purity),
+              amount: item.amount,
+            })),
+          },
           receivedDetails: {
-            create: validReceivedDetails,
+            create: receivedDetails.map((r) => ({
+              date: new Date(r.date),
+
+              goldRate: parseFloat(r.goldRate),
+              givenGold: parseFloat(r.givenGold),
+              touch: parseFloat(r.touch),
+              purityWeight: parseFloat(r.purityWeight),
+              amount: parseFloat(r.amount),
+              hallmark: parseFloat(r.hallmark),
+            })),
           },
         },
-        include: { items: true, receivedDetails: true },
+        include: {
+          items: true,
+          receivedDetails: true,
+        },
       });
-
-      for (const item of items) {
-        await tx.coinStock.updateMany({
-          where: {
-            coinType: item.percentage.toString(),
-            gram: item.coinValue,
-          },
-          data: {
-            quantity: { decrement: item.quantity },
-          },
-        });
-      }
 
       return newBill;
     });
 
-    res.status(201).json(bill);
+    res.status(201).json({ bill });
   } catch (error) {
-    console.error("Error creating bill:", error.message);
-    res.status(500).json({ error: error.message || "Failed to create bill" });
+    console.error("Error creating bill:", error);
+    res.status(500).json({ error: "Failed to create bill" });
   }
 };
-
 
 const getBillById = async (req, res) => {
   try {
@@ -136,6 +105,7 @@ const getBillById = async (req, res) => {
     res.status(500).json({ error: "Failed to fetch bill" });
   }
 };
+
 const getBills = async (req, res) => {
   try {
     const bills = await prisma.bill.findMany({
@@ -151,14 +121,25 @@ const getBills = async (req, res) => {
     res.status(500).json({ error: "Failed to fetch bills" });
   }
 };
+
 const addReceiveEntry = async (req, res) => {
   try {
     const { id } = req.params;
-    const { receivedDetails = [], goldRate } = req.body;
+    const { receivedDetails = [] } = req.body;
 
     if (!receivedDetails.length) {
       return res.status(400).json({ error: "No receive details provided" });
     }
+
+    const sanitizeDate = (date) => {
+      if (!date) return new Date().toISOString();
+      if (typeof date === "string") {
+        if (date.includes("T")) return date;
+        return new Date(date).toISOString();
+      }
+      if (date instanceof Date) return date.toISOString();
+      return new Date().toISOString();
+    };
 
     const existingBill = await prisma.bill.findUnique({
       where: { id: parseInt(id) },
@@ -169,56 +150,42 @@ const addReceiveEntry = async (req, res) => {
       return res.status(404).json({ error: "Bill not found" });
     }
 
-    const validReceivedDetails = receivedDetails
-      .filter((detail) => {
-        return (
-          (detail.givenGold && detail.touch) ||
-          (detail.amount &&
-            (detail.goldRate || goldRate || existingBill.goldRate))
-        );
-      })
-      .map((detail) => {
-        const goldRateToUse =
-          detail.goldRate || goldRate || existingBill.goldRate;
+    const existingKeys = new Set(
+      existingBill.receivedDetails.map(
+        (d) => `${new Date(d.date).toISOString()}_${parseFloat(d.amount)}`
+      )
+    );
 
-        const givenGold = parseFloat(detail.givenGold) || 0;
-        const touch = parseFloat(detail.touch) || 0;
-        const inputAmount = parseFloat(detail.amount) || 0;
-        const hallmark = parseFloat(detail.hallmark) || 0;
-
-        let amount = inputAmount;
-        let purityWeight = 0;
-
-        if (givenGold > 0 && touch > 0) {
-          purityWeight = givenGold * (touch / 100);
-          amount = purityWeight * goldRateToUse;
-        } else if (inputAmount > 0 && goldRateToUse > 0) {
-          purityWeight = inputAmount / goldRateToUse;
-        }
-
+    const sanitizedDetails = receivedDetails
+      .map(({ id, billId, createdAt, updatedAt, date, amount, ...rest }) => {
+        const cleanDate = sanitizeDate(date);
         return {
-          date: new Date(detail.date || new Date()),
-          goldRate: goldRateToUse,
-          givenGold,
-          touch,
-          purityWeight,
-          amount,
-          hallmark,
+          ...rest,
+          amount: parseFloat(amount),
+          date: cleanDate,
+          _key: `${cleanDate}_${parseFloat(amount)}`,
         };
-      });
+      })
+      .filter((detail) => !existingKeys.has(detail._key))
+      .map(({ _key, ...detail }) => detail); 
+
+    if (!sanitizedDetails.length) {
+      return res.status(200).json({ message: "No new receive entries to add" });
+    }
+
+    const totalNewAmount = sanitizedDetails.reduce(
+      (sum, detail) => sum + (parseFloat(detail.amount) || 0),
+      0
+    );
 
     const updatedBill = await prisma.bill.update({
       where: { id: parseInt(id) },
       data: {
         receivedDetails: {
-          create: validReceivedDetails,
+          create: sanitizedDetails,
         },
-
         totalAmount: {
-          increment: validReceivedDetails.reduce(
-            (sum, detail) => sum + detail.amount,
-            0
-          ),
+          increment: totalNewAmount,
         },
       },
       include: {
@@ -228,10 +195,10 @@ const addReceiveEntry = async (req, res) => {
       },
     });
 
-    res.status(200).json(updatedBill);
+    return res.status(200).json(updatedBill);
   } catch (error) {
     console.error("Error adding receive entry:", error);
-    res.status(500).json({ error: "Failed to add receive entry" });
+    return res.status(500).json({ error: "Failed to add receive entry" });
   }
 };
 
