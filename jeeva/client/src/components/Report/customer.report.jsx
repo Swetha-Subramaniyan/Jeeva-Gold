@@ -37,8 +37,8 @@ const CustomerReport = () => {
 
   useEffect(() => {
     const today = new Date().toISOString().split("T")[0];
-    setStartDate(today);
-    setEndDate(today);
+    setStartDate();
+    setEndDate();
   }, []);
 
   useEffect(() => {

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from "react";
 import {
   Autocomplete,
@@ -13,6 +14,8 @@ import {
   Snackbar,
 } from "@mui/material";
 import PrintIcon from "@mui/icons-material/Print";
+import { jsPDF } from "jspdf";
+import html2canvas from "html2canvas";
 import AddIcon from "@mui/icons-material/Add";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import "./Billing.css";
@@ -166,7 +169,6 @@ const Billing = () => {
   const showSnackbar = (message, severity = "success") => {
     setSnackbar({ open: true, message, severity });
   };
-
 
   const handleCloseSnackbar = () => {
     setSnackbar({ ...snackbar, open: false });
@@ -430,7 +432,6 @@ const Billing = () => {
     }
   };
 
-
   const reduceStockForBill = async (items) => {
     try {
       const results = await Promise.allSettled(
@@ -471,7 +472,6 @@ const Billing = () => {
       throw error;
     }
   };
-  
 
   const handleSubmitBill = async () => {
     if (!selectedCustomer || !goldRate || billItems.length === 0) {
@@ -480,8 +480,7 @@ const Billing = () => {
     }
 
     try {
-      
-      await reduceStockForBill(billItems); 
+      await reduceStockForBill(billItems);
       const totalWeight = billItems.reduce(
         (sum, item) => sum + parseFloat(item.weight || 0),
         0
@@ -541,7 +540,7 @@ const Billing = () => {
       showSnackbar(error.message || "Failed to create bill", "error");
     }
   };
-  
+
   const resetForm = () => {
     setBillItems([]);
     setRows([]);
@@ -557,6 +556,42 @@ const Billing = () => {
     setBillNo(newBillNo);
   };
 
+  const handlePrint = async () => {
+    const printButton = document.querySelector(".add-circle-icon"); 
+    let printButtonParent = null;
+    let printButtonClone = null;
+    if (printButton) {
+      printButtonParent = printButton.parentNode;
+      printButtonClone = printButton.cloneNode(true);
+      printButtonParent.removeChild(printButton);
+    }
+
+    const input = billRef.current;
+    if (input) {
+      const canvas = await html2canvas(input, { scale: 2 });
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF("p", "mm", "a5");
+
+      const imgWidth = 150;
+      const pageHeight = 295;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      let position = 0;
+      pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+      pdf.save("bill.pdf");
+    }
+
+    if (printButtonClone && printButtonParent) {
+      printButtonParent.appendChild(printButtonClone);
+    }
+  };
 
   return (
     <>
@@ -569,7 +604,7 @@ const Billing = () => {
         </Tooltip>
 
         <Tooltip title="Print Bill" arrow placement="right">
-          <div className="sidebar-button" onClick={() => window.print()}>
+          <div className="sidebar-button" onClick={handlePrint}>
             <PrintIcon />
             <span>Print</span>
           </div>
@@ -868,7 +903,11 @@ const Billing = () => {
               <h3>Received Details:</h3>
               {(!viewMode || selectedBill) && (
                 <p style={{ marginLeft: "42.4rem" }}>
-                  <IconButton size="small" onClick={handleAddRow}>
+                  <IconButton
+                    size="small"
+                    onClick={handleAddRow}
+                    className="add-circle-icon"
+                  >
                     <AddCircleOutlineIcon />
                   </IconButton>
                 </p>

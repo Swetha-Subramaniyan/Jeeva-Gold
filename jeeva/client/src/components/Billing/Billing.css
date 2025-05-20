@@ -1,5 +1,5 @@
 .container {
-  width: 80%;
+  width: 67%;
   max-width: 1200px;
   margin: 2rem auto;
   padding: 2.5rem;
@@ -400,4 +400,3 @@ tr:hover {
     background-color: transparent;
   }
 }
-
