@@ -1,7 +1,6 @@
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
-// Get all entries
 exports.getAllEntries = async (req, res) => {
   try {
     const entries = await prisma.entry.findMany({
@@ -13,9 +12,9 @@ exports.getAllEntries = async (req, res) => {
   }
 };
 
-// Create a new entry
 exports.createEntry = async (req, res) => {
-  const { date, type, cashAmount, goldValue, touch, purity } = req.body;
+  const { date, type, cashAmount, goldValue, touch, purity, goldRate } =
+    req.body;
 
   try {
     const newEntry = await prisma.entry.create({
@@ -25,7 +24,8 @@ exports.createEntry = async (req, res) => {
         cashAmount: type === "Cash" ? parseFloat(cashAmount) : null,
         goldValue: type === "Gold" ? parseFloat(goldValue) : null,
         touch: type === "Gold" ? parseFloat(touch) : null,
-        purity: type === "Gold" ? parseFloat(purity) : 0,
+        purity: parseFloat(purity),
+        goldRate: type === "Cash" ? parseFloat(goldRate) : null,
       },
     });
     res.status(201).json(newEntry);

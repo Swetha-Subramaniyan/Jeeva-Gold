@@ -1,10 +1,10 @@
+
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 const createTransaction = async (req, res) => {
   try {
-    const { date, type, value, touch, purity, customerId } = req.body;
-    console.log("Backend received request body:", req.body);
+    const { date, type, value, touch, purity, customerId, goldRate } = req.body;
 
     if (!date || !type || !value || !customerId) {
       return res.status(400).json({ error: "Missing required fields" });
@@ -15,8 +15,9 @@ const createTransaction = async (req, res) => {
         date: new Date(date),
         type,
         value: parseFloat(value),
-        touch: touch ? parseFloat(touch) : null,
-        purity: purity ? parseFloat(purity) : null,
+        goldRate: type === "Cash" ? parseFloat(goldRate) : null,
+        purity: parseFloat(purity),
+        touch: type === "Gold" ? parseFloat(touch) : null,
         customer: {
           connect: {
             id: parseInt(customerId),
@@ -28,7 +29,6 @@ const createTransaction = async (req, res) => {
     res.status(201).json(transaction);
   } catch (error) {
     console.error("Error creating transaction:", error);
-    console.error("Prisma error details:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 };

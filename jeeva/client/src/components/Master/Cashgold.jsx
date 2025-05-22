@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "./cashgold.css";
@@ -9,6 +10,7 @@ import { BACKEND_SERVER_URL } from "../../Config/Config";
 function Cashgold() {
   const [showFormPopup, setShowFormPopup] = useState(false);
   const [entries, setEntries] = useState([]);
+  const [goldRate, setGoldRate] = useState(0);
   const [formData, setFormData] = useState({
     date: "",
     type: "Select",
@@ -38,16 +40,46 @@ function Cashgold() {
     setFormData(updatedForm);
   };
 
+
+  useEffect(() => {
+    if (formData.type === "Cash") {
+      const cashAmount = parseFloat(formData.cashAmount);
+      const rate = parseFloat(goldRate);
+      if (!isNaN(cashAmount) && cashAmount > 0 && !isNaN(rate) && rate > 0) {
+        setFormData((prevFormData) => ({
+          ...prevFormData,
+          purity: (cashAmount / rate).toFixed(3),
+        }));
+      } else {
+        setFormData((prevFormData) => ({
+          ...prevFormData,
+          purity: "",
+        }));
+      }
+    }
+  }, [formData.cashAmount, goldRate, formData.type]); 
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    let calculatedPurity = 0;
+    if (formData.type === "Cash") {
+    
+      calculatedPurity = formData.purity;
+    } else if (formData.type === "Gold") {
+      calculatedPurity = formData.purity;
+    }
 
     const payload = {
       date: formData.date,
       type: formData.type,
-      cashAmount: formData.type === "Cash" ? formData.cashAmount : null,
-      goldValue: formData.type === "Gold" ? formData.goldValue : null,
-      touch: formData.type === "Gold" ? formData.touch : null,
-      purity: formData.type === "Gold" ? formData.purity : 0,
+      cashAmount:
+        formData.type === "Cash" ? parseFloat(formData.cashAmount) : null,
+      goldValue:
+        formData.type === "Gold" ? parseFloat(formData.goldValue) : null,
+      touch: formData.type === "Gold" ? parseFloat(formData.touch) : null,
+      purity: parseFloat(calculatedPurity), 
+      goldRate: formData.type === "Cash" ? parseFloat(goldRate) : null,
     };
 
     try {
@@ -56,40 +88,28 @@ function Cashgold() {
       fetchEntries();
       setFormData({
         date: "",
-        type: "Cash",
+        type: "Select", 
         cashAmount: "",
         goldValue: "",
         touch: "",
         purity: "",
       });
+      setGoldRate(0);
       setShowFormPopup(false);
     } catch (error) {
       toast.error("Failed to add entry. Please try again.");
       console.error("Error submitting entry:", error);
     }
   };
-  
-  
-  const calculateTotalCash = () => {
-    return entries
-      .reduce((total, entry) => {
-        return (
-          total +
-          (entry.type === "Cash" ? parseFloat(entry.cashAmount || 0) : 0)
-        );
-      }, 0)
-      .toFixed(2);
-  };
 
   const calculateTotalPurity = () => {
     return entries
       .reduce((total, entry) => {
-        return (
-          total + (entry.type === "Gold" ? parseFloat(entry.purity || 0) : 0)
-        );
+        return total + parseFloat(entry.purity || 0);
       }, 0)
       .toFixed(3);
   };
+
   useEffect(() => {
     fetchEntries();
   }, []);
@@ -102,7 +122,6 @@ function Cashgold() {
       console.error("Error fetching entries:", error);
     }
   };
-  
 
   return (
     <div className="cashgold-container">
@@ -139,6 +158,7 @@ function Cashgold() {
                   name="type"
                   value={formData.type}
                   onChange={handleChange}
+                  required
                 >
                   <option value="Select">Select</option>
                   <option value="Cash">Cash</option>
@@ -146,18 +166,43 @@ function Cashgold() {
                 </select>
               </div>
 
-              {formData.type === "Cash" ? (
-                <div className="form-group">
-                  <label>Cash Amount:</label>
-                  <input
-                    type="number"
-                    name="cashAmount"
-                    value={formData.cashAmount}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-              ) : (
+              {formData.type === "Cash" && (
+                <>
+                  <div className="form-group">
+                    <label>Cash Amount:</label>
+                    <input
+                      type="number"
+                      name="cashAmount"
+                      value={formData.cashAmount}
+                      onChange={handleChange}
+                      required
+                      step="0.01"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Gold Rate (per gram):</label>
+                    <input
+                      type="number"
+                      value={goldRate}
+                      onChange={(e) => setGoldRate(e.target.value)}
+                      required
+                      step="0.01"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Purity (g):</label>
+                    <input
+                      type="number"
+                      name="purity"
+                      value={formData.purity}
+                      readOnly
+                      className="read-only"
+                    />
+                  </div>
+                </>
+              )}
+
+              {formData.type === "Gold" && (
                 <>
                   <div className="form-group">
                     <label>Gold Value (g):</label>
@@ -217,9 +262,8 @@ function Cashgold() {
                   <th>Sl. No.</th>
                   <th>Date</th>
                   <th>Type</th>
-                  <th>Cash Amount</th>
-                  <th>Gold Value (g)</th>
-                  <th>Touch (%)</th>
+                  <th>Amount/Value</th>
+                  <th>Touch/Rate</th>
                   <th>Purity (g)</th>
                 </tr>
               </thead>
@@ -231,35 +275,24 @@ function Cashgold() {
                     <td>{entry.type}</td>
                     <td>
                       {entry.type === "Cash"
-                        ? parseFloat(entry.cashAmount).toFixed(2)
-                        : "-"}
+                        ? `₹${parseFloat(entry.cashAmount).toFixed(2)}`
+                        : `${parseFloat(entry.goldValue).toFixed(3)}g`}
                     </td>
                     <td>
-                      {entry.type === "Gold"
-                        ? parseFloat(entry.goldValue).toFixed(3)
-                        : "-"}
+                      {entry.type === "Cash"
+                        ? `₹${parseFloat(entry.goldRate).toFixed(2)}/g`
+                        : `${entry.touch}%`}
                     </td>
-                    <td>{entry.type === "Gold" ? entry.touch : "-"}</td>
-
-                    <td>
-                      {entry.type === "Gold"
-                        ? parseFloat(entry.purity).toFixed(3)
-                        : "-"}
-                    </td>
+                    <td>{parseFloat(entry.purity).toFixed(3)}</td>
                   </tr>
                 ))}
 
                 <tr className="totals-row">
-                  <td colSpan="3">
-                    <strong>Total</strong>
+                  <td colSpan="5">
+                    <strong>Total Purity</strong>
                   </td>
                   <td>
-                    <strong>{calculateTotalCash()}</strong>
-                  </td>
-                  <td>-</td>
-                  <td>-</td>
-                  <td>
-                    <strong>{calculateTotalPurity()}</strong>
+                    <strong>{calculateTotalPurity()}g</strong>
                   </td>
                 </tr>
               </tbody>

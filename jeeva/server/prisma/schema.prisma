@@ -158,15 +158,16 @@ model JewelStock {
   createdAt    DateTime @default(now())
 }
 model Transaction {
-  id         Int       @id @default(autoincrement())
-  date       DateTime
-  value      Float
-  type       String 
-  touch      Float?
-  purity     Float?
-  customer   Customer  @relation(fields: [customerId], references: [id])
-  customerId Int
-  createdAt  DateTime  @default(now())
+  id          Int      @id @default(autoincrement())
+  date        DateTime
+  type        String   
+  value       Float    
+  goldRate    Float? 
+  purity      Float    
+  touch       Float?   
+  customer    Customer @relation(fields: [customerId], references: [id])
+  customerId  Int
+  createdAt   DateTime @default(now())
 }
 model Entry {
   id          Int     @id @default(autoincrement())
@@ -176,6 +177,6 @@ model Entry {
   goldValue   Float?
   touch       Float?
   purity      Float?
+  goldRate    Float?  
   createdAt   DateTime @default(now())
 }
-
