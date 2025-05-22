@@ -1,5 +1,5 @@
 
-import { React, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./overallreport.css";
 import { BACKEND_SERVER_URL } from "../../Config/Config";
 import { ToastContainer, toast } from "react-toastify";
@@ -25,8 +25,8 @@ const OverallReport = () => {
           fetch(`${BACKEND_SERVER_URL}/api/customers`),
           fetch(`${BACKEND_SERVER_URL}/api/bills`),
           fetch(`${BACKEND_SERVER_URL}/api/jewel-stock`),
-          fetch(`${BACKEND_SERVER_URL}/api/v1/stocks`),
-          fetch(`${BACKEND_SERVER_URL}/api/entries`),
+          fetch(`${BACKEND_SERVER_URL}/api/v1/stocks`), 
+          fetch(`${BACKEND_SERVER_URL}/api/entries`), 
         ]);
 
       if (!customersRes.ok) throw new Error("Failed to fetch customers");
@@ -43,6 +43,10 @@ const OverallReport = () => {
           coinRes.json(),
           entriesRes.json(),
         ]);
+      const totalCashGoldEntriesPurity = entriesData.reduce(
+        (sum, entry) => sum + parseFloat(entry.purity || 0),
+        0
+      );
 
       const customerBalances = customers.map((customer) => {
         const customerBills = bills.filter(
@@ -90,14 +94,6 @@ const OverallReport = () => {
         0
       );
 
-      const totalCash = entriesData
-        .filter((e) => e.type === "Cash")
-        .reduce((sum, e) => sum + parseFloat(e.cashAmount || 0), 0);
-
-      const totalGoldPurity = entriesData
-        .filter((e) => e.type === "Gold")
-        .reduce((sum, e) => sum + parseFloat(e.purity || 0), 0);
-
       let allTransactions = [];
       try {
         const transRes = await fetch(`${BACKEND_SERVER_URL}/api/transactions`);
@@ -118,11 +114,12 @@ const OverallReport = () => {
         toast.warn("Could not load all transactions");
       }
 
+
       const filteredTransactions = allTransactions.filter((transaction) => {
-        if (!from && !to) return true;
+        if (!from && !to) return true; 
         const transactionDate = new Date(transaction.date);
         const fromDateObj = from ? new Date(from) : null;
-        const toDateObj = to ? new Date(to + "T23:59:59") : null;
+        const toDateObj = to ? new Date(to + "T23:59:59.999") : null;
 
         return (
           (!fromDateObj || transactionDate >= fromDateObj) &&
@@ -130,13 +127,10 @@ const OverallReport = () => {
         );
       });
 
-      const advancesCash = filteredTransactions
-        .filter((t) => t.type === "Cash")
-        .reduce((sum, t) => sum + parseFloat(t.value || 0), 0);
-
-      const advancesGold = filteredTransactions
-        .filter((t) => t.type === "Gold")
-        .reduce((sum, t) => sum + parseFloat(t.purity || 0), 0);
+      const advancesGold = filteredTransactions.reduce(
+        (sum, t) => sum + parseFloat(t.purity || 0),
+        0
+      );
 
       setReportData([
         {
@@ -148,11 +142,10 @@ const OverallReport = () => {
           tooltip: "Sum of all customer balances (bills minus payments)",
         },
         {
-          label: "Cash / Gold",
-          value: `₹${totalCash.toLocaleString(
-            "en-IN"
-          )} / ${totalGoldPurity.toFixed(3)}g`,
-          tooltip: "Total cash and gold entries in the system",
+          label: "Cash/Gold (Entries Purity)",
+          value: `${totalCashGoldEntriesPurity.toFixed(3)}g`,
+          tooltip:
+            "Total gold purity from all manual Cash/Gold entries in the system (unfiltered by date)",
         },
         {
           label: "Coin Stock",
@@ -169,14 +162,10 @@ const OverallReport = () => {
           tooltip: "Current jewel inventory with total purity",
         },
         {
-          label: "Advances in Gold",
+          label: "Advances in Gold (Purity)",
           value: `${advancesGold.toFixed(3)}g`,
-          tooltip: "Total gold advances received from all customers",
-        },
-        {
-          label: "Advances in Cash",
-          value: `₹${advancesCash.toLocaleString("en-IN")}`,
-          tooltip: "Total cash advances received from all customers",
+          tooltip:
+            "Total gold purity equivalent from all customer advance transactions (both cash and gold advances) within the selected date range.",
         },
         {
           label: "Active Customers",

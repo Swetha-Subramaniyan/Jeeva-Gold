@@ -78,7 +78,7 @@ const createBill = async (req, res) => {
     res.status(201).json({ bill });
   } catch (error) {
     console.error("Error creating bill:", error);
-    res.status(500).json({ error: "Failed to create bill" });
+    res.status(500).json({ error: "Failed to create Bill" });
   }
 };
 

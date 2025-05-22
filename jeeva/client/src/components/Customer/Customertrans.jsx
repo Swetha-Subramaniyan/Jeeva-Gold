@@ -17,6 +17,7 @@ const Customertrans = () => {
   const [transactions, setTransactions] = useState([]);
   const [showPopup, setShowPopup] = useState(false);
   const [error, setError] = useState("");
+  const [goldRate, setGoldRate] = useState("");
 
   const [newTransaction, setNewTransaction] = useState({
     date: "",
@@ -52,29 +53,26 @@ const Customertrans = () => {
 
     if (name === "cashValue" && updatedTransaction.type === "Cash") {
       updatedTransaction.value = value;
+      if (goldRate) {
+        const cash = parseFloat(value);
+        const rate = parseFloat(goldRate);
+        if (!isNaN(cash) && !isNaN(rate) && rate > 0) {
+          updatedTransaction.purity = (cash / rate).toFixed(3);
+        }
+      }
     } else if (name === "goldValue" && updatedTransaction.type === "Gold") {
       updatedTransaction.value = value;
       const touch = parseFloat(updatedTransaction.touch);
       const gold = parseFloat(value);
       if (!isNaN(gold) && !isNaN(touch)) {
         updatedTransaction.purity = ((gold * touch) / 100).toFixed(3);
-      } else {
-        updatedTransaction.purity = "";
       }
     } else if (name === "touch" && updatedTransaction.type === "Gold") {
       const gold = parseFloat(updatedTransaction.goldValue);
       const touch = parseFloat(value);
       if (!isNaN(gold) && !isNaN(touch)) {
         updatedTransaction.purity = ((gold * touch) / 100).toFixed(3);
-      } else {
-        updatedTransaction.purity = "";
       }
-    } else if (name === "type") {
-      updatedTransaction.value = "";
-      updatedTransaction.cashValue = "";
-      updatedTransaction.goldValue = "";
-      updatedTransaction.touch = "";
-      updatedTransaction.purity = "";
     }
 
     setNewTransaction(updatedTransaction);
@@ -93,25 +91,21 @@ const Customertrans = () => {
         throw new Error("Customer ID is missing");
       }
 
-      let transactionData = {
+      const transactionData = {
         date: newTransaction.date,
         type: newTransaction.type,
+        value:
+          newTransaction.type === "Cash"
+            ? parseFloat(newTransaction.cashValue)
+            : parseFloat(newTransaction.goldValue),
+        purity: parseFloat(newTransaction.purity),
         customerId: parseInt(customerId),
+        goldRate: newTransaction.type === "Cash" ? parseFloat(goldRate) : null,
+        touch:
+          newTransaction.type === "Gold"
+            ? parseFloat(newTransaction.touch)
+            : null,
       };
-
-      if (newTransaction.type === "Cash") {
-        if (!newTransaction.cashValue) {
-          throw new Error("Cash value is required");
-        }
-        transactionData.value = parseFloat(newTransaction.cashValue);
-      } else if (newTransaction.type === "Gold") {
-        if (!newTransaction.goldValue || !newTransaction.touch) {
-          throw new Error("Gold value and touch are required");
-        }
-        transactionData.value = parseFloat(newTransaction.goldValue);
-        transactionData.touch = parseFloat(newTransaction.touch);
-        transactionData.purity = parseFloat(newTransaction.purity);
-      }
 
       const response = await axios.post(
         `${BACKEND_SERVER_URL}/api/transactions`,
@@ -139,6 +133,7 @@ const Customertrans = () => {
       purity: "",
     });
     setError("");
+    setGoldRate("");
   };
 
   const filteredTransactions = transactions.filter((transaction) => {
@@ -148,19 +143,13 @@ const Customertrans = () => {
 
     return (!from || transactionDate >= from) && (!to || transactionDate <= to);
   });
-  
 
- 
   const totals = filteredTransactions.reduce(
     (acc, transaction) => {
-      if (transaction.type === "Cash") {
-        acc.totalCash += parseFloat(transaction.value) || 0;
-      } else if (transaction.type === "Gold") {
-        acc.totalPurity += parseFloat(transaction.purity) || 0;
-      }
+      acc.totalPurity += parseFloat(transaction.purity) || 0;
       return acc;
     },
-    { totalCash: 0, totalPurity: 0 }
+    { totalPurity: 0 }
   );
 
   return (
@@ -237,17 +226,51 @@ const Customertrans = () => {
               </label>
 
               {newTransaction.type === "Cash" && (
-                <label>
-                  Cash Value:
-                  <input
-                    type="number"
-                    name="cashValue"
-                    value={newTransaction.cashValue}
-                    onChange={handleChange}
-                    step="0.01"
-                    required
-                  />
-                </label>
+                <>
+                  <label>
+                    Cash Amount (₹):
+                    <input
+                      type="number"
+                      name="cashValue"
+                      value={newTransaction.cashValue}
+                      onChange={handleChange}
+                      step="0.01"
+                      required
+                    />
+                  </label>
+                  <label>
+                    Gold Rate (₹/gram):
+                    <input
+                      type="number"
+                      value={goldRate}
+                      onChange={(e) => {
+                        setGoldRate(e.target.value);
+                        if (newTransaction.cashValue) {
+                          const cash = parseFloat(newTransaction.cashValue);
+                          const rate = parseFloat(e.target.value);
+                          if (!isNaN(cash) && !isNaN(rate) && rate > 0) {
+                            const updatedTransaction = { ...newTransaction };
+                            updatedTransaction.purity = (cash / rate).toFixed(
+                              3
+                            );
+                            setNewTransaction(updatedTransaction);
+                          }
+                        }
+                      }}
+                      step="0.01"
+                      required
+                    />
+                  </label>
+                  <label>
+                    Purity (grams):
+                    <input
+                      type="number"
+                      name="purity"
+                      value={newTransaction.purity || ""}
+                      readOnly
+                    />
+                  </label>
+                </>
               )}
 
               {newTransaction.type === "Gold" && (
@@ -276,7 +299,7 @@ const Customertrans = () => {
                     />
                   </label>
                   <label>
-                    Purity:
+                    Purity (grams):
                     <input
                       type="number"
                       name="purity"
@@ -311,51 +334,40 @@ const Customertrans = () => {
         <thead>
           <tr>
             <th>Date</th>
-            <th>Value</th>
             <th>Type</th>
+            <th>Value</th>
+            <th>Gold Rate</th>
+            <th>Purity (grams)</th>
             <th>Touch</th>
-            <th>Purity</th>
           </tr>
         </thead>
         <tbody>
-          {filteredTransactions.length > 0 ? (
-            filteredTransactions.map((transaction, index) => (
-              <tr
-                key={index}
-                className={
-                  transaction.type === "Gold" ? "gold-row" : "cash-row"
-                }
-              >
-                <td>
-                  {new Date(transaction.date).toLocaleDateString("en-IN")}
-                </td>
-                <td>
-                  {transaction.type === "Gold"
-                    ? `${transaction.value} g`
-                    : `₹ ${transaction.value.toFixed(2)}`}
-                </td>
-                <td>{transaction.type}</td>
-                <td>{transaction.touch || "-"}</td>
-                <td>{transaction.purity || "-"}</td>
-              </tr>
-            ))
-          ) : (
-            <tr>
-              <td colSpan="5" className="no-data">
-                No transactions found
+          {filteredTransactions.map((transaction) => (
+            <tr key={transaction.id}>
+              <td>{new Date(transaction.date).toLocaleDateString()}</td>
+              <td>{transaction.type}</td>
+              <td>
+                {transaction.type === "Cash"
+                  ? `₹${transaction.value.toFixed(2)}`
+                  : `${transaction.value.toFixed(3)}g`}
+              </td>
+              <td>
+                {transaction.type === "Cash"
+                  ? transaction.goldRate?.toFixed(2)
+                  : "-"}
+              </td>
+              <td>{transaction.purity.toFixed(3)}</td>
+              <td>
+                {transaction.type === "Gold" ? `${transaction.touch}%` : "-"}
               </td>
             </tr>
-          )}
+          ))}
         </tbody>
       </table>
 
-      {(totals.totalCash > 0 || totals.totalPurity > 0) && (
+      {totals.totalPurity > 0 && (
         <div className="transaction-totals">
           <h3>Transaction Totals</h3>
-          <div className="total-row">
-            <span>Total Cash:</span>
-            <span>₹ {totals.totalCash.toFixed(2)}</span>
-          </div>
           <div className="total-row">
             <span>Total Purity:</span>
             <span>{totals.totalPurity.toFixed(3)} g</span>
