@@ -6,8 +6,6 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 const OverallReport = () => {
-  const [fromDate, setFromDate] = useState("");
-  const [toDate, setToDate] = useState("");
   const [reportData, setReportData] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -15,7 +13,7 @@ const OverallReport = () => {
     fetchReportData();
   }, []);
 
-  const fetchReportData = async (from = "", to = "") => {
+  const fetchReportData = async () => {
     setLoading(true);
     setReportData([]);
 
@@ -25,8 +23,8 @@ const OverallReport = () => {
           fetch(`${BACKEND_SERVER_URL}/api/customers`),
           fetch(`${BACKEND_SERVER_URL}/api/bills`),
           fetch(`${BACKEND_SERVER_URL}/api/jewel-stock`),
-          fetch(`${BACKEND_SERVER_URL}/api/v1/stocks`), 
-          fetch(`${BACKEND_SERVER_URL}/api/entries`), 
+          fetch(`${BACKEND_SERVER_URL}/api/v1/stocks`),
+          fetch(`${BACKEND_SERVER_URL}/api/entries`),
         ]);
 
       if (!customersRes.ok) throw new Error("Failed to fetch customers");
@@ -43,6 +41,7 @@ const OverallReport = () => {
           coinRes.json(),
           entriesRes.json(),
         ]);
+
       const totalCashGoldEntriesPurity = entriesData.reduce(
         (sum, entry) => sum + parseFloat(entry.purity || 0),
         0
@@ -114,23 +113,17 @@ const OverallReport = () => {
         toast.warn("Could not load all transactions");
       }
 
-
-      const filteredTransactions = allTransactions.filter((transaction) => {
-        if (!from && !to) return true; 
-        const transactionDate = new Date(transaction.date);
-        const fromDateObj = from ? new Date(from) : null;
-        const toDateObj = to ? new Date(to + "T23:59:59.999") : null;
-
-        return (
-          (!fromDateObj || transactionDate >= fromDateObj) &&
-          (!toDateObj || transactionDate <= toDateObj)
-        );
-      });
-
-      const advancesGold = filteredTransactions.reduce(
+      const advancesGold = allTransactions.reduce(
         (sum, t) => sum + parseFloat(t.purity || 0),
         0
       );
+
+      const overallValue =
+        customerBalanceTotal +
+        totalCashGoldEntriesPurity +
+        totalCoinPurity +
+        totalJewelPurity -
+        advancesGold;
 
       setReportData([
         {
@@ -145,7 +138,7 @@ const OverallReport = () => {
           label: "Cash/Gold (Entries Purity)",
           value: `${totalCashGoldEntriesPurity.toFixed(3)}g`,
           tooltip:
-            "Total gold purity from all manual Cash/Gold entries in the system (unfiltered by date)",
+            "Total gold purity from all manual Cash/Gold entries in the system",
         },
         {
           label: "Coin Stock",
@@ -165,7 +158,7 @@ const OverallReport = () => {
           label: "Advances in Gold (Purity)",
           value: `${advancesGold.toFixed(3)}g`,
           tooltip:
-            "Total gold purity equivalent from all customer advance transactions (both cash and gold advances) within the selected date range.",
+            "Total gold purity equivalent from all customer advance transactions (both cash and gold advances)",
         },
         {
           label: "Active Customers",
@@ -173,6 +166,15 @@ const OverallReport = () => {
             customerBalances.filter((c) => c.balance > 0).length
           } with balance)`,
           tooltip: "Total customers and those with outstanding balances",
+        },
+        {
+          label: "Overall Value",
+          value: `₹${overallValue.toLocaleString("en-IN", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })}`,
+          tooltip:
+            "Customer Balance + Cash/Gold + Coin + Jewel - Advances in Gold",
         },
       ]);
     } catch (error) {
@@ -190,49 +192,12 @@ const OverallReport = () => {
     }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    fetchReportData(fromDate, toDate);
-  };
-
   return (
     <div className="overall-report-container">
       <ToastContainer position="top-right" autoClose={3000} />
       <div className="report-header">
         <h2>Overall Report</h2>
       </div>
-
-      <form onSubmit={handleSubmit} className="date-filter-form">
-        <div className="form-group">
-          <label>
-            <span>From Date</span>
-            <input
-              type="date"
-              value={fromDate}
-              onChange={(e) => setFromDate(e.target.value)}
-              className="date-input"
-            />
-          </label>
-        </div>
-        <div className="form-group">
-          <label>
-            <span>To Date</span>
-            <input
-              type="date"
-              value={toDate}
-              onChange={(e) => setToDate(e.target.value)}
-              className="date-input"
-            />
-          </label>
-        </div>
-        <button type="submit" className="filter-btn" disabled={loading}>
-          {loading ? (
-            <span className="loading-spinner"></span>
-          ) : (
-            "Filter Report"
-          )}
-        </button>
-      </form>
 
       {reportData.length > 0 && (
         <div className="report-cards-container">
@@ -249,3 +214,4 @@ const OverallReport = () => {
 };
 
 export default OverallReport;
+
