@@ -31,6 +31,6 @@ exports.createEntry = async (req, res) => {
     res.status(201).json(newEntry);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Failed to create entry" });
+    res.status(500).json({ error: "Failed to create Entry" });
   }
 };
