@@ -14,7 +14,6 @@ import Customertrans from "./components/Customer/Customertrans";
 import Jobcard from "./components/Goldsmith/Jobcard";
 import AddCustomer from "./components/Billing/Addcustomer";
 import Register from "./components/Home/Register";
-import Billingjewel from "./components/Billing/Billingjewel";
 import CustomerReport from "./components/Report/customer.report";
 import Overallreport from "./components/Report/overallreport";
 
@@ -102,14 +101,7 @@ function App() {
         <Route path="/master" element={<Master />} />
         <Route path="/mastercustomer" element={<MasterCustomer />} />
         <Route path="/addcustomer" element={<AddCustomer />} />
-        <Route
-          path="/billingjewel"
-          element={
-            <PageWithNavbar>
-              <Billingjewel />
-            </PageWithNavbar>
-          }
-        />
+       
       </Routes>
     </BrowserRouter>
   );
