@@ -69,9 +69,6 @@ function Navbar() {
               <a href="/coinbill" style={dropdownItemStyle} className="dropdown-item">
                 Coin Bill
               </a>
-              <a href="/billingjewel" style={dropdownItemStyle} className="dropdown-item">
-                Jewel Bill
-              </a>
             </div>
           )}
         </li>
