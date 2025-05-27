@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const authRoutes = require("./Routes/auth.routes");
+const userRoutes = require("./Routes/user.routes");
 const customerRoutes = require("./Routes/customer.routes");
 const goldsmithRoutes = require("./Routes/goldsmith.routes");
 const masterItemRoutes = require("./Routes/masteritem.routes");
@@ -24,6 +25,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/auth", authRoutes);
+app.use("/api", userRoutes);
 app.use("/api/customers", customerRoutes);
 app.use("/api/master-items", masterItemRoutes);
 app.use("/api/v1/stocks", stockRoutes);
