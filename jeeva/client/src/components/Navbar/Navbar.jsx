@@ -8,11 +8,6 @@ function Navbar() {
   const [showBillsDropdown, setShowBillsDropdown] = useState(false);
   const dropdownRef = useRef(null);
 
-  // const handleLogout = () => {
-  //   navigate("/");
-  // };
-
-
   const handleLogout = () => {
     localStorage.removeItem("token");
     
@@ -105,6 +100,13 @@ function Navbar() {
                 className="dropdown-item"
               >
                 Overall Report
+              </a>
+              <a
+                href="/jobcardreport"
+                style={dropdownItemStyle}
+                className="dropdown-item"
+              >
+                Jobcard Report
               </a>
             </div>
           )}

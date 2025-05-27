@@ -100,7 +100,7 @@ const Jobcard = () => {
         }
       } catch (err) {
         console.error("Failed to fetch data", err);
-        toast.error("Failed to load data");
+        // toast.error("Failed to load data");
       }
     };
 

@@ -88,6 +88,7 @@ const updateJobCardItem = async (req, res) => {
     res.status(500).json({ error: "Failed to update job card item" });
   }
 };
+
 const getJobCardById = async (req, res) => {
   const { id } = req.params;
 
@@ -120,8 +121,27 @@ const getJobCardById = async (req, res) => {
   }
 };
 
+const getAllJobCards = async (req, res) => {
+  try {
+    const jobCards = await prisma.jobCard.findMany({
+      include: {
+        goldsmith: true,
+        items: { include: { masterItem: true, additionalWeights: true } },
+      },
+      orderBy: {
+        date: "desc",
+      },
+    });
+    res.json(jobCards);
+  } catch (error) {
+    console.error("Error fetching all job cards:", error);
+    res.status(500).json({ error: "Failed to fetch all job cards" });
+  }
+};
+
 module.exports = {
   createJobCard,
   updateJobCardItem,
   getJobCardById,
+  getAllJobCards,
 };

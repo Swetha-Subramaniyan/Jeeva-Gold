@@ -16,6 +16,7 @@ import AddCustomer from "./components/Billing/Addcustomer";
 import Register from "./components/Home/Register";
 import CustomerReport from "./components/Report/customer.report";
 import Overallreport from "./components/Report/overallreport";
+import Jobcardreport from "./components/Report/jobcardreport";
 import ProtectedRoutes from "../src/ProtectedRoutes/protected.routes";
 
 
@@ -23,11 +24,9 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-  
         <Route path="/" element={<Home />} />
         <Route path="/register" element={<Register />} />
 
- 
         <Route
           path="/customer"
           element={
@@ -89,6 +88,16 @@ function App() {
           }
         />
         <Route
+          path="/jobcardreport"
+          element={
+            <ProtectedRoutes>
+              <PageWithNavbar>
+                <Jobcardreport />
+              </PageWithNavbar>
+            </ProtectedRoutes>
+          }
+        />
+        <Route
           path="/stock"
           element={
             <ProtectedRoutes>
@@ -119,7 +128,6 @@ function App() {
           }
         />
 
-  
         <Route path="/master" element={<Master />} />
         <Route path="/mastercustomer" element={<MasterCustomer />} />
         <Route path="/addcustomer" element={<AddCustomer />} />
