@@ -8,8 +8,15 @@ function Navbar() {
   const [showBillsDropdown, setShowBillsDropdown] = useState(false);
   const dropdownRef = useRef(null);
 
+  // const handleLogout = () => {
+  //   navigate("/");
+  // };
+
+
   const handleLogout = () => {
-    navigate("/");
+    localStorage.removeItem("token");
+    
+    window.location.href = "/"; 
   };
 
   const toggleReportsDropdown = () => {
@@ -21,7 +28,6 @@ function Navbar() {
     setShowBillsDropdown(!showBillsDropdown);
     setShowReportsDropdown(false);
   };
-
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -55,47 +61,55 @@ function Navbar() {
             Gold Smith
           </a>
         </li>
-        
-   
+
         <li style={navItemStyle}>
-          <div 
-            style={dropdownHeaderStyle} 
-            onClick={toggleBillsDropdown}
-          >
+          <div style={dropdownHeaderStyle} onClick={toggleBillsDropdown}>
             Bills {showBillsDropdown ? <FiChevronUp /> : <FiChevronDown />}
           </div>
           {showBillsDropdown && (
             <div style={dropdownMenuStyle}>
-              <a href="/coinbill" style={dropdownItemStyle} className="dropdown-item">
+              <a
+                href="/coinbill"
+                style={dropdownItemStyle}
+                className="dropdown-item"
+              >
                 Coin Bill
               </a>
             </div>
           )}
         </li>
-        
 
         <li style={navItemStyle}>
-          <div 
-            style={dropdownHeaderStyle} 
-            onClick={toggleReportsDropdown}
-          >
+          <div style={dropdownHeaderStyle} onClick={toggleReportsDropdown}>
             Reports {showReportsDropdown ? <FiChevronUp /> : <FiChevronDown />}
           </div>
           {showReportsDropdown && (
             <div style={dropdownMenuStyle}>
-              <a href="/report" style={dropdownItemStyle} className="dropdown-item">
+              <a
+                href="/report"
+                style={dropdownItemStyle}
+                className="dropdown-item"
+              >
                 Daily Sales Report
               </a>
-              <a href="/customerreport" style={dropdownItemStyle} className="dropdown-item">
+              <a
+                href="/customerreport"
+                style={dropdownItemStyle}
+                className="dropdown-item"
+              >
                 Customer Report
               </a>
-              <a href="/overallreport" style={dropdownItemStyle} className="dropdown-item">
+              <a
+                href="/overallreport"
+                style={dropdownItemStyle}
+                className="dropdown-item"
+              >
                 Overall Report
               </a>
             </div>
           )}
         </li>
-        
+
         <li style={navItemStyle}>
           <a href="/stock" style={linkStyle}>
             Coin Stock
@@ -104,7 +118,7 @@ function Navbar() {
       </ul>
 
       <button onClick={handleLogout} style={logoutButtonStyle} title="Logout">
-        <FiLogOut size={20} /> 
+        <FiLogOut size={20} />
       </button>
 
       <style>

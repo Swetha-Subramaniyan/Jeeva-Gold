@@ -16,92 +16,113 @@ import AddCustomer from "./components/Billing/Addcustomer";
 import Register from "./components/Home/Register";
 import CustomerReport from "./components/Report/customer.report";
 import Overallreport from "./components/Report/overallreport";
+import ProtectedRoutes from "../src/ProtectedRoutes/protected.routes";
 
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
+  
         <Route path="/" element={<Home />} />
         <Route path="/register" element={<Register />} />
+
+ 
         <Route
           path="/customer"
           element={
-            <PageWithNavbar>
-              <Customer />
-            </PageWithNavbar>
+            <ProtectedRoutes>
+              <PageWithNavbar>
+                <Customer />
+              </PageWithNavbar>
+            </ProtectedRoutes>
           }
         />
         <Route
           path="/goldsmith"
           element={
-            <PageWithNavbar>
-              <Goldsmith />
-            </PageWithNavbar>
+            <ProtectedRoutes>
+              <PageWithNavbar>
+                <Goldsmith />
+              </PageWithNavbar>
+            </ProtectedRoutes>
           }
         />
-
         <Route
           path="/coinbill"
           element={
-            <PageWithNavbar>
-              <Billing />
-            </PageWithNavbar>
+            <ProtectedRoutes>
+              <PageWithNavbar>
+                <Billing />
+              </PageWithNavbar>
+            </ProtectedRoutes>
           }
         />
         <Route
           path="/report"
           element={
-            <PageWithNavbar>
-              <Report />
-            </PageWithNavbar>
+            <ProtectedRoutes>
+              <PageWithNavbar>
+                <Report />
+              </PageWithNavbar>
+            </ProtectedRoutes>
           }
         />
         <Route
           path="/customerreport"
           element={
-            <PageWithNavbar>
-              <CustomerReport />
-            </PageWithNavbar>
+            <ProtectedRoutes>
+              <PageWithNavbar>
+                <CustomerReport />
+              </PageWithNavbar>
+            </ProtectedRoutes>
           }
-        ></Route>
+        />
         <Route
           path="/overallreport"
           element={
-            <PageWithNavbar>
-            <Overallreport/>
-            </PageWithNavbar>
+            <ProtectedRoutes>
+              <PageWithNavbar>
+                <Overallreport />
+              </PageWithNavbar>
+            </ProtectedRoutes>
           }
-        ></Route>
+        />
         <Route
           path="/stock"
           element={
-            <PageWithNavbar>
-              <Stock />
-            </PageWithNavbar>
+            <ProtectedRoutes>
+              <PageWithNavbar>
+                <Stock />
+              </PageWithNavbar>
+            </ProtectedRoutes>
           }
         />
         <Route
           path="/customertrans"
           element={
-            <PageWithNavbar>
-              <Customertrans />
-            </PageWithNavbar>
+            <ProtectedRoutes>
+              <PageWithNavbar>
+                <Customertrans />
+              </PageWithNavbar>
+            </ProtectedRoutes>
           }
         />
         <Route
           path="/jobcard/:id/:name"
           element={
-            <PageWithNavbar>
-              <Jobcard />
-            </PageWithNavbar>
+            <ProtectedRoutes>
+              <PageWithNavbar>
+                <Jobcard />
+              </PageWithNavbar>
+            </ProtectedRoutes>
           }
         />
 
+  
         <Route path="/master" element={<Master />} />
         <Route path="/mastercustomer" element={<MasterCustomer />} />
         <Route path="/addcustomer" element={<AddCustomer />} />
-       
       </Routes>
     </BrowserRouter>
   );
@@ -109,7 +130,7 @@ function App() {
 
 function PageWithNavbar({ children }) {
   const location = useLocation();
- 
+
   const hideNavbarPaths = ["/", "/register"];
 
   if (hideNavbarPaths.includes(location.pathname)) {
@@ -125,3 +146,13 @@ function PageWithNavbar({ children }) {
 }
 
 export default App;
+
+
+
+
+
+
+
+
+
+
