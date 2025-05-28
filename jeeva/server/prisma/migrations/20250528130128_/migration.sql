@@ -196,6 +196,7 @@ CREATE TABLE `Entry` (
     `goldValue` DOUBLE NULL,
     `touch` DOUBLE NULL,
     `purity` DOUBLE NULL,
+    `goldRate` DOUBLE NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
 
     PRIMARY KEY (`id`)
