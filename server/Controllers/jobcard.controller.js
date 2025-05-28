@@ -3,7 +3,7 @@ const prisma = new PrismaClient();
 
 const createJobCard = async (req, res) => {
   try {
-    console.log("dsabjhf", req.body);
+    console.log("its a new commit")
     const { id, date, description, goldsmithId, items } = req.body;
 
     if (!date || !goldsmithId || !items || items.length === 0) {

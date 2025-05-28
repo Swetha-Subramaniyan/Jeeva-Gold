@@ -39,6 +39,7 @@ const Jobcard = () => {
     selectedItem: "",
     description: "",
   });
+  console.log("its a new commit")
 
    const fetchData = async () => {
       try {
