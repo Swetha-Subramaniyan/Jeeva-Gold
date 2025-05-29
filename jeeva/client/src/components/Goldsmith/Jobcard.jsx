@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
@@ -16,6 +17,7 @@ const Jobcard = () => {
 
   const today = new Date().toISOString().split("T")[0];
   const [jobDetails, setJobDetails] = useState({
+    id: "",
     date: today,
     items: [],
     description: "",
@@ -38,72 +40,76 @@ const Jobcard = () => {
     selectedItem: "",
     description: "",
   });
+  console.log("its a new commit");
+
+  const fetchData = async () => {
+    try {
+      const itemsRes = await axios.get(
+        `${BACKEND_SERVER_URL}/api/master-items`
+      );
+      setItemsList(itemsRes.data);
+
+      if (id) {
+        const jobRes = await axios.get(
+          `${BACKEND_SERVER_URL}/api/job-cards/${id}`
+        );
+        const jobCard = jobRes.data[0];
+        console.log("card", jobCard);
+
+        setJobDetails({
+          id: jobCard.id,
+          date: jobCard.date.split("T")[0],
+          description: jobCard.description,
+          goldsmithId: jobCard.goldsmithId.toString(),
+          items: jobCard.items.map((item) => ({
+            id: item.id,
+            selectedItem: item.masterItem.id.toString(),
+            selectedItemName: item.masterItem.itemName,
+            givenWeight: item.givenWeight.toString(),
+            originalGivenWeight: item.originalGivenWeight.toString(),
+            touch: item.touch.toString(),
+            estimateWeight: item.estimateWeight.toString(),
+            finalWeight: item.finalWeight?.toString() || "",
+            wastage: item.wastage?.toString() || "",
+            purity: item.purity,
+            additionalWeights: item.additionalWeights || [],
+            stone:
+              item.additionalWeights?.find((aw) => aw.name === "stone")
+                ?.weight || null,
+            enamel:
+              item.additionalWeights?.find((aw) => aw.name === "enamel")
+                ?.weight || null,
+            beads:
+              item.additionalWeights?.find((aw) => aw.name === "beeds")
+                ?.weight || null,
+          })),
+        });
+
+        setFormData({
+          date: jobCard.date.split("T")[0],
+          description: jobCard.description,
+        });
+      } else {
+        setJobDetails({
+          id: "",
+          date: new Date().toISOString().split("T")[0],
+          description: "",
+          goldsmithId: "",
+          items: [],
+        });
+
+        setFormData({
+          date: new Date().toISOString().split("T")[0],
+          description: "",
+        });
+      }
+    } catch (err) {
+      console.error("Failed to fetch data", err);
+      // toast.error("Failed to load data");
+    }
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const itemsRes = await axios.get(
-          `${BACKEND_SERVER_URL}/api/master-items`
-        );
-        setItemsList(itemsRes.data);
-
-        if (id) {
-          const jobRes = await axios.get(
-            `${BACKEND_SERVER_URL}/api/job-cards/${id}`
-          );
-          const jobCard = jobRes.data;
-
-          setJobDetails({
-            date: jobCard.date.split("T")[0],
-            description: jobCard.description,
-            goldsmithId: jobCard.goldsmithId.toString(),
-            items: jobCard.items.map((item) => ({
-              id: item.id,
-              selectedItem: item.masterItem.id.toString(),
-              selectedItemName: item.masterItem.itemName,
-              givenWeight: item.givenWeight.toString(),
-              originalGivenWeight: item.originalGivenWeight.toString(),
-              touch: item.touch.toString(),
-              estimateWeight: item.estimateWeight.toString(),
-              finalWeight: item.finalWeight?.toString() || "",
-              wastage: item.wastage?.toString() || "",
-              purity: item.purity,
-              additionalWeights: item.additionalWeights || [],
-              stone:
-                item.additionalWeights?.find((aw) => aw.name === "stone")
-                  ?.weight || null,
-              enamel:
-                item.additionalWeights?.find((aw) => aw.name === "enamel")
-                  ?.weight || null,
-              beads:
-                item.additionalWeights?.find((aw) => aw.name === "beeds")
-                  ?.weight || null,
-            })),
-          });
-
-          setFormData({
-            date: jobCard.date.split("T")[0],
-            description: jobCard.description,
-          });
-        } else {
-          setJobDetails({
-            date: new Date().toISOString().split("T")[0],
-            description: "",
-            goldsmithId: "",
-            items: [],
-          });
-
-          setFormData({
-            date: new Date().toISOString().split("T")[0],
-            description: "",
-          });
-        }
-      } catch (err) {
-        console.error("Failed to fetch data", err);
-        // toast.error("Failed to load data");
-      }
-    };
-
     fetchData();
   }, [id]);
 
@@ -147,7 +153,7 @@ const Jobcard = () => {
     }
 
     const newItem = {
-      id: Date.now().toString(),
+      id: Date.now().toString(), 
       selectedItem: selectedItemObj.id,
       selectedItemName: formData.selectedItem,
       givenWeight: purityWeight.toFixed(2),
@@ -164,14 +170,15 @@ const Jobcard = () => {
 
     const updatedJobDetails = {
       ...jobDetails,
+      id: jobDetails.id,
       date: formData.date,
       description: formData.description,
-      items: [...jobDetails.items, newItem],
+      items: [newItem], 
     };
-     setJobDetails(updatedJobDetails); 
 
     try {
       const payload = {
+        id: updatedJobDetails.id,
         date: updatedJobDetails.date,
         description: updatedJobDetails.description,
         goldsmithId: updatedJobDetails.goldsmithId,
@@ -185,16 +192,23 @@ const Jobcard = () => {
           finalWeight: item.finalWeight || null,
           wastage: item.wastage || null,
           purityWeight: item.purityWeight,
-          stone: item.weight || null,
-          enamel: item.weight || null,
-          beads: item.weight || null,
+          stone: item.stone || null,
+          enamel: item.enamel || null,
+          beads: item.beads || null,
+          additionalWeights: item.additionalWeights || [], 
         })),
       };
 
-      const response = id;
-      axios.post(`${BACKEND_SERVER_URL}/api/job-cards`, payload);
+   
+      const response = await axios.post(
+        `${BACKEND_SERVER_URL}/api/job-cards`,
+        payload
+      );
+      console.log("Post response:", response.data); 
 
-      setJobDetails(updatedJobDetails);
+     
+      await fetchData(); 
+
       setFormData({
         date: today,
         givenWeight: "",
@@ -204,6 +218,7 @@ const Jobcard = () => {
         description: "",
       });
 
+  
       if (!id) {
         navigate(`/job-cards/${response.data.id}`, {
           state: location.state,
@@ -221,9 +236,6 @@ const Jobcard = () => {
       );
     }
   };
-
-
-    
   const handleOpenPopup = (index) => {
     setSelectedIndex(index);
     setFinalWeight(jobDetails.items[index].finalWeight || "");
@@ -241,40 +253,40 @@ const Jobcard = () => {
     setPopupWastage("");
   };
 
-const handleSaveFinalWeight = (updatedItemData) => {
-  setJobDetails((prev) => {
-    const updatedItems = [...prev.items];
-    const index = updatedItems.findIndex(
-      (item) => item.id === updatedItemData.id
-    );
+  const handleSaveFinalWeight = (updatedItemData) => {
+    setJobDetails((prev) => {
+      const updatedItems = [...prev.items];
+      const index = updatedItems.findIndex(
+        (item) => item.id === updatedItemData.id
+      );
 
-    if (index !== -1) {
-      updatedItems[index] = {
-        ...updatedItems[index],
-        finalWeight: updatedItemData.finalWeight,
-        wastage: updatedItemData.wastage,
-        purity: updatedItemData.purity,
-        additionalWeights: updatedItemData.additionalWeights,
-        stone:
-          updatedItemData.additionalWeights?.find((aw) => aw.name === "stone")
-            ?.weight || null,
-        enamel:
-          updatedItemData.additionalWeights?.find((aw) => aw.name === "enamel")
-            ?.weight || null,
-        beads:
-          updatedItemData.additionalWeights?.find((aw) => aw.name === "beeds")
-            ?.weight || null,
-      };
-    }
+      if (index !== -1) {
+        updatedItems[index] = {
+          ...updatedItems[index],
+          finalWeight: updatedItemData.finalWeight,
+          wastage: updatedItemData.wastage,
+          purity: updatedItemData.purity,
+          additionalWeights: updatedItemData.additionalWeights,
+          stone:
+            updatedItemData.additionalWeights?.find((aw) => aw.name === "stone")
+              ?.weight || null,
+          enamel:
+            updatedItemData.additionalWeights?.find(
+              (aw) => aw.name === "enamel"
+            )?.weight || null,
+          beads:
+            updatedItemData.additionalWeights?.find((aw) => aw.name === "beeds")
+              ?.weight || null,
+        };
+      }
 
-    return { ...prev, items: updatedItems };
-  });
+      return { ...prev, items: updatedItems };
+    });
 
-  toast.success("Item updated successfully!");
-};
- 
+    toast.success("Item updated successfully!");
+  };
 
-const handleDeleteItem = (indexToDelete) => {
+  const handleDeleteItem = (indexToDelete) => {
     setJobDetails((prev) => ({
       ...prev,
       items: prev.items.filter((_, index) => index !== indexToDelete),
@@ -542,6 +554,7 @@ const handleDeleteItem = (indexToDelete) => {
 };
 
 export default Jobcard;
+
 
 
 

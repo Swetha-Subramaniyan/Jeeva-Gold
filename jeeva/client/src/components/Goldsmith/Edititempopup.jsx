@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-// import "./Edititempopup.css";
+import "./Edititempopup.css";
 
 const EditItemPopup = ({
   isOpen,
