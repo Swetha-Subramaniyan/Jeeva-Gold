@@ -51,11 +51,11 @@ function Navbar() {
             Customer
           </a>
         </li>
-        <li style={navItemStyle}>
+        {/* <li style={navItemStyle}>
           <a href="/goldsmith" style={linkStyle}>
             Gold Smith
           </a>
-        </li>
+        </li> */}
 
         <li style={navItemStyle}>
           <div style={dropdownHeaderStyle} onClick={toggleBillsDropdown}>
@@ -101,13 +101,13 @@ function Navbar() {
               >
                 Overall Report
               </a>
-              <a
+              {/* <a
                 href="/jobcardreport"
                 style={dropdownItemStyle}
                 className="dropdown-item"
               >
                 Jobcard Report
-              </a>
+              </a> */}
             </div>
           )}
         </li>

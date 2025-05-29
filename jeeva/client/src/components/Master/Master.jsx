@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import MasterCustomer from "./Mastercustomer";
 import "./Master.css";
-import Mastergoldsmith from "./Mastergoldsmith";
-import Masteradditems from "./Masteradditems";
+// import Mastergoldsmith from "./Mastergoldsmith";
+// import Masteradditems from "./Masteradditems";
 import Masterjewelstock from "./Masterjewelstock";
 import Cashgold from "./Cashgold";
 import { FiLogOut } from "react-icons/fi";
@@ -90,7 +90,7 @@ const handleCashGold =()=>{
               Customer
             </button>
           </li>
-          <li style={{ marginRight: "20px" }}>
+          {/* <li style={{ marginRight: "20px" }}>
             <button
               onClick={handleAddGoldsmithClick}
               className="nav-button"
@@ -101,8 +101,8 @@ const handleCashGold =()=>{
             >
               Goldsmith
             </button>
-          </li>
-          <li style={{ marginRight: "20px" }}>
+          </li> */}
+          {/* <li style={{ marginRight: "20px" }}>
             <button
               onClick={handleAddItemsClick}
               className="nav-button"
@@ -113,7 +113,7 @@ const handleCashGold =()=>{
             >
               Items
             </button>
-          </li>
+          </li> */}
           <li style={{ marginRight: "20px" }}>
             <button
               onClick={handleStockClick}
