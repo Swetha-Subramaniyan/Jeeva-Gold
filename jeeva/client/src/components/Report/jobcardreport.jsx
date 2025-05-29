@@ -3,14 +3,13 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { BACKEND_SERVER_URL } from "../../Config/Config";
 import "./jobcardreport.css";
-import { Modal, Button } from "react-bootstrap";
+
 
 const JobcardReport = () => {
   const [allJobCards, setAllJobCards] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [selectedJobCard, setSelectedJobCard] = useState(null);
-  const [showModal, setShowModal] = useState(false);
+  const [expandedCards, setExpandedCards] = useState({});
 
   useEffect(() => {
     const fetchAllJobCardsData = async () => {
@@ -36,15 +35,55 @@ const JobcardReport = () => {
     return (givenWeight * touchValue) / 100;
   };
 
-  const handleViewJobCard = (jobCard) => {
-    setSelectedJobCard(jobCard);
-    setShowModal(true);
+  const calculateJobCardTotals = (jobCard) => {
+    let totalGivenWeight = 0;
+    let totalFinalWeight = 0;
+    let totalWastage = 0;
+    let totalStone = 0;
+    let totalEnamel = 0;
+    let totalBeads = 0;
+
+    jobCard.items.forEach((item) => {
+      totalGivenWeight += calculatePurityWeight(
+        item.originalGivenWeight,
+        item.touch
+      );
+      totalFinalWeight += parseFloat(item.finalWeight || 0);
+      totalWastage += parseFloat(item.wastage || 0);
+
+      const stoneWeight =
+        item.additionalWeights?.find((aw) => aw.name === "stone")?.weight || 0;
+      const enamelWeight =
+        item.additionalWeights?.find((aw) => aw.name === "enamel")?.weight || 0;
+      const beadsWeight =
+        item.additionalWeights?.find((aw) => aw.name === "beeds")?.weight || 0;
+
+      totalStone += parseFloat(stoneWeight);
+      totalEnamel += parseFloat(enamelWeight);
+      totalBeads += parseFloat(beadsWeight);
+    });
+
+    const balance = totalGivenWeight - (totalFinalWeight + totalWastage);
+
+    return {
+      totalGivenWeight: totalGivenWeight.toFixed(2),
+      totalFinalWeight: totalFinalWeight.toFixed(2),
+      totalWastage: totalWastage.toFixed(2),
+      totalStone: totalStone.toFixed(2),
+      totalEnamel: totalEnamel.toFixed(2),
+      totalBeads: totalBeads.toFixed(2),
+      balance: balance.toFixed(2),
+      balanceColor: balance > 0 ? "green" : balance < 0 ? "red" : "blue",
+    };
   };
 
-  const handleCloseModal = () => {
-    setShowModal(false);
-    setSelectedJobCard(null);
+  const toggleExpandCard = (jobCardId) => {
+    setExpandedCards((prev) => ({
+      ...prev,
+      [jobCardId]: !prev[jobCardId],
+    }));
   };
+
 
   if (loading) {
     return <p className="loading-message">Loading all job card reports...</p>;
@@ -77,211 +116,131 @@ const JobcardReport = () => {
         <table className="jobcard-report-table">
           <thead>
             <tr>
+              <th></th>
               <th>SI.No</th>
               <th>Date</th>
               <th>Goldsmith Name</th>
-              <th>Item Name</th>
-              <th>Given Weight (g)</th>
-              <th>Touch</th>
-              <th>Given Weight (Purity)</th>
-              <th>Product Weight</th>
-              <th>Stone (g)</th>
-              <th>Enamel (g)</th>
-              <th>Beads (g)</th>
-              <th>Final Weight (g)</th>
-              <th>Wastage (g)</th>
-              <th>Balance (g)</th>
-              <th>Action</th>
+              <th>Items Count</th>
+              <th>Total Given Weight</th>
+              <th>Total Final Weight</th>
+              <th>Total Stone</th>
+              <th>Total Enamel</th>
+              <th>Total Beads</th>
+              <th>Total Wastage</th>
+              <th>Balance</th>
+            
             </tr>
           </thead>
           <tbody>
-            {allJobCards.flatMap((jobCard, jobIndex) =>
-              jobCard.items.map((item, itemIndex) => {
-                const givenPurityWeight = calculatePurityWeight(
-                  item.originalGivenWeight,
-                  item.touch
-                );
-                const finalWeight = parseFloat(item.finalWeight || 0);
-                const wastage = parseFloat(item.wastage || 0);
-                const balance = givenPurityWeight - (finalWeight + wastage);
+            {allJobCards.map((jobCard, index) => {
+              const totals = calculateJobCardTotals(jobCard);
+              const isExpanded = expandedCards[jobCard.id];
 
-                const stoneWeight =
-                  item.additionalWeights?.find((aw) => aw.name === "stone")
-                    ?.weight || 0;
-                const enamelWeight =
-                  item.additionalWeights?.find((aw) => aw.name === "enamel")
-                    ?.weight || 0;
-                const beadsWeight =
-                  item.additionalWeights?.find((aw) => aw.name === "beeds")
-                    ?.weight || 0;
-
-                return (
-                  <tr key={`${jobCard.id}-${item.id || itemIndex}`}>
+              return (
+                <React.Fragment key={jobCard.id}>
+             
+                  <tr className="jobcard-main-row">
                     <td>
-                      {jobIndex + 1}.{itemIndex + 1}
+                      <button
+                        className="expand-btn"
+                        onClick={() => toggleExpandCard(jobCard.id)}
+                      >
+                        {isExpanded ? "▼" : "►"}
+                      </button>
                     </td>
+                    <td>{index + 1}</td>
                     <td>
                       {new Date(jobCard.date).toISOString().split("T")[0]}
                     </td>
                     <td>{jobCard.goldsmith?.name || "N/A"}</td>
-                    <td>{item.masterItem?.itemName || "N/A"}</td>
-                    <td>{item.originalGivenWeight}</td>
-                    <td>{item.touch || "-"}</td>
-                    <td>{givenPurityWeight.toFixed(2)}</td>
-                    <td>{item.finalWeight || "Pending"}</td>
-                    <td>{stoneWeight || "-"}</td>
-                    <td>{enamelWeight || "-"}</td>
-                    <td>{beadsWeight || "-"}</td>
-                    <td>{finalWeight.toFixed(2)}</td>
-                    <td>{wastage.toFixed(2)}</td>
+                    <td>{jobCard.items.length} items</td>
+                    <td>{totals.totalGivenWeight} g</td>
+                    <td>{totals.totalFinalWeight} g</td>
+                    <td>{totals.totalStone} g</td>
+                    <td>{totals.totalEnamel} g</td>
+                    <td>{totals.totalBeads} g</td>
+                    <td>{totals.totalWastage} g</td>
                     <td
                       style={{
-                        color:
-                          balance > 0 ? "green" : balance < 0 ? "red" : "blue",
+                        color: totals.balanceColor,
                         fontWeight: "bold",
                       }}
                     >
-                      {balance.toFixed(2)}
+                      {totals.balance} g
                     </td>
-                    <td>
-                      <button
-                        className="view-btn"
-                        onClick={() => handleViewJobCard(jobCard)}
-                      >
-                        View
-                      </button>
-                    </td>
+                   
                   </tr>
-                );
-              })
-            )}
+
+                  {isExpanded &&
+                    jobCard.items.map((item, itemIndex) => {
+                      const givenPurityWeight = calculatePurityWeight(
+                        item.originalGivenWeight,
+                        item.touch
+                      );
+                      const finalWeight = parseFloat(item.finalWeight || 0);
+                      const wastage = parseFloat(item.wastage || 0);
+                      const balance =
+                        givenPurityWeight - (finalWeight + wastage);
+
+                      const stoneWeight =
+                        item.additionalWeights?.find(
+                          (aw) => aw.name === "stone"
+                        )?.weight || 0;
+                      const enamelWeight =
+                        item.additionalWeights?.find(
+                          (aw) => aw.name === "enamel"
+                        )?.weight || 0;
+                      const beadsWeight =
+                        item.additionalWeights?.find(
+                          (aw) => aw.name === "beeds"
+                        )?.weight || 0;
+
+                      return (
+                        <tr
+                          key={`${jobCard.id}-${item.id || itemIndex}`}
+                          className="item-detail-row"
+                        >
+                          <td></td>
+                          <td>
+                            {index + 1}.{itemIndex + 1}
+                          </td>
+                          <td colSpan="2">
+                            {item.masterItem?.itemName || "N/A"}
+                          </td>
+                          <td>{item.originalGivenWeight} g</td>
+                          <td>{item.touch}</td>
+                          <td>{givenPurityWeight.toFixed(2)} g</td>
+                          <td>{finalWeight.toFixed(2)} g</td>
+                          <td>{stoneWeight} g</td>
+                          <td>{enamelWeight} g</td>
+                          <td>{beadsWeight} g</td>
+                          <td>{wastage.toFixed(2)} g</td>
+                          <td
+                            style={{
+                              color:
+                                balance > 0
+                                  ? "green"
+                                  : balance < 0
+                                  ? "red"
+                                  : "blue",
+                              fontWeight: "bold",
+                            }}
+                          >
+                            {balance.toFixed(2)} g
+                          </td>
+                          <td></td>
+                        </tr>
+                      );
+                    })}
+                </React.Fragment>
+              );
+            })}
           </tbody>
         </table>
       </div>
 
-      {selectedJobCard && (
-        <Modal show={showModal} onHide={handleCloseModal} size="lg" centered>
-          <Modal.Header closeButton>
-            <Modal.Title>Job Card Details - #{selectedJobCard.id}</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <div className="job-card-detail">
-              <div className="job-card-header">
-                <div className="job-card-logo">JEEVA GOLD COINS</div>
-                <div className="job-card-contact">
-                  <p>Town Hall 458 Road</p>
-                  <p>Coimbatore</p>
-                  <p>9875637456</p>
-                </div>
-              </div>
-
-              <div className="job-card-info">
-                <p>
-                  <strong>Date:</strong>{" "}
-                  {new Date(selectedJobCard.date).toISOString().split("T")[0]}
-                </p>
-                <p>
-                  <strong>Description:</strong>{" "}
-                  {selectedJobCard.description || "No description"}
-                </p>
-              </div>
-
-              <div className="goldsmith-info">
-                <h4>Goldsmith Information</h4>
-                <p>
-                  <strong>Name:</strong>{" "}
-                  {selectedJobCard.goldsmith?.name || "N/A"}
-                </p>
-                <p>
-                  <strong>Address:</strong>{" "}
-                  {selectedJobCard.goldsmith?.address || "N/A"}
-                </p>
-                <p>
-                  <strong>Phone:</strong>{" "}
-                  {selectedJobCard.goldsmith?.phone || "N/A"}
-                </p>
-              </div>
-
-              <div className="items-table">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Item</th>
-                      <th>Given Weight</th>
-                      <th>Touch</th>
-                      <th>Purity Weight</th>
-                      <th>Final Weight</th>
-                      <th>Wastage</th>
-                      <th>Stone</th>
-                      <th>Enamel</th>
-                      <th>Beads</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {selectedJobCard.items.map((item, index) => (
-                      <tr key={item.id || index}>
-                        <td>{item.masterItem?.itemName || "N/A"}</td>
-                        <td>{item.originalGivenWeight} g</td>
-                        <td>{item.touch}</td>
-                        <td>
-                          {calculatePurityWeight(
-                            item.originalGivenWeight,
-                            item.touch
-                          ).toFixed(2)}{" "}
-                          g
-                        </td>
-                        <td>
-                          {item.finalWeight
-                            ? `${item.finalWeight} g`
-                            : "Pending"}
-                        </td>
-                        <td>{item.wastage} g</td>
-                        <td>
-                          {item.additionalWeights?.find(
-                            (aw) => aw.name === "stone"
-                          )?.weight || "-"}{" "}
-                          g
-                        </td>
-                        <td>
-                          {item.additionalWeights?.find(
-                            (aw) => aw.name === "enamel"
-                          )?.weight || "-"}{" "}
-                          g
-                        </td>
-                        <td>
-                          {item.additionalWeights?.find(
-                            (aw) => aw.name === "beeds"
-                          )?.weight || "-"}{" "}
-                          g
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-            
-            </div>
-          </Modal.Body>
-          <Modal.Footer>
-            <Button variant="secondary" onClick={handleCloseModal}>
-              Close
-            </Button>
-          </Modal.Footer>
-        </Modal>
-      )}
     </div>
   );
 };
 
 export default JobcardReport;
-
-
-
-
-
-
-
-
-
-
