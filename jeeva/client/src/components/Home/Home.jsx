@@ -25,6 +25,7 @@ function Home() {
 
       if (res.data.token) {
         localStorage.setItem("token", res.data.token);
+        localStorage.setItem("userRole", res.data.role); 
         navigate("/customer");
       } else {
         setError("Invalid username or password.");
@@ -80,8 +81,8 @@ function Home() {
             </button>
           </form>
           <div className="login-footer">
-            <a href="/">Forgot Password?</a>
-            {/* <a href="/register">Sign Up</a> */}
+            {/* <a href="/">Forgot Password?</a> */}
+            <a href="/register">Sign Up</a>
           </div>
         </div>
       </div>

@@ -30,6 +30,29 @@ exports.register = async (req, res) => {
   }
 };
 
+// exports.login = async (req, res) => {
+//   const { username, password } = req.body;
+//   try {
+//     const user = await prisma.user.findUnique({ where: { username } });
+//     if (!user)
+//       return res.status(400).json({ message: "Invalid username or password" });
+
+//     const isMatch = await bcrypt.compare(password, user.password);
+//     if (!isMatch)
+//       return res.status(400).json({ message: "Invalid username or password" });
+
+//     const token = jwt.sign(
+//       { userId: user.id, username: user.username },
+//       process.env.JWT_SECRET,
+//       { expiresIn: "1h" }
+//     );
+
+//     res.json({ message: "Login successful", token });
+//   } catch (err) {
+//     res.status(500).json({ message: "Login error", error: err.message });
+//   }
+// };
+
 exports.login = async (req, res) => {
   const { username, password } = req.body;
   try {
@@ -41,13 +64,15 @@ exports.login = async (req, res) => {
     if (!isMatch)
       return res.status(400).json({ message: "Invalid username or password" });
 
+    const role = username === "admin" ? "admin" : "user";
+
     const token = jwt.sign(
-      { userId: user.id, username: user.username },
+      { userId: user.id, username: user.username, role }, 
       process.env.JWT_SECRET,
       { expiresIn: "1h" }
     );
 
-    res.json({ message: "Login successful", token });
+    res.json({ message: "Login successful", token, role });
   } catch (err) {
     res.status(500).json({ message: "Login error", error: err.message });
   }

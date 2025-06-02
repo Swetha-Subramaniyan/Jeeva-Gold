@@ -17,6 +17,8 @@ const Master = () => {
 
   const navigate = useNavigate();
 
+
+
   const handleAddCustomerClick = () => {
     setShowCustomerDetails(true);
     setShowGoldsmithDetails(false);
@@ -163,3 +165,12 @@ const logoutButtonStyle = {
 };
 
 export default Master;
+
+
+
+
+
+
+
+
+
