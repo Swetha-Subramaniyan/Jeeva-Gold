@@ -82,7 +82,7 @@ function Home() {
           </form>
           <div className="login-footer">
             {/* <a href="/">Forgot Password?</a> */}
-            <a href="/register">Sign Up</a>
+            {/* <a href="/register">Sign Up</a> */}
           </div>
         </div>
       </div>
