@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from "react";
 import {
   Autocomplete,
@@ -29,7 +28,16 @@ const Billing = () => {
   const [time, setTime] = useState("");
   const [goldRate, setGoldRate] = useState("");
   const [hallmarkCharges, setHallmarkCharges] = useState(0);
-  const [rows, setRows] = useState([1]);
+  const [rows, setRows] = useState([
+    {
+      date: new Date().toISOString().slice(0, 10),
+      goldRate: "",
+      givenGold: "",
+      touch: "",
+      purityWeight: "",
+      amount: "",
+    },
+  ]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [viewMode, setViewMode] = useState(false);
   const [fetchedBills, setFetchedBills] = useState([]);
@@ -140,7 +148,6 @@ const Billing = () => {
         touch: detail.touch?.toString() || "",
         purityWeight: detail.purityWeight.toString(),
         amount: detail.amount.toString(),
-        hallmark: detail.hallmark?.toString() || "",
       }))
     );
 
@@ -225,7 +232,6 @@ const Billing = () => {
         touch: "",
         purityWeight: "",
         amount: "",
-        hallmark: "",
       },
     ]);
   };
@@ -237,6 +243,13 @@ const Billing = () => {
 
   const handleRowChange = (index, field, value) => {
     const updatedRows = [...rows];
+
+    if (value === "") {
+      updatedRows[index][field] = "";
+      setRows(updatedRows);
+      return;
+    }
+
     updatedRows[index][field] = value;
 
     if (field === "givenGold" || field === "touch") {
@@ -250,31 +263,44 @@ const Billing = () => {
         updatedRows[index].amount = amount.toFixed(2);
       }
     } else if (field === "amount") {
-      const amount = parseFloat(value) || 0;
-      const goldRate = parseFloat(updatedRows[index].goldRate) || 1;
-      const purityWeight = amount / goldRate;
-      updatedRows[index].purityWeight = purityWeight.toFixed(3);
-      updatedRows[index].givenGold = "";
-      updatedRows[index].touch = "";
+      const numValue = parseFloat(value);
+      if (!isNaN(numValue)) {
+        const hallmarkBalance = parseFloat(hallmarkCharges) || 0;
+        const purityBalance = parseFloat(receivedPurity) || 0;
+
+        if (numValue <= hallmarkBalance) {
+          setHallmarkCharges((prev) => (prev - numValue).toFixed(2));
+        } else {
+          const remainingAmount = numValue - hallmarkBalance;
+          setHallmarkCharges(0);
+          if (remainingAmount <= purityBalance) {
+            setReceivedPurity((prev) => (prev - remainingAmount).toFixed(3));
+          } else {
+            setReceivedPurity(0);
+            showSnackbar("Amount exceeds available balances", "error");
+          }
+        }
+      }
     } else if (field === "goldRate") {
-      const goldRate = parseFloat(value) || 0;
+      const goldRateVal = parseFloat(value) || 0;
       if (updatedRows[index].givenGold && updatedRows[index].touch) {
         const givenGold = parseFloat(updatedRows[index].givenGold) || 0;
         const touch = parseFloat(updatedRows[index].touch) || 0;
         const purityWeight = givenGold * (touch / 100);
-        const amount = purityWeight * goldRate;
+        const amount = purityWeight * goldRateVal;
         updatedRows[index].amount = amount.toFixed(2);
         updatedRows[index].purityWeight = purityWeight.toFixed(3);
       } else if (updatedRows[index].amount) {
         const amount = parseFloat(updatedRows[index].amount) || 0;
-        const purityWeight = amount / goldRate;
+        const purityWeight = amount / goldRateVal;
         updatedRows[index].purityWeight = purityWeight.toFixed(3);
       }
     }
 
     setRows(updatedRows);
   };
-
+ 
+  
   useEffect(() => {
     if (goldRate) {
       const updatedRows = rows.map((row) => {
@@ -393,8 +419,8 @@ const Billing = () => {
         touch: newItem.touch,
         weight: newItem.weight,
         purity: newItem.pure,
-        goldRate: "", 
-        amount: "", 
+        goldRate: "",
+        amount: "",
         displayName: `${newItem.name}g ${newItem.percentage}`,
       },
     ]);
@@ -413,8 +439,6 @@ const Billing = () => {
       const itemGoldRate = parseFloat(item.goldRate);
       if (!isNaN(itemGoldRate) && itemGoldRate > 0) {
         totalAmount += itemGoldRate * (parseFloat(item.purity) || 0);
-      } else {
-       
       }
     });
 
@@ -428,38 +452,47 @@ const Billing = () => {
       (sum, row) => sum + parseFloat(row.amount || 0),
       0
     );
-    const receivedHallmark = rows.reduce(
-      (sum, row) => sum + parseFloat(row.hallmark || 0),
-      0
-    );
     const receivedPurity = rows.reduce(
       (sum, row) => sum + parseFloat(row.purityWeight || 0),
       0
     );
 
-    return { receivedAmount, receivedHallmark, receivedPurity };
+    return { receivedAmount, receivedPurity };
   };
 
-  const { receivedAmount, receivedHallmark, receivedPurity } =
-    calculateReceivedTotals();
+  const { receivedAmount, receivedPurity } = calculateReceivedTotals();
 
   const calculateBalances = () => {
-    const billAmount = totalAmount;
-    const cashBalance = billAmount - receivedAmount;
-    const hallmarkBalance = parseFloat(hallmarkCharges || 0) - receivedHallmark;
-    const pureBalance = totalPurity - receivedPurity;
-    const totalBalance = cashBalance+hallmarkBalance
+    const totalPurity = billItems.reduce(
+      (sum, item) => sum + parseFloat(item.purity || 0),
+      0
+    );
+
+    const totalReceivedPurity = rows.reduce(
+      (sum, row) => sum + parseFloat(row.purityWeight || 0),
+      0
+    );
+
+    const pureBalance = totalPurity - totalReceivedPurity;
+
+    const latestRowWithGoldRate = [...rows]
+      .reverse()
+      .find((row) => parseFloat(row.goldRate));
+    const latestGoldRate = latestRowWithGoldRate
+      ? parseFloat(latestRowWithGoldRate.goldRate)
+      : 0;
+
+    const cashBalance = latestGoldRate * pureBalance;
+    const totalBalance = cashBalance + parseFloat(hallmarkCharges || 0);
 
     return {
       cashBalance: cashBalance.toFixed(2),
       pureBalance: pureBalance.toFixed(3),
-      hallmarkBalance: hallmarkBalance.toFixed(2),
-      totalBalance: totalBalance.toFixed(2)
-   
+      totalBalance: totalBalance.toFixed(2),
     };
   };
 
-  const { cashBalance, pureBalance, hallmarkBalance,totalBalance } = calculateBalances();
+  const { cashBalance, pureBalance, totalBalance } = calculateBalances();
 
   const handleBillItemChange = (index, field, value) => {
     const updatedBillItems = [...billItems];
@@ -472,7 +505,6 @@ const Billing = () => {
       if (!isNaN(goldRateVal) && goldRateVal > 0 && purityVal) {
         updatedBillItems[index].amount = (goldRateVal * purityVal).toFixed(2);
       } else {
- 
         updatedBillItems[index].amount = "";
       }
     }
@@ -508,7 +540,6 @@ const Billing = () => {
             touch: parseFloat(row.touch || 0),
             purityWeight: parseFloat(row.purityWeight || 0),
             amount: parseFloat(row.amount || 0),
-            hallmark: parseFloat(row.hallmark || 0),
           })),
         ],
       };
@@ -627,7 +658,6 @@ const Billing = () => {
           touch: parseFloat(row.touch || 0),
           purityWeight: parseFloat(row.purityWeight || 0),
           amount: parseFloat(row.amount || 0),
-          hallmark: parseFloat(row.hallmark || 0),
         })),
       };
 
@@ -655,7 +685,16 @@ const Billing = () => {
 
   const resetForm = () => {
     setBillItems([]);
-    setRows([]);
+    setRows([
+      {
+        date: new Date().toISOString().slice(0, 10),
+        goldRate: "",
+        givenGold: "",
+        touch: "",
+        purityWeight: "",
+        amount: "",
+      },
+    ]);
     setSelectedCustomer(null);
     setGoldRate("");
     setHallmarkCharges(0);
@@ -1054,7 +1093,6 @@ const Billing = () => {
                   <th className="th">%</th>
                   <th className="th">Purity WT</th>
                   <th className="th">Amount</th>
-                  <th className="th">Hallmark</th>
                   {(!viewMode || selectedBill) && (
                     <th className="th">Action</th>
                   )}
@@ -1140,20 +1178,9 @@ const Billing = () => {
                           viewMode &&
                           index < selectedBill?.receivedDetails?.length
                         }
-                      />
-                    </td>
-                    <td className="td">
-                      <TextField
-                        size="small"
-                        value={row.hallmark}
-                        onChange={(e) =>
-                          handleRowChange(index, "hallmark", e.target.value)
-                        }
-                        type="number"
-                        disabled={
-                          viewMode &&
-                          index < selectedBill?.receivedDetails?.length
-                        }
+                        inputProps={{
+                          step: "1",
+                        }}
                       />
                     </td>
                     {(!viewMode || selectedBill) && (
@@ -1174,8 +1201,8 @@ const Billing = () => {
             <div className="flex">
               <b>Cash Balance: {cashBalance}</b>
               <b>Pure Balance: {pureBalance}</b>
-              <b>Hallmark Balance: {hallmarkBalance}</b>
-              <b>Total Balance:{totalBalance}</b>
+              <b>Total Balance: {totalBalance}</b>
+              <b>Hallmark Balance: {hallmarkCharges}</b>
             </div>
           </Box>
         </Box>
@@ -1250,7 +1277,6 @@ const Billing = () => {
               required
               disabled={viewMode && selectedBill}
             />
-
             {newItem.percentage && (
               <Box>
                 {newItem.name ? (
@@ -1353,5 +1379,15 @@ const Billing = () => {
 };
 
 export default Billing;
+
+
+
+
+
+
+
+
+
+
 
 
