@@ -238,11 +238,9 @@ import { FiLogOut, FiChevronDown, FiChevronUp } from "react-icons/fi";
 function Navbar() {
   const navigate = useNavigate();
   const [showReportsDropdown, setShowReportsDropdown] = useState(false);
-  const [showBillsDropdown, setShowBillsDropdown] = useState(false);
   const dropdownRef = useRef(null);
 
-
-  const userRole = localStorage.getItem("userRole"); 
+  const userRole = localStorage.getItem("userRole");
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -252,19 +250,12 @@ function Navbar() {
 
   const toggleReportsDropdown = () => {
     setShowReportsDropdown(!showReportsDropdown);
-    setShowBillsDropdown(false);
-  };
-
-  const toggleBillsDropdown = () => {
-    setShowBillsDropdown(!showBillsDropdown);
-    setShowReportsDropdown(false);
   };
 
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setShowReportsDropdown(false);
-        setShowBillsDropdown(false);
       }
     };
 
@@ -277,7 +268,6 @@ function Navbar() {
   return (
     <nav style={navbarStyle} ref={dropdownRef}>
       <ul style={navListStyle}>
- 
         {userRole !== "user" && (
           <>
             <li style={navItemStyle}>
@@ -295,73 +285,61 @@ function Navbar() {
               <a href="/goldsmith" style={linkStyle}>
                 Gold Smith
               </a>
-            </li> 
-            */}
-            <li style={navItemStyle}>
-              <div style={dropdownHeaderStyle} onClick={toggleReportsDropdown}>
-                Reports{" "}
-                {showReportsDropdown ? <FiChevronUp /> : <FiChevronDown />}
-              </div>
-              {showReportsDropdown && (
-                <div style={dropdownMenuStyle}>
-                  <a
-                    href="/report"
-                    style={dropdownItemStyle}
-                    className="dropdown-item"
-                  >
-                    Daily Sales Report
-                  </a>
-                  <a
-                    href="/customerreport"
-                    style={dropdownItemStyle}
-                    className="dropdown-item"
-                  >
-                    Customer Report
-                  </a>
-                  <a
-                    href="/overallreport"
-                    style={dropdownItemStyle}
-                    className="dropdown-item"
-                  >
-                    Overall Report
-                  </a>
-                  {/* <a
-                    href="/jobcardreport"
-                    style={dropdownItemStyle}
-                    className="dropdown-item"
-                  >
-                    Jobcard Report
-                  </a> */}
-                </div>
-              )}
             </li>
+            */}
           </>
         )}
 
-        {/* Bills dropdown shown to both user and others */}
-        <li style={navItemStyle}>
-          <div style={dropdownHeaderStyle} onClick={toggleBillsDropdown}>
-            Bills {showBillsDropdown ? <FiChevronUp /> : <FiChevronDown />}
-          </div>
-          {showBillsDropdown && (
-            <div style={dropdownMenuStyle}>
-              <a
-                href="/coinbill"
-                style={dropdownItemStyle}
-                className="dropdown-item"
-              >
-                Coin Bill
-              </a>
-            </div>
-          )}
-        </li>
-
-        {/* Coin Stock visible to both */}
         <li style={navItemStyle}>
           <a href="/stock" style={linkStyle}>
             Coin Stock
           </a>
         </li>
+
+        <li style={navItemStyle}>
+          <a href="/coinbill" style={linkStyle}>
+            Coin Bill
+          </a>
+        </li>
+
+        {userRole !== "user" && (
+          <li style={navItemStyle}>
+            <div style={dropdownHeaderStyle} onClick={toggleReportsDropdown}>
+              Reports{" "}
+              {showReportsDropdown ? <FiChevronUp /> : <FiChevronDown />}
+            </div>
+            {showReportsDropdown && (
+              <div style={dropdownMenuStyle}>
+                <a
+                  href="/report"
+                  style={dropdownItemStyle}
+                  className="dropdown-item"
+                >
+                  Daily Sales Report
+                </a>
+                <a
+                  href="/customerreport"
+                  style={dropdownItemStyle}
+                  className="dropdown-item"
+                >
+                  Customer Report
+                </a>
+                <a
+                  href="/overallreport"
+                  style={dropdownItemStyle}
+                  className="dropdown-item"
+                >
+                  Overall Report
+                </a>
+                {/* 
+                <a href="/jobcardreport" style={dropdownItemStyle} className="dropdown-item">
+                  Jobcard Report
+                </a> 
+                */}
+              </div>
+            )}
+          </li>
+        )}
       </ul>
 
       <button onClick={handleLogout} style={logoutButtonStyle} title="Logout">
