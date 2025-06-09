@@ -168,6 +168,8 @@ const addReceiveEntry = async (req, res) => {
     const { id } = req.params;
     const { receivedDetails = [] } = req.body;
 
+    console.log("reee", req.body)
+
     if (!receivedDetails.length) {
       return res.status(400).json({ error: "No receive details provided" });
     }
@@ -219,9 +221,12 @@ const addReceiveEntry = async (req, res) => {
       0
     );
 
+    const hallbalance = req.body.hallmarkBalance;
+
     const updatedBill = await prisma.bill.update({
       where: { id: parseInt(id) },
       data: {
+        hallmarkBalance:parseFloat(hallbalance),
         receivedDetails: {
           create: sanitizedDetails,
         },

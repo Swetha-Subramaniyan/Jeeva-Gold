@@ -122,7 +122,7 @@ const Billing = () => {
     setSelectedBill(bill);
     setSelectedCustomer(customers.find((c) => c.id === bill.customerId));
     setGoldRate(bill.goldRate.toString());
-    setHallmarkCharges(displayHallmarkCharges);
+    setHallmarkCharges(bill.hallmarkBalance.toString());
     setBillItems(
       bill.items.map((item) => ({
         id: item.id || Date.now().toString(),
@@ -525,7 +525,7 @@ const Billing = () => {
     if (field === "goldRate") {
       const goldRateVal = parseFloat(value);
       const purityVal = parseFloat(updatedBillItems[index].purity);
-      setGoldRate(value)
+      setGoldRate(value);
 
       if (!isNaN(goldRateVal) && goldRateVal > 0 && purityVal) {
         updatedBillItems[index].amount = (goldRateVal * purityVal).toFixed(2);
@@ -542,10 +542,13 @@ const Billing = () => {
       showSnackbar("Invalid bill data", "error");
       return;
     }
-    setIsUpdating(true);
+
+   
+
     try {
       const updatedBill = {
         ...selectedBill,
+        hallmarkBalance: parseFloat(hallmarkCharges || 0),
         items: billItems.map((item) => ({
           coinValue: parseFloat(item.coinValue),
           quantity: parseInt(item.quantity),
@@ -568,6 +571,8 @@ const Billing = () => {
           })),
         ],
       };
+
+      console.log("seee", selectedBill, updatedBill);
 
       const response = await fetch(
         `${BACKEND_SERVER_URL}/api/bills/${selectedBill.id}/receive`,
@@ -689,7 +694,7 @@ const Billing = () => {
         })),
       };
 
-      console.log("kiagusbsaliurasbd", billData)
+      console.log("kiagusbsaliurasbd", billData);
 
       const response = await fetch(`${BACKEND_SERVER_URL}/api/bills`, {
         method: "POST",
@@ -702,8 +707,8 @@ const Billing = () => {
       const newBill = await response.json();
       setLatestBill(newBill);
       showSnackbar("Bill created successfully!", "success");
-
       await fetchBills();
+
       resetForm();
     } catch (error) {
       console.error("Error:", error);
@@ -732,6 +737,7 @@ const Billing = () => {
     setViewMode(false);
     setIsSubmitting(false);
     setIsUpdating(false);
+    setDisplayHallmarkCharges(0);
 
     const newBillNo = latestBill
       ? `BILL-${parseInt(latestBill.id) + 1}`
@@ -787,7 +793,7 @@ const Billing = () => {
     }
   };
 
-  console.log("asiuf", rows);
+  console.log("fetched", selectedBill);
 
   return (
     <>
@@ -870,9 +876,8 @@ const Billing = () => {
               className="sidebar-button"
               onClick={handleUpdateBill}
               style={{
-                opacity: rows.length === 0 || isUpdating ? 0.5 : 1,
-                pointerEvents:
-                  rows.length === 0 || isUpdating ? "none" : "auto",
+                opacity: !isUpdating ? 0.5 : 1,
+                pointerEvents: !isUpdating ? "none" : "auto",
               }}
             >
               <span>Update</span>
@@ -908,7 +913,7 @@ const Billing = () => {
                 <th className="th">Bill No</th>
                 <th className="th">Customer</th>
                 <th className="th">Date</th>
-                <th className="th">Total Amount</th>
+                {/* <th className="th">Total Amount</th> */}
                 <th className="th">Action</th>
               </tr>
             </thead>
@@ -923,14 +928,14 @@ const Billing = () => {
                   <td className="td">
                     {new Date(bill.createdAt).toLocaleDateString()}
                   </td>
-                  <td className="td">
+                {/*   <td className="td">
                     {(
                       bill.items.reduce(
                         (sum, item) => sum + item.purity * bill.goldRate,
                         0
                       ) + (bill.hallmarkCharges || 0)
                     ).toFixed(2)}
-                  </td>
+                  </td> */}
                   <td className="td">
                     <Button variant="outlined" onClick={() => viewBill(bill)}>
                       View
@@ -1075,7 +1080,11 @@ const Billing = () => {
                     <TextField
                       size="small"
                       style={{ width: "120px" }}
-                      value={displayHallmarkCharges}
+                      value={
+                        displayHallmarkCharges
+                          ? displayHallmarkCharges
+                          : selectedBill?.hallmarkCharges
+                      }
                       onChange={(e) => {
                         setDisplayHallmarkCharges(e.target.value);
                         setHallmarkCharges(e.target.value);
@@ -1092,9 +1101,14 @@ const Billing = () => {
                   </td>
                   <td className="td">
                     <strong>
-                      {(totalAmount + parseFloat(hallmarkCharges || 0)).toFixed(
-                        2
-                      )}
+                      {selectedBill
+                        ? (
+                            totalAmount +
+                            parseFloat(selectedBill?.hallmarkCharges || 0)
+                          ).toFixed(2)
+                        : (
+                            totalAmount + parseFloat(hallmarkCharges || 0)
+                          ).toFixed(2)}
                     </strong>
                   </td>
                   <td className="td"></td>
@@ -1110,7 +1124,10 @@ const Billing = () => {
                 <p style={{ marginLeft: "42.4rem" }}>
                   <IconButton
                     size="small"
-                    onClick={handleAddRow}
+                    onClick={() => {
+                      handleAddRow();
+                      setIsUpdating(true);
+                    }}
                     className="add-circle-icon"
                   >
                     <AddCircleOutlineIcon />
@@ -1198,7 +1215,7 @@ const Billing = () => {
                     <td className="td">
                       <TextField
                         size="small"
-                        value={Number(row.purityWeight).toFixed(2)}
+                        value={Number(row.purityWeight).toFixed(3)}
                         InputProps={{ readOnly: true }}
                       />
                     </td>
