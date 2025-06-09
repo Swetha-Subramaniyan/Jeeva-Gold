@@ -116,13 +116,13 @@ const Billing = () => {
   };
 
   const viewBill = (bill) => {
-    console.log("aksh", bill)
+    console.log("aksh", bill);
 
     setViewMode(true);
     setSelectedBill(bill);
     setSelectedCustomer(customers.find((c) => c.id === bill.customerId));
     setGoldRate(bill.goldRate.toString());
-    setHallmarkCharges(bill.hallmarkCharges.toString());
+    setHallmarkCharges(displayHallmarkCharges);
     setBillItems(
       bill.items.map((item) => ({
         id: item.id || Date.now().toString(),
@@ -155,7 +155,7 @@ const Billing = () => {
 
     setBillNo(`BILL-${bill.id}`);
   };
- 
+
   const handleDeleteBill = async (billId) => {
     if (
       !window.confirm(
@@ -265,35 +265,42 @@ const Billing = () => {
         updatedRows[index].amount = amount.toFixed(2);
       }
     } else if (field === "amount") {
-      console.log("in amount")
+      console.log("in amount");
       const numValue = parseFloat(value);
       if (!isNaN(numValue)) {
-        console.log("in amount 2") 
+        console.log("in amount 2");
         const hallmarkBalance = parseFloat(hallmarkCharges) || 0;
         const purityBalance = parseFloat(pureBalance) || 0;
-        console.log("sssssss",numValue, hallmarkBalance)
+        console.log("sssssss", numValue, hallmarkBalance);
 
         if (numValue <= hallmarkBalance) {
           setHallmarkCharges((prev) => (prev - numValue).toFixed(2));
         } else {
-           console.log("4") 
+          console.log("4");
           setHallmarkCharges(0);
           const remainingAmount = numValue - hallmarkBalance;
-          const updatedPurity = numValue/updatedRows[index].goldRate;
-         
+          const updatedPurity = numValue / updatedRows[index].goldRate;
+
           const newPurity = (updatedPurity - receivedPurity).toFixed(3);
-           console.log("in amount 2", newPurity, purityBalance, updatedPurity,receivedPurity, remainingAmount,receivedAmount, numValue ) ;
+          console.log(
+            "in amount 2",
+            newPurity,
+            purityBalance,
+            updatedPurity,
+            receivedPurity,
+            remainingAmount,
+            receivedAmount,
+            numValue
+          );
 
-           if(newPurity > 0 || updatedPurity < receivedPurity){
-            console.log("balance", updatedPurity, purityBalance)
-            if (remainingAmount>= 0 ) {
-            updatedRows[index].purityWeight = updatedPurity;
-          } else {
-            showSnackbar("Amount exceeds available pure balances", "error");
+          if (newPurity > 0 || updatedPurity < receivedPurity) {
+            console.log("balance", updatedPurity, purityBalance);
+            if (remainingAmount >= 0) {
+              updatedRows[index].purityWeight = updatedPurity;
+            } else {
+              showSnackbar("Amount exceeds available pure balances", "error");
+            }
           }
-
-             }
-          
         }
       }
     } else if (field === "goldRate") {
@@ -314,9 +321,8 @@ const Billing = () => {
 
     setRows(updatedRows);
   };
- 
-  
-  useEffect(() => {
+
+  /*  useEffect(() => {
     if (goldRate) {
       const updatedRows = rows.map((row) => {
         if (row.purityWeight) {
@@ -325,9 +331,10 @@ const Billing = () => {
         }
         return { ...row, goldRate: goldRate };
       });
+      console.log("------------------------------")
       setRows(updatedRows);
     }
-  }, [goldRate]);
+  }, [goldRate]); */
 
   useEffect(() => {
     const updateTime = () => {
@@ -497,7 +504,7 @@ const Billing = () => {
       ? parseFloat(latestRowWithGoldRate.goldRate)
       : 0;
 
-      console.log("pure balance ", pureBalance, latestGoldRate)
+    console.log("pure balance ", pureBalance, latestGoldRate);
 
     const cashBalance = latestGoldRate * pureBalance;
     const totalBalance = cashBalance + parseFloat(hallmarkCharges || 0);
@@ -508,7 +515,7 @@ const Billing = () => {
       totalBalance: totalBalance.toFixed(2),
     };
   };
- 
+
   const { cashBalance, pureBalance, totalBalance } = calculateBalances();
 
   const handleBillItemChange = (index, field, value) => {
@@ -518,6 +525,7 @@ const Billing = () => {
     if (field === "goldRate") {
       const goldRateVal = parseFloat(value);
       const purityVal = parseFloat(updatedBillItems[index].purity);
+      setGoldRate(value)
 
       if (!isNaN(goldRateVal) && goldRateVal > 0 && purityVal) {
         updatedBillItems[index].amount = (goldRateVal * purityVal).toFixed(2);
@@ -528,7 +536,7 @@ const Billing = () => {
 
     setBillItems(updatedBillItems);
   };
- 
+
   const handleUpdateBill = async () => {
     if (!selectedBill || !selectedCustomer) {
       showSnackbar("Invalid bill data", "error");
@@ -651,13 +659,13 @@ const Billing = () => {
 
       const totalAmount = totalAmountCalc + parseFloat(hallmarkCharges || 0);
 
-      console.log("g", billItems, rows)
+      console.log("g", billItems, rows, goldRate);
 
       const billData = {
         customerId: selectedCustomer.id,
         goldRate: parseFloat(goldRate),
-        displayHallmarkCharges: parseFloat(displayHallmarkCharges || 0),
-        hallmarkCharges: parseFloat(hallmarkCharges || 0),
+        hallmarkCharges: parseFloat(displayHallmarkCharges || 0),
+        hallmarkBalance: parseFloat(hallmarkCharges || 0),
         totalWeight,
         totalPurity,
         totalAmount,
@@ -680,6 +688,8 @@ const Billing = () => {
           amount: parseFloat(row.amount || 0),
         })),
       };
+
+      console.log("kiagusbsaliurasbd", billData)
 
       const response = await fetch(`${BACKEND_SERVER_URL}/api/bills`, {
         method: "POST",
@@ -777,7 +787,7 @@ const Billing = () => {
     }
   };
 
-  console.log("asiuf", rows)
+  console.log("asiuf", rows);
 
   return (
     <>
@@ -1032,7 +1042,6 @@ const Billing = () => {
                   </tr>
                 ))}
 
-             
                 <tr>
                   <td className="td">
                     <strong>Total</strong>
@@ -1189,7 +1198,7 @@ const Billing = () => {
                     <td className="td">
                       <TextField
                         size="small"
-                        value={row.purityWeight}
+                        value={Number(row.purityWeight).toFixed(2)}
                         InputProps={{ readOnly: true }}
                       />
                     </td>
@@ -1403,12 +1412,3 @@ const Billing = () => {
 };
 
 export default Billing;
-
-
-
-
-
-
-
-
-

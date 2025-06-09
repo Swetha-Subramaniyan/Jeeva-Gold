@@ -110,6 +110,7 @@ model Bill {
   customerId      Int
   goldRate        Float
   hallmarkCharges Float            @default(0)
+  hallmarkBalance Float            @default(0)
   totalWeight     Float
   totalPurity     Float
   totalAmount     Float
@@ -128,6 +129,7 @@ model BillItem {
   quantity   Int
   percentage Int
   touch      Float?
+  goldRate   Float?
   weight     Float
   purity     Float
   amount     Float

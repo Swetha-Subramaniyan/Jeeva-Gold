@@ -6,13 +6,16 @@ const createBill = async (req, res) => {
     const {
       customerId,
       goldRate,
-      hallmarkCharges = 0,
+      hallmarkCharges,
+      hallmarkBalance,
       items = [],
       receivedDetails = [],
       totalWeight,
       totalPurity,
       totalAmount,
     } = req.body;
+
+    console.log("req body", req.body)
 
     if (
       totalWeight === undefined ||
@@ -38,6 +41,7 @@ const createBill = async (req, res) => {
           customerId: parseInt(customerId),
           goldRate: parseFloat(goldRate) || 0,
           hallmarkCharges: parseFloat(hallmarkCharges),
+          hallmarkBalance:parseFloat(hallmarkBalance),
           totalWeight: parseFloat(totalWeight),
           totalPurity: parseFloat(totalPurity),
           totalAmount: parseFloat(totalAmount),
@@ -50,6 +54,7 @@ const createBill = async (req, res) => {
               weight: parseFloat(item.weight),
               purity: parseFloat(item.purity),
               amount: item.amount,
+              goldRate: item.goldRate
             })),
           },
           receivedDetails: {
