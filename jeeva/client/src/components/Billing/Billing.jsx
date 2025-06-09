@@ -155,7 +155,7 @@ const Billing = () => {
 
     setBillNo(`BILL-${bill.id}`);
   };
-
+ 
   const handleDeleteBill = async (billId) => {
     if (
       !window.confirm(
@@ -504,11 +504,11 @@ const Billing = () => {
 
     return {
       cashBalance: cashBalance.toFixed(2),
-      pureBalance: pureBalance.toFixed(2),
+      pureBalance: pureBalance.toFixed(3),
       totalBalance: totalBalance.toFixed(2),
     };
   };
-
+ 
   const { cashBalance, pureBalance, totalBalance } = calculateBalances();
 
   const handleBillItemChange = (index, field, value) => {
@@ -528,7 +528,7 @@ const Billing = () => {
 
     setBillItems(updatedBillItems);
   };
-
+ 
   const handleUpdateBill = async () => {
     if (!selectedBill || !selectedCustomer) {
       showSnackbar("Invalid bill data", "error");
@@ -1031,6 +1031,8 @@ const Billing = () => {
                     </td>
                   </tr>
                 ))}
+
+             
                 <tr>
                   <td className="td">
                     <strong>Total</strong>
@@ -1066,9 +1068,9 @@ const Billing = () => {
                       style={{ width: "120px" }}
                       value={displayHallmarkCharges}
                       onChange={(e) => {
-        setDisplayHallmarkCharges(e.target.value);
-        setHallmarkCharges(e.target.value); 
-      }}
+                        setDisplayHallmarkCharges(e.target.value);
+                        setHallmarkCharges(e.target.value);
+                      }}
                       type="number"
                       disabled={viewMode && selectedBill}
                     />
@@ -1401,9 +1403,6 @@ const Billing = () => {
 };
 
 export default Billing;
-
-
-
 
 
 
