@@ -66,6 +66,7 @@ const Billing = () => {
   });
 
   const billRef = useRef(null);
+  const [displayHallmarkCharges, setDisplayHallmarkCharges] = useState(0);
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -115,12 +116,13 @@ const Billing = () => {
   };
 
   const viewBill = (bill) => {
+    console.log("aksh", bill)
+
     setViewMode(true);
     setSelectedBill(bill);
     setSelectedCustomer(customers.find((c) => c.id === bill.customerId));
     setGoldRate(bill.goldRate.toString());
     setHallmarkCharges(bill.hallmarkCharges.toString());
-
     setBillItems(
       bill.items.map((item) => ({
         id: item.id || Date.now().toString(),
@@ -143,11 +145,11 @@ const Billing = () => {
         date: detail.date
           ? new Date(detail.date).toISOString().split("T")[0]
           : new Date().toISOString().split("T")[0],
-        goldRate: detail.goldRate.toString(),
-        givenGold: detail.givenGold?.toString() || "",
+        goldRate: detail.goldRate?.toString(),
+        givenGold: detail.givenGold?.toString(),
         touch: detail.touch?.toString() || "",
         purityWeight: detail.purityWeight.toString(),
-        amount: detail.amount.toString(),
+        amount: detail.amount?.toString(),
       }))
     );
 
@@ -263,22 +265,35 @@ const Billing = () => {
         updatedRows[index].amount = amount.toFixed(2);
       }
     } else if (field === "amount") {
+      console.log("in amount")
       const numValue = parseFloat(value);
       if (!isNaN(numValue)) {
+        console.log("in amount 2") 
         const hallmarkBalance = parseFloat(hallmarkCharges) || 0;
-        const purityBalance = parseFloat(receivedPurity) || 0;
+        const purityBalance = parseFloat(pureBalance) || 0;
+        console.log("sssssss",numValue, hallmarkBalance)
 
         if (numValue <= hallmarkBalance) {
           setHallmarkCharges((prev) => (prev - numValue).toFixed(2));
         } else {
-          const remainingAmount = numValue - hallmarkBalance;
+           console.log("4") 
           setHallmarkCharges(0);
-          if (remainingAmount <= purityBalance) {
-            setReceivedPurity((prev) => (prev - remainingAmount).toFixed(3));
+          const remainingAmount = numValue - hallmarkBalance;
+          const updatedPurity = numValue/updatedRows[index].goldRate;
+         
+          const newPurity = (updatedPurity - receivedPurity).toFixed(3);
+           console.log("in amount 2", newPurity, purityBalance, updatedPurity,receivedPurity, remainingAmount,receivedAmount, numValue ) ;
+
+           if(newPurity > 0 || updatedPurity < receivedPurity){
+            console.log("balance", updatedPurity, purityBalance)
+            if (remainingAmount>= 0 ) {
+            updatedRows[index].purityWeight = updatedPurity;
           } else {
-            setReceivedPurity(0);
-            showSnackbar("Amount exceeds available balances", "error");
+            showSnackbar("Amount exceeds available pure balances", "error");
           }
+
+             }
+          
         }
       }
     } else if (field === "goldRate") {
@@ -482,12 +497,14 @@ const Billing = () => {
       ? parseFloat(latestRowWithGoldRate.goldRate)
       : 0;
 
+      console.log("pure balance ", pureBalance, latestGoldRate)
+
     const cashBalance = latestGoldRate * pureBalance;
     const totalBalance = cashBalance + parseFloat(hallmarkCharges || 0);
 
     return {
       cashBalance: cashBalance.toFixed(2),
-      pureBalance: pureBalance.toFixed(3),
+      pureBalance: pureBalance.toFixed(2),
       totalBalance: totalBalance.toFixed(2),
     };
   };
@@ -634,9 +651,12 @@ const Billing = () => {
 
       const totalAmount = totalAmountCalc + parseFloat(hallmarkCharges || 0);
 
+      console.log("g", billItems, rows)
+
       const billData = {
         customerId: selectedCustomer.id,
         goldRate: parseFloat(goldRate),
+        displayHallmarkCharges: parseFloat(displayHallmarkCharges || 0),
         hallmarkCharges: parseFloat(hallmarkCharges || 0),
         totalWeight,
         totalPurity,
@@ -653,7 +673,7 @@ const Billing = () => {
         })),
         receivedDetails: rows.map((row) => ({
           date: row.date ? new Date(row.date) : new Date(),
-          goldRate: parseFloat(row.goldRate || goldRate),
+          goldRate: parseFloat(row.goldRate),
           givenGold: parseFloat(row.givenGold || 0),
           touch: parseFloat(row.touch || 0),
           purityWeight: parseFloat(row.purityWeight || 0),
@@ -756,6 +776,8 @@ const Billing = () => {
       printButtonParent.appendChild(printButtonClone);
     }
   };
+
+  console.log("asiuf", rows)
 
   return (
     <>
@@ -1042,8 +1064,11 @@ const Billing = () => {
                     <TextField
                       size="small"
                       style={{ width: "120px" }}
-                      value={hallmarkCharges}
-                      onChange={(e) => setHallmarkCharges(e.target.value)}
+                      value={displayHallmarkCharges}
+                      onChange={(e) => {
+        setDisplayHallmarkCharges(e.target.value);
+        setHallmarkCharges(e.target.value); 
+      }}
                       type="number"
                       disabled={viewMode && selectedBill}
                     />
@@ -1178,9 +1203,6 @@ const Billing = () => {
                           viewMode &&
                           index < selectedBill?.receivedDetails?.length
                         }
-                        inputProps={{
-                          step: "1",
-                        }}
                       />
                     </td>
                     {(!viewMode || selectedBill) && (

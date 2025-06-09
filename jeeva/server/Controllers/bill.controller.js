@@ -36,7 +36,7 @@ const createBill = async (req, res) => {
         data: {
           billNo,
           customerId: parseInt(customerId),
-          goldRate: parseFloat(goldRate),
+          goldRate: parseFloat(goldRate) || 0,
           hallmarkCharges: parseFloat(hallmarkCharges),
           totalWeight: parseFloat(totalWeight),
           totalPurity: parseFloat(totalPurity),
@@ -55,13 +55,12 @@ const createBill = async (req, res) => {
           receivedDetails: {
             create: receivedDetails.map((r) => ({
               date: new Date(r.date),
-
-              goldRate: parseFloat(r.goldRate),
+              goldRate: parseFloat(r.goldRate) || 0,
               givenGold: parseFloat(r.givenGold),
               touch: parseFloat(r.touch),
               purityWeight: parseFloat(r.purityWeight),
               amount: parseFloat(r.amount),
-              hallmark: parseFloat(r.hallmark),
+              hallmark: parseFloat(r.hallmark) || 0,
             })),
           },
         },
