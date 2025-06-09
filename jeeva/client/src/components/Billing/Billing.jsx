@@ -543,8 +543,6 @@ const Billing = () => {
       return;
     }
 
-   
-
     try {
       const updatedBill = {
         ...selectedBill,
@@ -928,7 +926,7 @@ const Billing = () => {
                   <td className="td">
                     {new Date(bill.createdAt).toLocaleDateString()}
                   </td>
-                {/*   <td className="td">
+                  {/*   <td className="td">
                     {(
                       bill.items.reduce(
                         (sum, item) => sum + item.purity * bill.goldRate,

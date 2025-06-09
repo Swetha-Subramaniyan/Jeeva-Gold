@@ -15,7 +15,7 @@ const createBill = async (req, res) => {
       totalAmount,
     } = req.body;
 
-    console.log("req body", req.body)
+    console.log("req body", req.body);
 
     if (
       totalWeight === undefined ||
@@ -41,7 +41,7 @@ const createBill = async (req, res) => {
           customerId: parseInt(customerId),
           goldRate: parseFloat(goldRate) || 0,
           hallmarkCharges: parseFloat(hallmarkCharges),
-          hallmarkBalance:parseFloat(hallmarkBalance),
+          hallmarkBalance: parseFloat(hallmarkBalance),
           totalWeight: parseFloat(totalWeight),
           totalPurity: parseFloat(totalPurity),
           totalAmount: parseFloat(totalAmount),
@@ -54,7 +54,7 @@ const createBill = async (req, res) => {
               weight: parseFloat(item.weight),
               purity: parseFloat(item.purity),
               amount: item.amount,
-              goldRate: item.goldRate
+              goldRate: item.goldRate,
             })),
           },
           receivedDetails: {
@@ -168,7 +168,7 @@ const addReceiveEntry = async (req, res) => {
     const { id } = req.params;
     const { receivedDetails = [] } = req.body;
 
-    console.log("reee", req.body)
+    console.log("reee", req.body);
 
     if (!receivedDetails.length) {
       return res.status(400).json({ error: "No receive details provided" });
@@ -226,7 +226,7 @@ const addReceiveEntry = async (req, res) => {
     const updatedBill = await prisma.bill.update({
       where: { id: parseInt(id) },
       data: {
-        hallmarkBalance:parseFloat(hallbalance),
+        hallmarkBalance: parseFloat(hallbalance),
         receivedDetails: {
           create: sanitizedDetails,
         },
