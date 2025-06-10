@@ -321,21 +321,8 @@ const Billing = () => {
 
     setRows(updatedRows);
   };
-
-  /*  useEffect(() => {
-    if (goldRate) {
-      const updatedRows = rows.map((row) => {
-        if (row.purityWeight) {
-          const amount = parseFloat(row.purityWeight) * parseFloat(goldRate);
-          return { ...row, amount: amount.toFixed(2), goldRate: goldRate };
-        }
-        return { ...row, goldRate: goldRate };
-      });
-      console.log("------------------------------")
-      setRows(updatedRows);
-    }
-  }, [goldRate]); */
-
+ 
+  
   useEffect(() => {
     const updateTime = () => {
       const now = new Date();
@@ -546,7 +533,7 @@ const Billing = () => {
     try {
       const updatedBill = {
         ...selectedBill,
-        hallmarkBalance: parseFloat(hallmarkCharges || 0),
+        hallmarkBalance: parseFloat(hallmarkCharges ||0),
         items: billItems.map((item) => ({
           coinValue: parseFloat(item.coinValue),
           quantity: parseInt(item.quantity),
