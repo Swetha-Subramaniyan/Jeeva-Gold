@@ -408,3 +408,29 @@ tr:hover {
     background-color: transparent;
   }
 }
+.flex {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+  border-top: 1px solid #ccc;
+  padding-top: 1rem;
+}
+
+.flex div:first-child {
+  flex: 1;
+  text-align: left;
+}
+
+.flex div:nth-child(2) {
+  flex: 1;
+  text-align: right;
+}
+
+.flex div:last-child {
+  flex: 0 0 100%;
+  text-align: center;
+  margin-top: 1rem;
+  border-top: 1px solid #ccc;
+  padding-top: 1rem;
+}
