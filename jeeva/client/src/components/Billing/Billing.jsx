@@ -28,6 +28,8 @@ const Billing = () => {
   const [time, setTime] = useState("");
   const [goldRate, setGoldRate] = useState("");
   const [hallmarkCharges, setHallmarkCharges] = useState(0);
+
+
   const [rows, setRows] = useState([
     {
       date: new Date().toISOString().slice(0, 10),
@@ -59,6 +61,7 @@ const Billing = () => {
   const [stockError, setStockError] = useState(null);
   const [availableStock, setAvailableStock] = useState(0);
   const [latestBill, setLatestBill] = useState(null);
+
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
@@ -249,6 +252,7 @@ const Billing = () => {
     if (value === "") {
       updatedRows[index][field] = "";
       setRows(updatedRows);
+
       return;
     }
 
@@ -321,8 +325,7 @@ const Billing = () => {
 
     setRows(updatedRows);
   };
- 
-  
+
   useEffect(() => {
     const updateTime = () => {
       const now = new Date();
@@ -366,7 +369,15 @@ const Billing = () => {
         [name]: value,
       };
 
-      if (name === "name" || name === "no" || name === "touch") {
+      if (name === "weight") {
+        const touch = parseFloat(updated.touch) || 0;
+        const weight = parseFloat(value) || 0;
+        if (touch && weight) {
+          updated.pure = (weight * (touch / 100)).toFixed(3);
+        } else {
+          updated.pure = "";
+        }
+      } else if (name === "name" || name === "no" || name === "touch") {
         const coin = parseFloat(updated.name) || 0;
         const no = parseFloat(updated.no) || 0;
         const touch = parseFloat(updated.touch) || 0;
@@ -383,7 +394,6 @@ const Billing = () => {
       return updated;
     });
   };
-
   const calculateValues = () => {
     const coin = parseFloat(newItem.name) || 0;
     const no = parseFloat(newItem.no) || 0;
@@ -495,15 +505,22 @@ const Billing = () => {
 
     const cashBalance = latestGoldRate * pureBalance;
     const totalBalance = cashBalance + parseFloat(hallmarkCharges || 0);
+    const hallmarkBalance= hallmarkCharges||0;
 
     return {
       cashBalance: cashBalance.toFixed(2),
       pureBalance: pureBalance.toFixed(3),
       totalBalance: totalBalance.toFixed(2),
+      hallmarkBalance:hallmarkBalance
     };
   };
+ 
+  
+ 
+  const { cashBalance, hallmarkBalance, pureBalance, totalBalance } =
+    calculateBalances();
 
-  const { cashBalance, pureBalance, totalBalance } = calculateBalances();
+  // const { cashBalance, pureBalance, totalBalance } = calculateBalances();
 
   const handleBillItemChange = (index, field, value) => {
     const updatedBillItems = [...billItems];
@@ -533,7 +550,7 @@ const Billing = () => {
     try {
       const updatedBill = {
         ...selectedBill,
-        hallmarkBalance: parseFloat(hallmarkCharges ||0),
+        hallmarkBalance: parseFloat(hallmarkCharges || 0),
         items: billItems.map((item) => ({
           coinValue: parseFloat(item.coinValue),
           quantity: parseInt(item.quantity),
@@ -779,6 +796,15 @@ const Billing = () => {
   };
 
   console.log("fetched", selectedBill);
+
+  useEffect(() => {
+    if (viewMode && selectedBill) {
+      setDisplayHallmarkCharges(selectedBill.hallmarkCharges || 0);
+    } else if (!selectedBill && !viewMode) {
+      setDisplayHallmarkCharges(0);
+      setHallmarkCharges(0);
+    }
+  }, [viewMode, selectedBill]);
 
   return (
     <>
@@ -1065,14 +1091,11 @@ const Billing = () => {
                     <TextField
                       size="small"
                       style={{ width: "120px" }}
-                      value={
-                        displayHallmarkCharges
-                          ? displayHallmarkCharges
-                          : selectedBill?.hallmarkCharges
-                      }
+                      value={displayHallmarkCharges}
                       onChange={(e) => {
-                        setDisplayHallmarkCharges(e.target.value);
-                        setHallmarkCharges(e.target.value);
+                        const value = parseFloat(e.target.value);
+                        setDisplayHallmarkCharges(value);
+                        setHallmarkCharges(value);
                       }}
                       type="number"
                       disabled={viewMode && selectedBill}
@@ -1234,10 +1257,15 @@ const Billing = () => {
             </table>
 
             <div className="flex">
-              <b>Cash Balance: {cashBalance}</b>
-              <b>Pure Balance: {pureBalance}</b>
-              <b>Total Balance: {totalBalance}</b>
-              <b>Hallmark Balance: {hallmarkCharges}</b>
+              <div>
+                <b>Pure Balance: {pureBalance}</b>
+              </div>
+              <div>
+                <b>Hallmark Balance: {hallmarkBalance}</b>
+              </div>
+              <div>
+                <b>Total Balance: {totalBalance}</b>
+              </div>
             </div>
           </Box>
         </Box>
@@ -1368,6 +1396,8 @@ const Billing = () => {
               value={newItem.weight}
               onChange={handleInputChange}
               margin="normal"
+              type="number"
+              inputProps={{ step: "0.001" }}
             />
 
             <TextField
@@ -1377,6 +1407,7 @@ const Billing = () => {
               value={newItem.pure}
               onChange={handleInputChange}
               margin="normal"
+              InputProps={{ readOnly: true }}
             />
 
             <Box className="modal-actions">
@@ -1414,3 +1445,8 @@ const Billing = () => {
 };
 
 export default Billing;
+
+
+
+
+
