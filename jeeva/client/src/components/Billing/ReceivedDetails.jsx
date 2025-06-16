@@ -78,21 +78,36 @@ const ReceivedDetails = ({
     }
   }, [rows, currentBalances.pureBalance, currentBalances.hallmarkBalance]);
 
+  // useEffect(() => {
+  //   const totalPurityWeight = rows.reduce((sum, row) => {
+  //     return sum + parseFloatSafe(row.purityWeight);
+  //   }, 0);
+
+  //   if (totalPurityWeight > parseFloatSafe(initialPureBalance)) {
+  //     showSnackbar(
+  //       `Total purity weight (${totalPurityWeight.toFixed(
+  //         2
+  //       )}) exceeds available pure balance (${initialPureBalance})`,
+  //       "error"
+  //     );
+  //   }
+  // }, [rows, initialPureBalance]);
+
   useEffect(() => {
     const totalPurityWeight = rows.reduce((sum, row) => {
       return sum + parseFloatSafe(row.purityWeight);
     }, 0);
 
     if (totalPurityWeight > parseFloatSafe(initialPureBalance)) {
-      showSnackbar(
+      console.warn(
         `Total purity weight (${totalPurityWeight.toFixed(
           2
-        )}) exceeds available pure balance (${initialPureBalance})`,
-        "error"
+        )}) exceeds available pure balance (${initialPureBalance})`
       );
+      // Do not show in UI
     }
   }, [rows, initialPureBalance]);
-
+  
   const showSnackbar = (message, severity = "error") => {
     setSnackbar({ open: true, message, severity });
   };
@@ -343,7 +358,7 @@ const ReceivedDetails = ({
           <b>Hallmark Balance: {currentBalances.hallmarkBalance?.toFixed(2)}</b>
         </div>
         <div>
-          <b>Total Balance: {currentBalances.totalBalance?.toFixed(2)}</b>
+          <b>Total Balance: {Math.round(currentBalances.totalBalance)}</b>
         </div>
       </div>
 

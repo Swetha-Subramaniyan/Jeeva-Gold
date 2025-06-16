@@ -79,6 +79,41 @@ const BillDetails = ({
     setStockError(null);
   };
 
+  // const handleInputChange = (e) => {
+  //   const { name, value } = e.target;
+
+  //   setNewItem((prev) => {
+  //     const updated = {
+  //       ...prev,
+  //       [name]: value,
+  //     };
+
+  //     if (name === "weight") {
+  //       const touch = parseFloat(updated.touch) || 0;
+  //       const weight = parseFloat(value) || 0;
+  //       if (touch && weight) {
+  //         updated.pure = weight * (touch / 100);
+  //       } else {
+  //         updated.pure = "";
+  //       }
+  //     } else if (name === "name" || name === "no" || name === "touch") {
+  //       const coin = parseFloat(updated.name) || 0;
+  //       const no = parseFloat(updated.no) || 0;
+  //       const touch = parseFloat(updated.touch) || 0;
+
+  //       if (coin && no && touch) {
+  //         const weight = coin * no;
+  //         const pure = weight * (touch / 100);
+
+  //         updated.weight = weight;
+  //         updated.pure = pure;
+  //       }
+  //     }
+
+  //     return updated;
+  //   });
+  // };
+ 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
 
@@ -92,9 +127,7 @@ const BillDetails = ({
         const touch = parseFloat(updated.touch) || 0;
         const weight = parseFloat(value) || 0;
         if (touch && weight) {
-          updated.pure = weight * (touch / 100);
-        } else {
-          updated.pure = "";
+          updated.pure = parseFloat((weight * (touch / 100)).toFixed(3));
         }
       } else if (name === "name" || name === "no" || name === "touch") {
         const coin = parseFloat(updated.name) || 0;
@@ -104,16 +137,23 @@ const BillDetails = ({
         if (coin && no && touch) {
           const weight = coin * no;
           const pure = weight * (touch / 100);
-
           updated.weight = weight;
-          updated.pure = pure;
+          // updated.pure = parseFloat(pure.toFixed(3));
+          updated.pure = pure.toFixed(3);
+        }
+      } else if (name === "pure") {
+        const floatVal = parseFloat(value);
+        if (!isNaN(floatVal)) {
+          updated.pure = parseFloat(floatVal.toFixed(3));
+        } else {
+          updated.pure = value;
         }
       }
 
       return updated;
     });
   };
-
+  
   const handleSaveItem = () => {
     if (!newItem.name || !newItem.no || !newItem.percentage) {
       showSnackbar("Please fill all required fields", "error");
@@ -402,14 +442,40 @@ const BillDetails = ({
               inputProps={{ step: "0.001" }}
             />
 
-            <TextField
+            {/* <TextField
               fullWidth
               label="Purity (Auto-calculated)"
               name="pure"
               value={newItem.pure}
+             
               onChange={handleInputChange}
               margin="normal"
-              InputProps={{ readOnly: true }}
+              type="number"
+              inputProps={{ step: "0.001" }}
+            /> */}
+            <TextField
+              fullWidth
+              label="Purity (Auto-calculated or Manual)"
+              name="pure"
+              value={newItem.pure}
+              onChange={(e) => {
+                const input = e.target.value;
+                // Allow user to type freely, including partial decimals
+                setNewItem((prev) => ({ ...prev, pure: input }));
+              }}
+              onBlur={(e) => {
+                // When user finishes editing, fix to 3 decimals
+                const val = parseFloat(e.target.value);
+                if (!isNaN(val)) {
+                  setNewItem((prev) => ({
+                    ...prev,
+                    pure: val.toFixed(3),
+                  }));
+                }
+              }}
+              margin="normal"
+              type="number"
+              inputProps={{ step: "0.001" }}
             />
 
             <Box className="modal-actions">
