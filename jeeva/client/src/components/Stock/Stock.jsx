@@ -400,7 +400,7 @@ const Stock = () => {
             <input
               type="text"
               name="coinType"
-              placeholder="Coin Type"
+              placeholder="Coin Type Eg:916,999"
               value={formData.coinType}
               onChange={handleChange}
               onKeyDown={(e) => handleKeyDown(e, gramRef)}
