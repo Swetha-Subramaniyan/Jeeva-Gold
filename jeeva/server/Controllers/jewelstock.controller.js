@@ -37,3 +37,27 @@ exports.getAllJewelStock = async (req, res) => {
     res.status(500).json({ error: "Failed to fetch jewel stock entries" });
   }
 };
+exports.updateJewelStock = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { jewelName, weight, stoneWeight, finalWeight, touch, purityValue } =
+      req.body;
+
+    const updatedEntry = await prisma.jewelStock.update({
+      where: { id: parseInt(id) },
+      data: {
+        jewelName,
+        weight: parseFloat(weight),
+        stoneWeight: parseFloat(stoneWeight),
+        finalWeight: parseFloat(finalWeight),
+        touch: parseFloat(touch),
+        purityValue: parseFloat(purityValue),
+      },
+    });
+
+    res.status(200).json(updatedEntry);
+  } catch (error) {
+    console.error("Error updating jewel stock:", error);
+    res.status(500).json({ error: "Failed to update jewel stock entry" });
+  }
+};
