@@ -54,7 +54,7 @@ const ReceivedDetails = ({
     });
 
     return {
-      pureBalance: Math.max(0, pure),
+      pureBalance: pure,
       totalBalance: Math.max(0, total),
       hallmarkBalance: Math.max(0, hallmark),
     };
@@ -78,36 +78,22 @@ const ReceivedDetails = ({
     }
   }, [rows, currentBalances.pureBalance, currentBalances.hallmarkBalance]);
 
-  // useEffect(() => {
-  //   const totalPurityWeight = rows.reduce((sum, row) => {
-  //     return sum + parseFloatSafe(row.purityWeight);
-  //   }, 0);
-
-  //   if (totalPurityWeight > parseFloatSafe(initialPureBalance)) {
-  //     showSnackbar(
-  //       `Total purity weight (${totalPurityWeight.toFixed(
-  //         2
-  //       )}) exceeds available pure balance (${initialPureBalance})`,
-  //       "error"
-  //     );
-  //   }
-  // }, [rows, initialPureBalance]);
-
   useEffect(() => {
     const totalPurityWeight = rows.reduce((sum, row) => {
       return sum + parseFloatSafe(row.purityWeight);
     }, 0);
 
+    console.log("tot", totalPurityWeight, initialPureBalance)
+
     if (totalPurityWeight > parseFloatSafe(initialPureBalance)) {
-      console.warn(
+      showSnackbar(
         `Total purity weight (${totalPurityWeight.toFixed(
           2
         )}) exceeds available pure balance (${initialPureBalance})`
       );
-      // Do not show in UI
     }
   }, [rows, initialPureBalance]);
-  
+
   const showSnackbar = (message, severity = "error") => {
     setSnackbar({ open: true, message, severity });
   };
@@ -201,12 +187,11 @@ const ReceivedDetails = ({
         const hallmarkDeduction = Math.min(amount, availableHallmark);
         const remainingAmount = amount - initialHallmarkBalance;
 
-
         let purityWeight = 0;
-        if (availableHallmark ==  0) {
-          console.log("remmmmmmmmmmmmmm", availableHallmark)
-          purityWeight = (remainingAmount) / goldRate;
-        } 
+        if (availableHallmark == 0) {
+          console.log("remmmmmmmmmmmmmm", availableHallmark);
+          purityWeight = remainingAmount / goldRate;
+        }
 
         row.purityWeight = purityWeight;
       }
