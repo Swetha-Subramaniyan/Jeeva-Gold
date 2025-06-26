@@ -7,7 +7,6 @@ import {
   Button,
   Alert,
 } from "@mui/material";
-import { BACKEND_SERVER_URL } from "../../Config/Config";
 
 const BillDetails = ({
   billItems,
@@ -79,41 +78,6 @@ const BillDetails = ({
     setStockError(null);
   };
 
-  // const handleInputChange = (e) => {
-  //   const { name, value } = e.target;
-
-  //   setNewItem((prev) => {
-  //     const updated = {
-  //       ...prev,
-  //       [name]: value,
-  //     };
-
-  //     if (name === "weight") {
-  //       const touch = parseFloat(updated.touch) || 0;
-  //       const weight = parseFloat(value) || 0;
-  //       if (touch && weight) {
-  //         updated.pure = weight * (touch / 100);
-  //       } else {
-  //         updated.pure = "";
-  //       }
-  //     } else if (name === "name" || name === "no" || name === "touch") {
-  //       const coin = parseFloat(updated.name) || 0;
-  //       const no = parseFloat(updated.no) || 0;
-  //       const touch = parseFloat(updated.touch) || 0;
-
-  //       if (coin && no && touch) {
-  //         const weight = coin * no;
-  //         const pure = weight * (touch / 100);
-
-  //         updated.weight = weight;
-  //         updated.pure = pure;
-  //       }
-  //     }
-
-  //     return updated;
-  //   });
-  // };
- 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
 
@@ -200,6 +164,7 @@ const BillDetails = ({
 
     setBillItems(updatedBillItems);
   };
+  //fixed removed
 
   return (
     <Box className="itemsSection">
@@ -229,7 +194,7 @@ const BillDetails = ({
               <td className="td">{item.weight}</td>
               <td className="td">{item.purity}</td>
               <td className="td">
-                {item.goldRate ? item.amount.toFixed(2) : ""}
+                {item.goldRate ? item.amount  : ""}
               </td>
 
               <td className="td">
