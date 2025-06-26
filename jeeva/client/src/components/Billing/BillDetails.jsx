@@ -164,6 +164,7 @@ const BillDetails = ({
 
     setBillItems(updatedBillItems);
   };
+  //fixed removed
 
   return (
     <Box className="itemsSection">
@@ -193,7 +194,7 @@ const BillDetails = ({
               <td className="td">{item.weight}</td>
               <td className="td">{item.purity}</td>
               <td className="td">
-                {item.goldRate ? item.amount.toFixed(2) : ""}
+                {item.goldRate ? item.amount  : ""}
               </td>
 
               <td className="td">
