@@ -12,7 +12,6 @@
   bottom: 25rem;
 }
 
-
 .heading {
   text-align: center;
   margin-bottom: 2rem;
@@ -23,7 +22,6 @@
   position: relative;
   padding-bottom: 0.5rem;
 }
-
 .heading::after {
   content: '';
   position: absolute;
@@ -99,7 +97,8 @@
 }
 
 .itemsSection h3 {
-  color: #2c3e50;
+  /* color: #2c3e50; */
+  color: black;
   font-size: 1.3rem;
   font-weight: 600;
   margin-bottom: 1rem;
@@ -135,12 +134,15 @@
 }
 
 .td {
-  color: #495057;
-  font-size: 0.9rem;
+  /* color: #495057; */
+  color: black;
+  font-size:1rem;
+  /* font-weight: 100; */
 }
 
 tr:nth-child(even) {
   background-color: #f8f9fa;
+
 }
 
 tr:hover {
@@ -390,7 +392,7 @@ tr:hover {
     width: 100%;
     padding: 0;
   }
-  /* Add to your CSS or use inline styles */
+
 @media print {
   .container {
     width: 100% !important;
@@ -405,7 +407,7 @@ tr:hover {
   
   .billInfo, .customerDetails {
     box-shadow: none;
-    background-color: transparent;
+    background-color:transparent;
   }
 }
 .flex {
@@ -433,4 +435,15 @@ tr:hover {
   margin-top: 1rem;
   border-top: 1px solid #ccc;
   padding-top: 1rem;
+}
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}
+input[readonly],
+input[disabled] {
+  color: #000 !important;
+  opacity: 2 !important;
+  -webkit-text-fill-color: #000 !important;
 }

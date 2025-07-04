@@ -10,6 +10,7 @@ import {
   TableRow,
   TableCell,
 } from "@mui/material";
+import "./Billing.css"
 
 const ViewBill = ({ fetchedBills, customers, viewBill, setViewMode }) => {
   return (

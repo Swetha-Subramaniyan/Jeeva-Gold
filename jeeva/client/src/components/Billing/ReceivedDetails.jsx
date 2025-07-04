@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { TextField, IconButton, Box, Alert, Snackbar } from "@mui/material";
 import { MdDeleteForever } from "react-icons/md";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
+import "./Billing.css"
 
 const ReceivedDetails = ({
   rows,
@@ -305,7 +306,7 @@ const ReceivedDetails = ({
                     (isViewMode && !row.isNew) ||
                     (row.mode === "amount" && !(isViewMode && row.isNew))
                   }
-                  inputProps={{ min: 0, max: 100, step: "0.1" }}
+                  inputProps={{ min:0, max: 100, step: "0.1" }}
                 />
               </td>
               <td className="td">
