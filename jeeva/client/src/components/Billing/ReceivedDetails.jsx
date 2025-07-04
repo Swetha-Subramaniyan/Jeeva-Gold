@@ -48,14 +48,19 @@ const ReceivedDetails = ({
 
         if (amountAfterHallmark > 0 && row.goldRate) {
           const purity = amountAfterHallmark / parseFloatSafe(row.goldRate);
+          if(pure > 0){
           pure -= purity;
+          }
+          else{
+            pure += purity;
+          }
         }
       }
     });
 
     return {
       pureBalance: pure,
-      totalBalance: Math.max(0, total),
+      totalBalance: total,
       hallmarkBalance: Math.max(0, hallmark),
     };
   };
@@ -70,10 +75,17 @@ const ReceivedDetails = ({
       const latestGoldRate = parseFloatSafe(
         goldRateRows[goldRateRows.length - 1].goldRate
       );
-      const newTotalBalance =
-        parseFloatSafe(currentBalances.pureBalance) * latestGoldRate +
-        parseFloatSafe(currentBalances.hallmarkBalance);
 
+      let newTotalBalance;
+
+      if (currentBalances.pureBalance > 0) {
+        newTotalBalance =
+          parseFloatSafe(currentBalances.pureBalance) * latestGoldRate +
+          parseFloatSafe(currentBalances.hallmarkBalance);
+      }else {
+         newTotalBalance =
+          parseFloatSafe(currentBalances.pureBalance) * latestGoldRate
+      }
       setTotalBalance(newTotalBalance);
     }
   }, [rows, currentBalances.pureBalance, currentBalances.hallmarkBalance]);
@@ -83,7 +95,7 @@ const ReceivedDetails = ({
       return sum + parseFloatSafe(row.purityWeight);
     }, 0);
 
-    console.log("tot", totalPurityWeight, initialPureBalance)
+    console.log("tot", totalPurityWeight, initialPureBalance);
 
     if (totalPurityWeight > parseFloatSafe(initialPureBalance)) {
       showSnackbar(
@@ -343,7 +355,7 @@ const ReceivedDetails = ({
           <b>Hallmark Balance: {currentBalances.hallmarkBalance?.toFixed(2)}</b>
         </div>
         <div>
-          <b>Total Balance: {Math.round(currentBalances.totalBalance)}</b>
+          <b>Total Balance: {currentBalances.totalBalance?.toFixed(2)}</b>
         </div>
       </div>
 
