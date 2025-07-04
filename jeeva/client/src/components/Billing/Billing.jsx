@@ -235,6 +235,15 @@ const Billing = () => {
 
   const handlePrint = async () => {
     const input = billRef.current;
+    const searchSection = document.querySelector(".searchSection");
+    if (searchSection) searchSection.style.display = "none";
+
+    const addIconInForm = document.querySelector(
+      'p > .MuiIconButton-root svg[data-testid="AddCircleOutlineIcon"]'
+    );
+    const addIconWrapper = addIconInForm?.closest("p");
+    if (addIconWrapper) addIconWrapper.style.display = "none";
+
     if (input) {
       const canvas = await html2canvas(input, {
         scale: window.devicePixelRatio || 2,
@@ -242,16 +251,20 @@ const Billing = () => {
         scrollY: -window.scrollY,
       });
 
+      if (searchSection) searchSection.style.display = "";
+      if (addIconWrapper) addIconWrapper.style.display = "";
+
       const imgData = canvas.toDataURL("image/png");
       const pdf = new jsPDF("l", "mm", "a5");
       const pageWidth = pdf.internal.pageSize.getWidth();
       const pageHeight = pdf.internal.pageSize.getHeight();
-      
+
       pdf.addImage(imgData, "PNG", 0, 0, pageWidth, pageHeight);
       pdf.save("bill.pdf");
     }
   };
-
+  
+  
   const reduceStockForBill = async (items) => {
     try {
       const results = await Promise.allSettled(
