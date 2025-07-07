@@ -14,12 +14,13 @@ function Cashgold() {
   const [editId, setEditId] = useState(null);
 
   const [formData, setFormData] = useState({
-    date: "",
+    date: new Date().toISOString().split("T")[0],
     type: "Select",
     cashAmount: "",
     goldValue: "",
     touch: "",
     purity: "",
+    remarks: "",
   });
 
   useEffect(() => {
@@ -34,13 +35,21 @@ function Cashgold() {
       console.error("Error fetching entries:", error);
     }
   };
-
+  const calculateTotalCash = () => {
+    return entries
+      .filter((entry) => entry.type === "Cash")
+      .reduce((sum, entry) => sum + parseFloat(entry.cashAmount || 0), 0)
+      .toFixed(2);
+  };
+  
   const handleChange = (e) => {
     const { name, value } = e.target;
     const updatedForm = { ...formData, [name]: value };
 
     if (name === "goldValue" || name === "touch") {
-      const goldValue = parseFloat(name === "goldValue" ? value : formData.goldValue);
+      const goldValue = parseFloat(
+        name === "goldValue" ? value : formData.goldValue
+      );
       const touch = parseFloat(name === "touch" ? value : formData.touch);
       if (!isNaN(goldValue) && !isNaN(touch)) {
         updatedForm.purity = ((goldValue * touch) / 100).toFixed(3);
@@ -57,7 +66,10 @@ function Cashgold() {
       const cashAmount = parseFloat(formData.cashAmount);
       const rate = parseFloat(goldRate);
       if (!isNaN(cashAmount) && !isNaN(rate)) {
-        setFormData((prev) => ({ ...prev, purity: (cashAmount / rate).toFixed(3) }));
+        setFormData((prev) => ({
+          ...prev,
+          purity: (cashAmount / rate).toFixed(3),
+        }));
       }
     }
   }, [formData.cashAmount, goldRate, formData.type]);
@@ -68,11 +80,14 @@ function Cashgold() {
     const payload = {
       date: formData.date,
       type: formData.type,
-      cashAmount: formData.type === "Cash" ? parseFloat(formData.cashAmount) : null,
-      goldValue: formData.type === "Gold" ? parseFloat(formData.goldValue) : null,
+      cashAmount:
+        formData.type === "Cash" ? parseFloat(formData.cashAmount) : null,
+      goldValue:
+        formData.type === "Gold" ? parseFloat(formData.goldValue) : null,
       touch: formData.type === "Gold" ? parseFloat(formData.touch) : null,
       purity: parseFloat(formData.purity),
       goldRate: formData.type === "Cash" ? parseFloat(goldRate) : null,
+      remarks: formData.remarks || null,
     };
 
     try {
@@ -93,20 +108,6 @@ function Cashgold() {
     }
   };
 
-  const resetForm = () => {
-    setFormData({
-      date: "",
-      type: "Select",
-      cashAmount: "",
-      goldValue: "",
-      touch: "",
-      purity: "",
-    });
-    setGoldRate(0);
-    setIsEditMode(false);
-    setEditId(null);
-  };
-
   const handleEdit = (entry) => {
     setIsEditMode(true);
     setEditId(entry.id);
@@ -117,13 +118,47 @@ function Cashgold() {
       goldValue: entry.goldValue || "",
       touch: entry.touch || "",
       purity: entry.purity || "",
+      remarks: entry.remarks || "",
     });
     setGoldRate(entry.goldRate || 0);
     setShowFormPopup(true);
   };
 
+  const handleDelete = async (id) => {
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this entry?"
+    );
+    if (!confirmDelete) return;
+
+    try {
+      await axios.delete(`${BACKEND_SERVER_URL}/api/entries/${id}`);
+      toast.success("Entry deleted successfully!");
+      fetchEntries();
+    } catch (error) {
+      toast.error("Failed to delete entry.");
+      console.error("Error deleting entry:", error);
+    }
+  };
+
+  const resetForm = () => {
+    setFormData({
+      date: new Date().toISOString().split("T")[0],
+      type: "Select",
+      cashAmount: "",
+      goldValue: "",
+      touch: "",
+      purity: "",
+      remarks: "",
+    });
+    setGoldRate(0);
+    setIsEditMode(false);
+    setEditId(null);
+  };
+
   const calculateTotalPurity = () => {
-    return entries.reduce((sum, entry) => sum + parseFloat(entry.purity || 0), 0).toFixed(3);
+    return entries
+      .reduce((sum, entry) => sum + parseFloat(entry.purity || 0), 0)
+      .toFixed(3);
   };
 
   return (
@@ -222,7 +257,6 @@ function Cashgold() {
               )}
               <div className="form-group">
                 <label>Purity (g):</label>
-                {/* <input type="number" name="purity" value={formData.purity} readOnly className="read-only" /> */}
                 <input
                   type="number"
                   name="purity"
@@ -231,6 +265,24 @@ function Cashgold() {
                   readOnly={!isEditMode}
                   className={isEditMode ? "" : "read-only"}
                   step="0.001"
+                />
+              </div>
+              <div className="form-group">
+                <label>Remarks:</label>
+                <textarea
+                  name="remarks"
+                  value={formData.remarks}
+                  onChange={handleChange}
+                  placeholder="Enter description (optional)"
+                  rows={3}
+                  style={{
+                    width: "100%",
+                    padding: "8px",
+                    borderRadius: "4px",
+                    border: "1px solid #ccc",
+                    fontFamily: "inherit",
+                    resize: "vertical",
+                  }}
                 />
               </div>
               <div className="button-group">
@@ -254,7 +306,8 @@ function Cashgold() {
               <th>Amount/Value</th>
               <th>Touch/Rate</th>
               <th>Purity (g)</th>
-              <th>Edit</th>
+              <th>Remarks</th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody>
@@ -274,6 +327,7 @@ function Cashgold() {
                     : `${entry.touch}%`}
                 </td>
                 <td>{entry.purity}</td>
+                <td>{entry.remarks || "-"}</td>
                 <td>
                   <button
                     className="edit-btn"
@@ -281,16 +335,30 @@ function Cashgold() {
                   >
                     ✏️
                   </button>
+                  <button
+                    className="delete-btn"
+                    onClick={() => handleDelete(entry.id)}
+                    title="Delete"
+                  >
+                    🗑️
+                  </button>
                 </td>
               </tr>
             ))}
             <tr className="totals-row">
-              <td colSpan="5">
+              <td colSpan="3">
+                <strong>Total Cash (₹)</strong>
+              </td>
+              <td>
+                <strong>₹{calculateTotalCash()}</strong>
+              </td>
+              <td colSpan="1">
                 <strong>Total Purity</strong>
               </td>
-              <td colSpan="2">
+              <td>
                 <strong>{calculateTotalPurity()}g</strong>
               </td>
+              <td colSpan="2" />
             </tr>
           </tbody>
         </table>

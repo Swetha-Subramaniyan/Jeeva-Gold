@@ -183,5 +183,6 @@ model Entry {
   touch      Float?
   purity     Float?
   goldRate   Float?
+  remarks    String?
   createdAt  DateTime @default(now())
 }

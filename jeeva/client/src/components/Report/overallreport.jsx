@@ -128,7 +128,7 @@ const OverallReport = () => {
       setReportData([
         {
           label: "Customer Balance Total",
-          value: `₹${customerBalanceTotal.toLocaleString("en-IN", {
+          value: `${customerBalanceTotal.toLocaleString("en-IN", {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2,
           })}`,
@@ -142,16 +142,16 @@ const OverallReport = () => {
         },
         {
           label: "Coin Stock",
-          value: `${coinData.length} Coins (${totalCoinPurity.toFixed(
-            3
-          )}g Purity)`,
+          value: ` ${totalCoinPurity.toFixed(3)}g Purity (${
+            coinData.length
+          } Coins)`,
           tooltip: "Current coin inventory with total purity",
         },
         {
           label: "Jewel Stock",
-          value: `${jewelData.length} Items (${totalJewelPurity.toFixed(
-            3
-          )}g Purity)`,
+          value: ` ${totalJewelPurity.toFixed(3)}g Purity ( ${
+            jewelData.length
+          } Items)`,
           tooltip: "Current jewel inventory with total purity",
         },
         {
@@ -160,16 +160,10 @@ const OverallReport = () => {
           tooltip:
             "Total gold purity equivalent from all customer advance transactions (both cash and gold advances)",
         },
-        {
-          label: "Active Customers",
-          value: `${customers.length} (${
-            customerBalances.filter((c) => c.balance > 0).length
-          } with balance)`,
-          tooltip: "Total customers and those with outstanding balances",
-        },
+
         {
           label: "Overall Value",
-          value: `₹${overallValue.toLocaleString("en-IN", {
+          value: `${overallValue.toLocaleString("en-IN", {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2,
           })}`,

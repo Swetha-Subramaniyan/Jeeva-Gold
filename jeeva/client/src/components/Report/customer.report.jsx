@@ -141,16 +141,6 @@ const CustomerReport = () => {
     setPage(0);
   };
 
-  const calculateTotal = (bills) => {
-    return bills.reduce((total, bill) => {
-      const billTotal = bill.items.reduce(
-        (sum, item) => sum + item.purity * bill.goldRate,
-        0
-      );
-      return total + billTotal + (bill.hallmarkCharges || 0);
-    }, 0);
-  };
-
   const calculateWeight = (bills) => {
     return bills.reduce(
       (total, bill) =>
@@ -165,16 +155,6 @@ const CustomerReport = () => {
         total + bill.items.reduce((sum, item) => sum + item.purity, 0),
       0
     );
-  };
-
-  const handleReset = () => {
-    const today = new Date().toISOString().split("T")[0];
-    setSelectedCustomer(null);
-    setStartDate(today);
-    setEndDate(today);
-    setFilteredBills(bills); 
-    setOpeningBalance(0);
-    setClosingBalance(0);
   };
 
   const handleViewBill = (bill) => {
@@ -224,10 +204,6 @@ const CustomerReport = () => {
           InputLabelProps={{ shrink: true }}
           sx={{ minWidth: 200 }}
         />
-
-        <Button variant="outlined" onClick={handleReset}>
-          Reset
-        </Button>
       </Box>
 
       {selectedCustomer && (
@@ -240,12 +216,7 @@ const CustomerReport = () => {
             fontWeight: "bold",
           }}
         >
-          <Typography variant="body1">
-            Opening Balance: ₹{openingBalance.toFixed(2)}
-          </Typography>
-          <Typography variant="body1">
-            Closing Balance: ₹{closingBalance.toFixed(2)}
-          </Typography>
+         
         </Box>
       )}
 
@@ -258,9 +229,7 @@ const CustomerReport = () => {
           fontWeight: "bold",
         }}
       >
-        <Typography variant="body1">
-          Total Sales: ₹{calculateTotal(filteredBills).toFixed(2)}
-        </Typography>
+      
         <Typography variant="body1">
           Total Weight: {calculateWeight(filteredBills).toFixed(3)} g
         </Typography>
@@ -377,9 +346,7 @@ const CustomerReport = () => {
                   {customers.find((c) => c.id === selectedBill.customerId)
                     ?.name || "Unknown"}
                 </Typography>
-                <Typography variant="body1">
-                  <strong>Gold Rate:</strong> {selectedBill.goldRate}
-                </Typography>
+               
               </Box>
 
               <TableContainer component={Paper} sx={{ mb: 2 }}>
@@ -525,3 +492,13 @@ const CustomerReport = () => {
 };
 
 export default CustomerReport;
+
+
+
+
+
+
+
+
+
+
