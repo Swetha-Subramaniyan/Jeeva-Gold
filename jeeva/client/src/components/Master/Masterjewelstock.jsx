@@ -50,16 +50,15 @@ const Masterjewelstock = () => {
     const { name, value } = e.target;
     const updatedData = { ...formData, [name]: value };
 
-    if (!isEditMode) {
-      const weight = parseFloat(updatedData.weight) || 0;
-      const stoneWeight = parseFloat(updatedData.stoneWeight) || 0;
-      const finalWeight = weight - stoneWeight;
-      updatedData.finalWeight = finalWeight.toFixed(3);
+    const weight = parseFloat(updatedData.weight) || 0;
+    const stoneWeight = parseFloat(updatedData.stoneWeight) || 0;
 
-      const touch = parseFloat(updatedData.touch);
-      updatedData.purityValue =
-        finalWeight && touch ? ((finalWeight * touch) / 100).toFixed(3) : "";
-    }
+    const finalWeight = weight - stoneWeight;
+    updatedData.finalWeight = finalWeight.toFixed(3);
+
+    const touch = parseFloat(updatedData.touch);
+    updatedData.purityValue =
+      finalWeight && touch ? ((finalWeight * touch) / 100).toFixed(3) : "";
 
     setFormData(updatedData);
   };
@@ -129,6 +128,32 @@ const Masterjewelstock = () => {
     setEditId(entry.id);
     setIsEditMode(true);
     setShowFormPopup(true);
+  };
+
+  const handleDelete = async (id) => {
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this entry?"
+    );
+    if (!confirmDelete) return;
+
+    try {
+      const response = await fetch(
+        `${BACKEND_SERVER_URL}/api/jewel-stock/${id}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to delete entry");
+
+      const updatedEntries = entries.filter((entry) => entry.id !== id);
+      setEntries(updatedEntries);
+      calculateTotalPurity(updatedEntries);
+      toast.success("Entry deleted successfully!");
+    } catch (error) {
+      console.error(error);
+      toast.error("Error deleting entry.");
+    }
   };
 
   return (
@@ -251,6 +276,7 @@ const Masterjewelstock = () => {
                 <th>Touch (%)</th>
                 <th>Purity (g)</th>
                 <th>Edit</th>
+                <th>Delete</th>
               </tr>
             </thead>
             <tbody>
@@ -262,7 +288,7 @@ const Masterjewelstock = () => {
                   <td>{entry.stoneWeight}</td>
                   <td>{entry.finalWeight}</td>
                   <td>{entry.touch}</td>
-                  <td>{entry.purityValue}</td>
+                  <td>{parseFloat(entry.purityValue).toFixed(3)}</td>
                   <td>
                     <button
                       className="edit-btn"
@@ -270,6 +296,15 @@ const Masterjewelstock = () => {
                       title="Edit"
                     >
                       ✏️
+                    </button>
+                  </td>
+                  <td>
+                    <button
+                      className="delete-btn"
+                      onClick={() => handleDelete(entry.id)}
+                      title="Delete"
+                    >
+                      🗑️
                     </button>
                   </td>
                 </tr>
@@ -283,7 +318,9 @@ const Masterjewelstock = () => {
                 >
                   Total Purity:
                 </td>
-                <td style={{ fontWeight: "bold" }}>{totalPurity}</td>
+                <td colSpan="2" style={{ fontWeight: "bold" }}>
+                  {totalPurity}
+                </td>
               </tr>
             </tfoot>
           </table>

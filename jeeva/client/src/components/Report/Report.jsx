@@ -162,9 +162,7 @@ const DailySalesReport = () => {
           borderRadius: 2,
         }}
       >
-        <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-          Total Sales: ₹{metrics.totalSales.toFixed(2)}
-        </Typography>
+       
         <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
           Total Weight: {metrics.totalWeight.toFixed(3)} g
         </Typography>
@@ -173,12 +171,6 @@ const DailySalesReport = () => {
         </Typography>
         <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
           Pure Received: {metrics.pureReceived.toFixed(3)} g
-        </Typography>
-        <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-          Cash Received: ₹{metrics.cashReceived.toFixed(2)}
-        </Typography>
-        <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-          Hallmark Received: ₹{metrics.hallmarkReceived.toFixed(2)}
         </Typography>
         <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
           Outstanding Cash: ₹{metrics.outstandingCash.toFixed(2)}
