@@ -1,4 +1,3 @@
-
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
@@ -51,6 +50,7 @@ const getAllTransactions = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
 const deleteTransaction = async (req, res) => {
   try {
     const { id } = req.params;
@@ -101,14 +101,27 @@ const updateTransaction = async (req, res) => {
       },
     });
 
-    res
-      .status(200)
-      .json({
-        message: "Transaction updated successfully",
-        transaction: updatedTransaction,
-      });
+    res.status(200).json({
+      message: "Transaction updated successfully",
+      transaction: updatedTransaction,
+    });
   } catch (error) {
     console.error("Error updating transaction:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+const getAllTransactionsForAllCustomers = async (req, res) => {
+  try {
+    const transactions = await prisma.transaction.findMany({
+      orderBy: { date: "desc" },
+      include: {
+        customer: true, 
+      },
+    });
+
+    res.status(200).json(transactions);
+  } catch (error) {
+    console.error("Error fetching all transactions:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 };
@@ -118,5 +131,6 @@ module.exports = {
   createTransaction,
   getAllTransactions,
   deleteTransaction,
-  updateTransaction
+  updateTransaction,
+getAllTransactionsForAllCustomers
 };
