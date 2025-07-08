@@ -21,6 +21,8 @@ import BillDetails from "./BillDetails";
 import ReceivedDetails from "./ReceivedDetails";
 import ViewBill from "./ViewBill";
 
+
+
 const Billing = () => {
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [billItems, setBillItems] = useState([]);
@@ -44,6 +46,8 @@ const Billing = () => {
   ]);
 
   const [pureBalance, setPureBalance] = useState(0);
+
+
   const [totalBalance, setTotalBalance] = useState(0);
   const [hallmarkBalance, setHallmarkBalance] = useState(0);
 

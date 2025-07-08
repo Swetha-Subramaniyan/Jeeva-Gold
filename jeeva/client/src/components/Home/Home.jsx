@@ -80,10 +80,10 @@ function Home() {
               Sign In
             </button>
           </form>
-          <div className="login-footer">
+          {/* <div className="login-footer">
           
             <a href="/register">Sign Up</a>
-          </div>
+          </div> */}
         </div> 
       </div>
     </div>
