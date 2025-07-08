@@ -47,42 +47,6 @@ const OverallReport = () => {
         0
       );
 
-      const customerBalances = customers.map((customer) => {
-        const customerBills = bills.filter(
-          (bill) => bill.customerId === customer.id
-        );
-
-        const totalBillAmount = customerBills.reduce((sum, bill) => {
-          const billAmount =
-            bill.items.reduce(
-              (billSum, item) => billSum + item.purity * bill.goldRate,
-              0
-            ) + (bill.hallmarkCharges || 0);
-          return sum + billAmount;
-        }, 0);
-
-        const totalReceived = customerBills.reduce((sum, bill) => {
-          return (
-            sum +
-            bill.receivedDetails.reduce(
-              (receivedSum, detail) => receivedSum + detail.amount,
-              0
-            )
-          );
-        }, 0);
-
-        return {
-          customerId: customer.id,
-          customerName: customer.name,
-          balance: totalBillAmount - totalReceived,
-        };
-      });
-
-      const customerBalanceTotal = customerBalances.reduce(
-        (sum, customer) => sum + customer.balance,
-        0
-      );
-
       const totalJewelPurity = jewelData.reduce(
         (sum, item) => sum + parseFloat(item.purityValue || 0),
         0
@@ -118,8 +82,22 @@ const OverallReport = () => {
         0
       );
 
+      const totalPureBalance = bills.reduce((sum, bill) => {
+        const totalPurity = parseFloat(bill.totalPurity || 0);
+        const receivedPurity = bill.receivedDetails?.reduce(
+          (acc, entry) => acc + parseFloat(entry.purityWeight || 0),
+          0
+        );
+        const pureBalance = totalPurity - receivedPurity;
+        if (pureBalance > 0) {
+          return sum + pureBalance;
+        }
+        return sum;
+      }, 0);
+      
+
       const overallValue =
-        customerBalanceTotal +
+        totalPureBalance +
         totalCashGoldEntriesPurity +
         totalCoinPurity +
         totalJewelPurity -
@@ -127,12 +105,10 @@ const OverallReport = () => {
 
       setReportData([
         {
-          label: "Customer Balance Total",
-          value: `${customerBalanceTotal.toLocaleString("en-IN", {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
-          })}`,
-          tooltip: "Sum of all customer balances (bills minus payments)",
+          label: "Total Pure Balance from Bills",
+          value: `${totalPureBalance.toFixed(3)}g`,
+          tooltip:
+            "Total sum of 'pureBalance' (i.e. totalPurity) across all saved bills",
         },
         {
           label: "Cash/Gold (Entries Purity)",
@@ -149,7 +125,7 @@ const OverallReport = () => {
         },
         {
           label: "Jewel Stock",
-          value: ` ${totalJewelPurity.toFixed(3)}g Purity ( ${
+          value: ` ${totalJewelPurity.toFixed(3)}g Purity (${
             jewelData.length
           } Items)`,
           tooltip: "Current jewel inventory with total purity",
@@ -158,17 +134,15 @@ const OverallReport = () => {
           label: "Advances in Gold (Purity)",
           value: `${advancesGold.toFixed(3)}g`,
           tooltip:
-            "Total gold purity equivalent from all customer advance transactions (both cash and gold advances)",
+            "Total gold purity equivalent from all customer advance transactions",
         },
-
         {
           label: "Overall Value",
           value: `${overallValue.toLocaleString("en-IN", {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2,
-          })}`,
-          tooltip:
-            "Customer Balance + Cash/Gold + Coin + Jewel - Advances in Gold",
+          })} g`,
+          tooltip: "Pure Balance + Cash/Gold + Coin + Jewel - Advances in Gold",
         },
       ]);
     } catch (error) {
@@ -208,4 +182,3 @@ const OverallReport = () => {
 };
 
 export default OverallReport;
-
