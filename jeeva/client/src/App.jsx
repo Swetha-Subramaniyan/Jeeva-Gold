@@ -18,123 +18,133 @@ import CustomerReport from "./components/Report/customer.report";
 import Overallreport from "./components/Report/overallreport";
 import Jobcardreport from "./components/Report/jobcardreport";
 import ProtectedRoutes from "../src/ProtectedRoutes/protected.routes";
+import Advancereport from "./components/Report/Advancereport";
+
 
 
 function App() {
   return (
- 
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/register" element={<Register />} />
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/register" element={<Register />} />
 
-          <Route
-            path="/customer"
-            element={
-              <ProtectedRoutes>
-                <PageWithNavbar>
-                  <Customer />
-                </PageWithNavbar>
-              </ProtectedRoutes>
-            }
-          />
-          <Route
-            path="/goldsmith"
-            element={
-              <ProtectedRoutes>
-                <PageWithNavbar>
-                  <Goldsmith />
-                </PageWithNavbar>
-              </ProtectedRoutes>
-            }
-          />
-          <Route
-            path="/coinbill"
-            element={
-              <ProtectedRoutes>
-                <PageWithNavbar>
-                  <Billing />
-                </PageWithNavbar>
-              </ProtectedRoutes>
-            }
-          />
-          <Route
-            path="/report"
-            element={
-              <ProtectedRoutes>
-                <PageWithNavbar>
-                  <Report />
-                </PageWithNavbar>
-              </ProtectedRoutes>
-            }
-          />
-          <Route
-            path="/customerreport"
-            element={
-              <ProtectedRoutes>
-                <PageWithNavbar>
-                  <CustomerReport />
-                </PageWithNavbar>
-              </ProtectedRoutes>
-            }
-          />
-          <Route
-            path="/overallreport"
-            element={
-              <ProtectedRoutes>
-                <PageWithNavbar>
-                  <Overallreport />
-                </PageWithNavbar>
-              </ProtectedRoutes>
-            }
-          />
-          <Route
-            path="/jobcardreport"
-            element={
-              <ProtectedRoutes>
-                <PageWithNavbar>
-                  <Jobcardreport />
-                </PageWithNavbar>
-              </ProtectedRoutes>
-            }
-          />
-          <Route
-            path="/stock"
-            element={
-              <ProtectedRoutes>
-                <PageWithNavbar>
-                  <Stock />
-                </PageWithNavbar>
-              </ProtectedRoutes>
-            }
-          />
-          <Route
-            path="/customertrans"
-            element={
-              <ProtectedRoutes>
-                <PageWithNavbar>
-                  <Customertrans />
-                </PageWithNavbar>
-              </ProtectedRoutes>
-            }
-          />
-          <Route
-            path="/jobcard/:id/:name"
-            element={
-              <ProtectedRoutes>
-                <PageWithNavbar>
-                  <Jobcard />
-                </PageWithNavbar>
-              </ProtectedRoutes>
-            }
-          />
+        <Route
+          path="/customer"
+          element={
+            <ProtectedRoutes>
+              <PageWithNavbar>
+                <Customer />
+              </PageWithNavbar>
+            </ProtectedRoutes>
+          }
+        />
+        <Route
+          path="/goldsmith"
+          element={
+            <ProtectedRoutes>
+              <PageWithNavbar>
+                <Goldsmith />
+              </PageWithNavbar>
+            </ProtectedRoutes>
+          }
+        />
+        <Route
+          path="/coinbill"
+          element={
+            <ProtectedRoutes>
+              <PageWithNavbar>
+                <Billing />
+              </PageWithNavbar>
+            </ProtectedRoutes>
+          }
+        />
+        <Route
+          path="/report"
+          element={
+            <ProtectedRoutes>
+              <PageWithNavbar>
+                <Report />
+              </PageWithNavbar>
+            </ProtectedRoutes>
+          }
+        />
+        <Route
+          path="/customerreport"
+          element={
+            <ProtectedRoutes>
+              <PageWithNavbar>
+                <CustomerReport />
+              </PageWithNavbar>
+            </ProtectedRoutes>
+          }
+        />
+        <Route
+          path="/overallreport"
+          element={
+            <ProtectedRoutes>
+              <PageWithNavbar>
+                <Overallreport />
+              </PageWithNavbar>
+            </ProtectedRoutes>
+          }
+        />
+        <Route
+          path="/advancereport"
+          element={
+            <ProtectedRoutes>
+              <PageWithNavbar>
+                <Advancereport/>
+              </PageWithNavbar>
+            </ProtectedRoutes>
+          }
+        />
+        <Route
+          path="/jobcardreport"
+          element={
+            <ProtectedRoutes>
+              <PageWithNavbar>
+                <Jobcardreport />
+              </PageWithNavbar>
+            </ProtectedRoutes>
+          }
+        />
+        <Route
+          path="/stock"
+          element={
+            <ProtectedRoutes>
+              <PageWithNavbar>
+                <Stock />
+              </PageWithNavbar>
+            </ProtectedRoutes>
+          }
+        />
+        <Route
+          path="/customertrans"
+          element={
+            <ProtectedRoutes>
+              <PageWithNavbar>
+                <Customertrans />
+              </PageWithNavbar>
+            </ProtectedRoutes>
+          }
+        />
+        <Route
+          path="/jobcard/:id/:name"
+          element={
+            <ProtectedRoutes>
+              <PageWithNavbar>
+                <Jobcard />
+              </PageWithNavbar>
+            </ProtectedRoutes>
+          }
+        />
 
-          <Route path="/master" element={<Master />} />
-          <Route path="/mastercustomer" element={<MasterCustomer />} />
-          <Route path="/addcustomer" element={<AddCustomer />} />
-        </Routes>
-      </BrowserRouter>
-  
+        <Route path="/master" element={<Master />} />
+        <Route path="/mastercustomer" element={<MasterCustomer />} />
+        <Route path="/addcustomer" element={<AddCustomer />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 

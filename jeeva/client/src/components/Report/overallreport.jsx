@@ -105,7 +105,7 @@ const OverallReport = () => {
 
       setReportData([
         {
-          label: "Total Pure Balance from Bills",
+          label: "Customer Balance",
           value: `${totalPureBalance.toFixed(3)}g`,
           tooltip:
             "Total sum of 'pureBalance' (i.e. totalPurity) across all saved bills",
