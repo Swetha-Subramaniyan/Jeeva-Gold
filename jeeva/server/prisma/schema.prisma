@@ -146,6 +146,7 @@ model ReceivedDetail {
   touch        Float
   purityWeight Float
   amount       Float
+  paidAmount   Float?
   hallmark     Float    @default(0)
   createdAt    DateTime @default(now())
 }
