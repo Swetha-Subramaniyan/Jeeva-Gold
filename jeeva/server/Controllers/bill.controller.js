@@ -65,6 +65,7 @@ const createBill = async (req, res) => {
               touch: parseFloat(r.touch),
               purityWeight: parseFloat(r.purityWeight),
               amount: parseFloat(r.amount),
+              paidAmount: parseFloat(r.paidAmount),
               hallmark: parseFloat(r.hallmark) || 0,
             })),
           },

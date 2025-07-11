@@ -41,7 +41,9 @@ const Billing = () => {
       touch: "",
       purityWeight: "",
       amount: "",
+      paidAmount:"",
       mode: "", 
+
     },
   ]);
 
@@ -99,6 +101,8 @@ const Billing = () => {
   }, []);
 
   useEffect(() => {
+    console.log("asbkjasgkba", billItems)
+    
     if (billItems.length > 0) {
       const totalPurity = billItems.reduce(
         (sum, item) => sum + parseFloat(item.purity || 0),
@@ -111,6 +115,7 @@ const Billing = () => {
         }
         return sum;
       }, 0);
+      console.log("pppppppppppppppppppppppppppppppppppppppppppppppp", totalPurity,totalAmount, hallmarkCharges)
 
       setPureBalance(totalPurity.toFixed(3));
       setTotalBalance((totalAmount + parseFloat(hallmarkCharges || 0)).toFixed(2));
@@ -121,6 +126,8 @@ const Billing = () => {
       setHallmarkBalance(0);
     }
   }, [billItems, hallmarkCharges]);
+
+  console.log("ooooooooooooooooooooooooooooooooooooooooooooooooooo", totalBalance)
 
   useEffect(() => {
     const updateTime = () => {
@@ -202,6 +209,7 @@ const Billing = () => {
         touch: detail.touch?.toString() || "",
         purityWeight: detail.purityWeight.toString(),
         amount: detail.amount?.toString(),
+        paidAmount: detail.paidAmount?.toString(),
         mode: detail.amount ? "amount" : "weight",
       }))
     );
@@ -220,6 +228,7 @@ const Billing = () => {
         purityWeight: "",
         amount: "",
         mode: "",
+        paidAmount:""
       },
     ]);
     setSelectedCustomer(null);
@@ -363,6 +372,7 @@ const Billing = () => {
           touch: parseFloat(row.touch || 0),
           purityWeight: parseFloat(row.purityWeight || 0),
           amount: parseFloat(row.amount || 0),
+          paidAmount :parseFloat(row.paidAmount || 0 ),
         })),
       };
 
@@ -438,6 +448,7 @@ const Billing = () => {
             touch: parseFloat(row.touch || 0),
             purityWeight: parseFloat(row.purityWeight || 0),
             amount: parseFloat(row.amount || 0),
+            paidAmount: parseFloat(row.paidAmount || 0),
           })),
         ],
       };
@@ -467,6 +478,8 @@ const Billing = () => {
     }
   };
 
+
+  console.log("issviewmodeeeeeeee", viewMode)
 
   return (
     <>

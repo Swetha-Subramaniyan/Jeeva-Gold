@@ -1,8 +1,8 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { TextField, IconButton, Box, Alert, Snackbar } from "@mui/material";
 import { MdDeleteForever } from "react-icons/md";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
-import "./Billing.css"
+import "./Billing.css";
 
 const ReceivedDetails = ({
   rows,
@@ -16,6 +16,7 @@ const ReceivedDetails = ({
   isViewMode,
   setIsUpdating,
 }) => {
+  console.log("issssviewmode", isViewMode);
   const [snackbar, setSnackbar] = React.useState({
     open: false,
     message: "",
@@ -32,27 +33,53 @@ const ReceivedDetails = ({
     let total = parseFloatSafe(initialTotalBalance);
     let hallmark = parseFloatSafe(initialHallmarkBalance);
 
+    console.log(
+      "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii",
+      pure,
+      total,
+      hallmark
+    );
+
+    let paidOnlyPurity = 0;
+
     rows.forEach((row) => {
       if (row.mode === "weight" && row.purityWeight) {
-        pure -= parseFloatSafe(row.purityWeight);
-      } else if (row.mode === "amount" && row.amount) {
+        if (
+          parseFloatSafe(row.paidAmount) > 0 &&
+          (!row.receivedAmount || parseFloatSafe(row.receivedAmount) === 0)
+        ) {
+          paidOnlyPurity += parseFloatSafe(row.purityWeight);
+          pure -= paidOnlyPurity;
+        } else {
+          pure -= parseFloatSafe(row.purityWeight);
+        }
+      } else if (row.mode === "amount" && parseFloatSafe(row.amount) > 0) {
         const amount = parseFloatSafe(row.amount);
         const hallmarkDeduction = Math.min(amount, hallmark);
 
         hallmark -= hallmarkDeduction;
-
-        console.log("tot", total);
         const amountAfterHallmark = amount - hallmarkDeduction;
         //total -= amountAfterHallmark;
 
-        console.log("amountAfterHallmark", amountAfterHallmark, total);
+        if (amountAfterHallmark > 0 && row.goldRate) {
+          const purity = amountAfterHallmark / parseFloatSafe(row.goldRate);
+          pure -= purity;
+        }
+      } else if (row.mode === "amount" && parseFloatSafe(row.paidAmount) > 0) {
+        const amount = parseFloatSafe(row.paidAmount);
+
+        const hallmarkDeduction = Math.min(amount, hallmark);
+
+        hallmark -= hallmarkDeduction;
+
+        const amountAfterHallmark = amount - hallmarkDeduction;
+        //total -= amountAfterHallmark;
 
         if (amountAfterHallmark > 0 && row.goldRate) {
           const purity = amountAfterHallmark / parseFloatSafe(row.goldRate);
-          if(pure > 0){
-          pure -= purity;
-          }
-          else{
+          if (pure > 0) {
+            pure -= purity;
+          } else {
             pure += purity;
           }
         }
@@ -67,6 +94,8 @@ const ReceivedDetails = ({
   };
 
   const currentBalances = calculateBalances();
+
+  console.log("curre", currentBalances);
 
   useEffect(() => {
     const goldRateRows = rows.filter(
@@ -83,9 +112,9 @@ const ReceivedDetails = ({
         newTotalBalance =
           parseFloatSafe(currentBalances.pureBalance) * latestGoldRate +
           parseFloatSafe(currentBalances.hallmarkBalance);
-      }else {
-         newTotalBalance =
-          parseFloatSafe(currentBalances.pureBalance) * latestGoldRate
+      } else {
+        newTotalBalance =
+          parseFloatSafe(currentBalances.pureBalance) * latestGoldRate;
       }
       setTotalBalance(newTotalBalance);
     }
@@ -95,9 +124,6 @@ const ReceivedDetails = ({
     const totalPurityWeight = rows.reduce((sum, row) => {
       return sum + parseFloatSafe(row.purityWeight);
     }, 0);
-
-    console.log("tot", totalPurityWeight, initialPureBalance);
-
     if (totalPurityWeight > parseFloatSafe(initialPureBalance)) {
       showSnackbar(
         `Total purity weight (${totalPurityWeight.toFixed(
@@ -108,7 +134,9 @@ const ReceivedDetails = ({
   }, [rows, initialPureBalance]);
 
   const showSnackbar = (message, severity = "error") => {
-    setSnackbar({ open: true, message, severity });
+    if (!isViewMode) {
+      setSnackbar({ open: true, message, severity });
+    }
   };
 
   const handleCloseSnackbar = () => {
@@ -127,6 +155,7 @@ const ReceivedDetails = ({
         amount: "",
         mode: "",
         isNew: true,
+        paidAmount: "",
       },
     ]);
     setIsUpdating(true);
@@ -180,16 +209,25 @@ const ReceivedDetails = ({
         row.amount = "";
       }
     } else if (
-      (field === "amount" || field === "goldRate") &&
-      (row.amount || row.goldRate)
+      (field === "amount" || field === "goldRate" || field === 'paidAmount') &&
+      (row.amount || row.goldRate || row.paidAmount)
     ) {
       row.mode = "amount";
       row.givenGold = "";
       row.touch = "";
 
-      if (row.amount && row.goldRate) {
+      if ((row.amount || row.paidAmount) && row.goldRate) {
         const goldRate = parseFloatSafe(row.goldRate);
-        const amount = parseFloatSafe(row.amount);
+
+        const balances = calculateBalances();
+        const usePaidAmount =
+          balances.pureBalance < 0 &&
+          balances.totalBalance < 0 &&
+          parseFloatSafe(row.paidAmount) > 0;
+
+        const amount = usePaidAmount
+          ? parseFloatSafe(row.paidAmount)
+          : parseFloatSafe(row.amount);
 
         const currentBalances = calculateBalances();
         const availablePure = parseFloatSafe(currentBalances.pureBalance);
@@ -202,8 +240,9 @@ const ReceivedDetails = ({
 
         let purityWeight = 0;
         if (availableHallmark == 0) {
-          console.log("remmmmmmmmmmmmmm", availableHallmark);
           purityWeight = remainingAmount / goldRate;
+
+          console.log("purity weight", purityWeight);
         }
 
         row.purityWeight = purityWeight;
@@ -241,10 +280,9 @@ const ReceivedDetails = ({
             <th className="th">Gold Rate</th>
             <th className="th">%</th>
             <th className="th">Purity WT</th>
-            <th className="th">Amount</th>
-            {(!isViewMode || rows.some((row) => row.isNew)) && (
-              <th className="th">Action</th>
-            )}
+            <th className="th">Received Amount</th>
+            <th className="th">Paid Amount</th>
+            <th className="th">Action</th>
           </tr>
         </thead>
         <tbody>
@@ -306,7 +344,7 @@ const ReceivedDetails = ({
                     (isViewMode && !row.isNew) ||
                     (row.mode === "amount" && !(isViewMode && row.isNew))
                   }
-                  inputProps={{ min:0, max: 100, step: "0.1" }}
+                  inputProps={{ min: 0, max: 100, step: "0.1" }}
                 />
               </td>
               <td className="td">
@@ -333,16 +371,29 @@ const ReceivedDetails = ({
                   inputProps={{ min: 0 }}
                 />
               </td>
-              {!isViewMode && (
-                <td className="td">
-                  <IconButton
-                    onClick={() => handleDeleteRow(index)}
-                    disabled={isViewMode && !row.isNew}
-                  >
-                    <MdDeleteForever />
-                  </IconButton>
-                </td>
-              )}
+              <td className="td">
+                <TextField
+                  size="small"
+                  value={row.paidAmount}
+                  onChange={(e) =>
+                    handleRowChange(index, "paidAmount", e.target.value)
+                  }
+                  type="number"
+                  disabled={
+                    (isViewMode && !row.isNew) ||
+                    (row.mode === "weight" && !(isViewMode && row.isNew))
+                  }
+                  inputProps={{ min: 0 }}
+                />
+              </td>
+              <td className="td">
+                <IconButton
+                  onClick={() => handleDeleteRow(index)}
+                  disabled={isViewMode && !row.isNew}
+                >
+                  <MdDeleteForever />
+                </IconButton>
+              </td>
             </tr>
           ))}
         </tbody>
