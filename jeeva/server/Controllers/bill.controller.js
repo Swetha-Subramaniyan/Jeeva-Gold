@@ -164,6 +164,7 @@ const deleteBill = async (req, res) => {
     return res.status(500).json({ message: "Failed to delete bill" });
   }
 };
+
 const addReceiveEntry = async (req, res) => {
   try {
     const { id } = req.params;
@@ -194,24 +195,21 @@ const addReceiveEntry = async (req, res) => {
       return res.status(404).json({ error: "Bill not found" });
     }
 
-    const existingKeys = new Set(
-      existingBill.receivedDetails.map(
-        (d) => `${new Date(d.date).toISOString()}_${parseFloat(d.amount)}`
-      )
-    );
+    console.log("existing", existingBill);
 
     const sanitizedDetails = receivedDetails
-      .map(({ id, billId, createdAt, updatedAt, date, amount, ...rest }) => {
-        const cleanDate = sanitizeDate(date);
-        return {
-          ...rest,
-          amount: parseFloat(amount),
-          date: cleanDate,
-          _key: `${cleanDate}_${parseFloat(amount)}`,
-        };
-      })
-      .filter((detail) => !existingKeys.has(detail._key))
-      .map(({ _key, ...detail }) => detail);
+      .filter((detail) => !detail.id)
+      .map((detail) => ({
+        ...detail,
+        date: sanitizeDate(detail.date),
+        amount: parseFloat(detail.amount) || 0,
+        paidAmount: parseFloat(detail.paidAmount) || 0,
+        purityWeight: parseFloat(detail.purityWeight) || 0,
+        givenGold: parseFloat(detail.givenGold) || 0,
+        goldRate: parseFloat(detail.goldRate) || 0,
+        touch: parseFloat(detail.touch) || 0,
+        hallmark: parseFloat(detail.hallmark) || 0,
+      }));
 
     if (!sanitizedDetails.length) {
       return res.status(200).json({ message: "No new receive entries to add" });

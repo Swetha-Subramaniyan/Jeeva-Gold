@@ -19,6 +19,7 @@ import Overallreport from "./components/Report/overallreport";
 import Jobcardreport from "./components/Report/jobcardreport";
 import ProtectedRoutes from "../src/ProtectedRoutes/protected.routes";
 import Advancereport from "./components/Report/Advancereport";
+import BalanceReport from "./components/Report/BalanceReport";
 
 
 
@@ -99,6 +100,18 @@ function App() {
             </ProtectedRoutes>
           }
         />
+
+         <Route
+          path="/balancereport"
+          element={
+            <ProtectedRoutes>
+              <PageWithNavbar>
+                <BalanceReport/>
+              </PageWithNavbar>
+            </ProtectedRoutes>
+          }
+        />
+
         <Route
           path="/jobcardreport"
           element={

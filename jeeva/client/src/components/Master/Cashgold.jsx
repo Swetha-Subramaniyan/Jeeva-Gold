@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "./Cashgold.css";
@@ -12,6 +11,8 @@ function Cashgold() {
   const [goldRate, setGoldRate] = useState(0);
   const [isEditMode, setIsEditMode] = useState(false);
   const [editId, setEditId] = useState(null);
+  const [bills, setBills] = useState([]);
+  const [billPurityByDate, setBillPurityByDate] = useState({});
 
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split("T")[0],
@@ -23,8 +24,41 @@ function Cashgold() {
     remarks: "",
   });
 
+  const fetchbills = async () => {
+    try {
+      const res = await axios.get(`${BACKEND_SERVER_URL}/api/bills`);
+      const billsData = res.data;
+
+      const purityMap = {};
+
+      billsData.forEach((bill) => {
+        bill.receivedDetails.forEach((detail) => {
+          const date = detail.date.split("T")[0];
+          const purity = parseFloat(detail.purityWeight || 0);
+          const paid = parseFloat(detail.paidAmount || 0);
+
+          if (!purityMap[date]) purityMap[date] = 0;
+
+          console.log("sssssssssssss", purityMap[date], purity)
+
+          if (paid > 0) {
+            purityMap[date] -= Math.abs(purity);
+          } else {
+            purityMap[date] += purity;
+          }
+        });
+      });
+
+      setBills(billsData);
+      setBillPurityByDate(purityMap);
+    } catch (error) {
+      console.error("Failed to fetch bills", error);
+    }
+  };
+
   useEffect(() => {
     fetchEntries();
+    fetchbills();
   }, []);
 
   const fetchEntries = async () => {
@@ -35,13 +69,37 @@ function Cashgold() {
       console.error("Error fetching entries:", error);
     }
   };
+
+  const getMergedRows = () => {
+    const rows = [];
+    const dateSet = new Set();
+
+    entries.forEach((entry) => {
+      const entryDate = entry.date.split("T")[0];
+      rows.push({ ...entry, isBillSummary: false });
+      dateSet.add(entryDate);
+    });
+
+    Object.keys(billPurityByDate).forEach((date) => {
+      const purity = billPurityByDate[date].toFixed(3);
+      rows.push({
+        date,
+        type: "Gold",
+        purity,
+        isBillSummary: true,
+      });
+    });
+
+    return rows.sort((a, b) => new Date(b.date) - new Date(a.date));
+  };
+
   const calculateTotalCash = () => {
     return entries
       .filter((entry) => entry.type === "Cash")
       .reduce((sum, entry) => sum + parseFloat(entry.cashAmount || 0), 0)
       .toFixed(2);
   };
-  
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     const updatedForm = { ...formData, [name]: value };
@@ -311,55 +369,51 @@ function Cashgold() {
             </tr>
           </thead>
           <tbody>
-            {entries.map((entry, index) => (
-              <tr key={entry.id}>
-                <td>{index + 1}</td>
+            {getMergedRows().map((entry, index) => (
+              <tr
+                key={index}
+                className={entry.isBillSummary ? "bill-summary-row" : ""}
+              >
+                <td>{entry.isBillSummary ? "" : index + 1}</td>
                 <td>{new Date(entry.date).toLocaleDateString("en-IN")}</td>
                 <td>{entry.type}</td>
                 <td>
-                  {entry.type === "Cash"
+                  {entry.isBillSummary
+                    ? ""
+                    : entry.type === "Cash"
                     ? `₹${entry.cashAmount}`
                     : `${entry.goldValue}g`}
                 </td>
                 <td>
-                  {entry.type === "Cash"
+                  {entry.isBillSummary
+                    ? ""
+                    : entry.type === "Cash"
                     ? `₹${entry.goldRate}/g`
                     : `${entry.touch}%`}
                 </td>
                 <td>{entry.purity}</td>
-                <td>{entry.remarks || "-"}</td>
+                <td>{entry.isBillSummary ? "" : entry.remarks || "-"}</td>
                 <td>
-                  <button
-                    className="edit-btn"
-                    onClick={() => handleEdit(entry)}
-                  >
-                    ✏️
-                  </button>
-                  <button
-                    className="delete-btn"
-                    onClick={() => handleDelete(entry.id)}
-                    title="Delete"
-                  >
-                    🗑️
-                  </button>
+                  {!entry.isBillSummary && (
+                    <>
+                      <button
+                        className="edit-btn"
+                        onClick={() => handleEdit(entry)}
+                      >
+                        ✏️
+                      </button>
+                      <button
+                        className="delete-btn"
+                        onClick={() => handleDelete(entry.id)}
+                        title="Delete"
+                      >
+                        🗑️
+                      </button>
+                    </>
+                  )}
                 </td>
               </tr>
             ))}
-            <tr className="totals-row">
-              <td colSpan="3">
-                <strong>Total Cash (₹)</strong>
-              </td>
-              <td>
-                <strong>₹{calculateTotalCash()}</strong>
-              </td>
-              <td colSpan="1">
-                <strong>Total Purity</strong>
-              </td>
-              <td>
-                <strong>{calculateTotalPurity()}g</strong>
-              </td>
-              <td colSpan="2" />
-            </tr>
           </tbody>
         </table>
       </div>

@@ -192,8 +192,7 @@ const DailySalesReport = () => {
               <TableCell>Total Weight</TableCell>
               <TableCell>Total Purity</TableCell>
               <TableCell>Total Amount</TableCell>
-              <TableCell>Cash Received</TableCell>
-              <TableCell>Hallmark Received</TableCell>
+              <TableCell>Total Received</TableCell>
               <TableCell>Pure Received</TableCell>
               <TableCell>Cash Balance</TableCell> 
               <TableCell>Hallmark Balance</TableCell>
@@ -240,8 +239,7 @@ const DailySalesReport = () => {
                     <TableCell>{totalWeight.toFixed(3)}</TableCell>
                     <TableCell>{totalPurity.toFixed(3)}</TableCell>
                     <TableCell>₹{totalAmount.toFixed(2)}</TableCell>
-                    <TableCell>₹{received.cash.toFixed(2)}</TableCell>
-                    <TableCell>₹{received.hallmark.toFixed(2)}</TableCell>
+                    <TableCell>₹{(received.cash+received.hallmark).toFixed(2)}</TableCell>
                     <TableCell>{received.pure.toFixed(3)} g</TableCell>
                     <TableCell
                       sx={{
