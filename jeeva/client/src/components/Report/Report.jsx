@@ -195,7 +195,6 @@ const DailySalesReport = () => {
               <TableCell>Total Received</TableCell>
               <TableCell>Pure Received</TableCell>
               <TableCell>Cash Balance</TableCell> 
-              <TableCell>Hallmark Balance</TableCell>
               <TableCell>Pure Balance</TableCell>
             </TableRow>
           </TableHead>
@@ -247,16 +246,9 @@ const DailySalesReport = () => {
                         color: "success.main", 
                       }}
                     >
-                      ₹{cashBalance.toFixed(2)}
+                      ₹{(cashBalance+hallmarkBalance).toFixed(2)}
                     </TableCell>
-                    <TableCell
-                      sx={{
-                        color:
-                          hallmarkBalance > 0 ? "error.main" : "success.main",
-                      }}
-                    >
-                      ₹{hallmarkBalance.toFixed(2)}
-                    </TableCell>
+                   
                     <TableCell
                       sx={{
                         color: pureBalance > 0 ? "error.main" : "success.main",
