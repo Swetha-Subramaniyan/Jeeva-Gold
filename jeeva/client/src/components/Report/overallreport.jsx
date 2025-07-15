@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import "./overallreport.css";
 import { BACKEND_SERVER_URL } from "../../Config/Config";
@@ -82,22 +81,44 @@ const OverallReport = () => {
         0
       );
 
-      const totalPureBalance = bills.reduce((sum, bill) => {
-        const totalPurity = parseFloat(bill.totalPurity || 0);
-        const receivedPurity = bill.receivedDetails?.reduce(
-          (acc, entry) => acc + parseFloat(entry.purityWeight || 0),
-          0
-        );
-        const pureBalance = totalPurity - receivedPurity;
-        if (pureBalance > 0) {
-          return sum + pureBalance;
-        }
-        return sum;
-      }, 0);
-      
+      const calculateTotalBalances = (bills) => {
+        let totalCustomerBalance = 0;
+
+        bills.forEach((bill) => {
+          const totalPurity = parseFloat(bill.totalPurity || 0);
+
+          let receivedPurity = 0;
+          if (bill.receivedDetails && Array.isArray(bill.receivedDetails)) {
+            bill.receivedDetails.forEach((detail) => {
+              const purity = parseFloat(detail.purityWeight || 0);
+              if (detail.paidAmount>0) {
+                receivedPurity -= purity;
+              } else {
+                receivedPurity += purity;
+              }
+            });
+          }
+
+          const balance = totalPurity - receivedPurity;
+
+          if (balance.toFixed(3) > 0) {
+
+           
+            totalCustomerBalance += balance;
+             console.log("balances", balance, totalCustomerBalance, bill)
+          } 
+        });
+
+        return {
+          totalCustomerBalance,
+        };
+      };
+
+      const { totalCustomerBalance } =
+        calculateTotalBalances(bills);
 
       const overallValue =
-        totalPureBalance +
+        totalCustomerBalance +
         totalCashGoldEntriesPurity +
         totalCoinPurity +
         totalJewelPurity -
@@ -106,7 +127,7 @@ const OverallReport = () => {
       setReportData([
         {
           label: "Customer Balance",
-          value: `${totalPureBalance.toFixed(3)}g`,
+          value: `${totalCustomerBalance.toFixed(3)}g`,
           tooltip:
             "Total sum of 'pureBalance' (i.e. totalPurity) across all saved bills",
         },

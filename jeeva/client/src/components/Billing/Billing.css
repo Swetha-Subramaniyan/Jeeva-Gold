@@ -1,6 +1,5 @@
 .container {
-  width:100%;
-  max-width: 1200px;
+  width:94%;
   margin: 5rem ;
   padding: 2.5rem;
   border: 1px solid #e0e0e0;
@@ -359,14 +358,14 @@ tr:hover {
 
 @media (max-width: 1200px) {
   .container {
-    width: 90%;
+    width:94%;
     padding: 1.5rem;
   }
 }
 
 @media (max-width: 768px) {
   .container {
-    width: 95%;
+    width:94%;
     padding: 1rem;
   }
   
