@@ -99,6 +99,13 @@ function Navbar() {
                 >
                   Advance Payments Report
                 </a>
+                 <a
+                  href="/balancereport"
+                  style={dropdownItemStyle}
+                  className="dropdown-item"
+                >
+                  Balance Report
+                </a>
                 <a
                   href="/overallreport"
                   style={dropdownItemStyle}

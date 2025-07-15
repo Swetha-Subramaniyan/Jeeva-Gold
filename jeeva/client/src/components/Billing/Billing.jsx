@@ -101,7 +101,6 @@ const Billing = () => {
   }, []);
 
   useEffect(() => {
-    console.log("asbkjasgkba", billItems)
     
     if (billItems.length > 0) {
       const totalPurity = billItems.reduce(
@@ -115,7 +114,6 @@ const Billing = () => {
         }
         return sum;
       }, 0);
-      console.log("pppppppppppppppppppppppppppppppppppppppppppppppp", totalPurity,totalAmount, hallmarkCharges)
 
       setPureBalance(totalPurity.toFixed(3));
       setTotalBalance((totalAmount + parseFloat(hallmarkCharges || 0)).toFixed(2));
@@ -127,7 +125,6 @@ const Billing = () => {
     }
   }, [billItems, hallmarkCharges]);
 
-  console.log("ooooooooooooooooooooooooooooooooooooooooooooooooooo", totalBalance)
 
   useEffect(() => {
     const updateTime = () => {
@@ -345,7 +342,6 @@ const Billing = () => {
 
       const totalAmount = totalAmountCalc + parseFloat(hallmarkCharges || 0);
 
-      console.log("g", billItems, rows, goldRate);
 
       const billData = {
         customerId: selectedCustomer.id,
@@ -376,7 +372,6 @@ const Billing = () => {
         })),
       };
 
-      console.log("kiagusbsaliurasbd", billData);
 
       const response = await fetch(`${BACKEND_SERVER_URL}/api/bills`, {
         method: "POST",
@@ -453,8 +448,6 @@ const Billing = () => {
         ],
       };
 
-      console.log("seee", selectedBill, updatedBill);
-
       const response = await fetch(
         `${BACKEND_SERVER_URL}/api/bills/${selectedBill.id}/receive`,
         {
@@ -478,8 +471,6 @@ const Billing = () => {
     }
   };
 
-
-  console.log("issviewmodeeeeeeee", viewMode)
 
   return (
     <>

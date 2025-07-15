@@ -16,7 +16,6 @@ const ReceivedDetails = ({
   isViewMode,
   setIsUpdating,
 }) => {
-  console.log("issssviewmode", isViewMode);
   const [snackbar, setSnackbar] = React.useState({
     open: false,
     message: "",
@@ -28,32 +27,24 @@ const ReceivedDetails = ({
     return isNaN(num) ? 0 : num;
   };
 
+  console.log("initial in received", initialPureBalance, initialTotalBalance);
+
   const calculateBalances = () => {
     let pure = parseFloatSafe(initialPureBalance);
     let total = parseFloatSafe(initialTotalBalance);
     let hallmark = parseFloatSafe(initialHallmarkBalance);
-
-    console.log(
-      "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii",
-      pure,
-      total,
-      hallmark
-    );
-
     let paidOnlyPurity = 0;
 
     rows.forEach((row) => {
       if (row.mode === "weight" && row.purityWeight) {
-        if (
-          parseFloatSafe(row.paidAmount) > 0 &&
-          (!row.receivedAmount || parseFloatSafe(row.receivedAmount) === 0)
-        ) {
-          paidOnlyPurity += parseFloatSafe(row.purityWeight);
-          pure -= paidOnlyPurity;
+        console.log("in 1");
+        if (row.paidAmount > 0) {
+          pure += parseFloatSafe(row.purityWeight);
         } else {
           pure -= parseFloatSafe(row.purityWeight);
         }
       } else if (row.mode === "amount" && parseFloatSafe(row.amount) > 0) {
+        console.log("in 2");
         const amount = parseFloatSafe(row.amount);
         const hallmarkDeduction = Math.min(amount, hallmark);
 
@@ -65,23 +56,19 @@ const ReceivedDetails = ({
           const purity = amountAfterHallmark / parseFloatSafe(row.goldRate);
           pure -= purity;
         }
-      } else if (row.mode === "amount" && parseFloatSafe(row.paidAmount) > 0) {
+      }
+      else if (row.mode === "amount" && parseFloatSafe(row.paidAmount) > 0) {
+        console.log("in 2");
         const amount = parseFloatSafe(row.paidAmount);
-
         const hallmarkDeduction = Math.min(amount, hallmark);
 
         hallmark -= hallmarkDeduction;
-
         const amountAfterHallmark = amount - hallmarkDeduction;
         //total -= amountAfterHallmark;
 
         if (amountAfterHallmark > 0 && row.goldRate) {
           const purity = amountAfterHallmark / parseFloatSafe(row.goldRate);
-          if (pure > 0) {
-            pure -= purity;
-          } else {
-            pure += purity;
-          }
+          pure += purity;
         }
       }
     });
@@ -95,7 +82,7 @@ const ReceivedDetails = ({
 
   const currentBalances = calculateBalances();
 
-  console.log("curre", currentBalances);
+  console.log("pure", currentBalances.pureBalance);
 
   useEffect(() => {
     const goldRateRows = rows.filter(
@@ -209,7 +196,7 @@ const ReceivedDetails = ({
         row.amount = "";
       }
     } else if (
-      (field === "amount" || field === "goldRate" || field === 'paidAmount') &&
+      (field === "amount" || field === "goldRate" || field === "paidAmount") &&
       (row.amount || row.goldRate || row.paidAmount)
     ) {
       row.mode = "amount";
@@ -218,6 +205,7 @@ const ReceivedDetails = ({
 
       if ((row.amount || row.paidAmount) && row.goldRate) {
         const goldRate = parseFloatSafe(row.goldRate);
+        const paidAmount = parseFloatSafe(row.paidAmount);
 
         const balances = calculateBalances();
         const usePaidAmount =
@@ -225,9 +213,7 @@ const ReceivedDetails = ({
           balances.totalBalance < 0 &&
           parseFloatSafe(row.paidAmount) > 0;
 
-        const amount = usePaidAmount
-          ? parseFloatSafe(row.paidAmount)
-          : parseFloatSafe(row.amount);
+        const amount = parseFloatSafe(row.amount);
 
         const currentBalances = calculateBalances();
         const availablePure = parseFloatSafe(currentBalances.pureBalance);
@@ -240,9 +226,11 @@ const ReceivedDetails = ({
 
         let purityWeight = 0;
         if (availableHallmark == 0) {
-          purityWeight = remainingAmount / goldRate;
-
-          console.log("purity weight", purityWeight);
+          if (usePaidAmount || paidAmount > 0) {
+            purityWeight = paidAmount / goldRate;
+          } else {
+            purityWeight = remainingAmount / goldRate;
+          }
         }
 
         row.purityWeight = purityWeight;
@@ -252,7 +240,6 @@ const ReceivedDetails = ({
     setRows(updatedRows);
     setIsUpdating(true);
   };
-  console.log("rows", rows);
 
   return (
     <Box className="itemsSection">
