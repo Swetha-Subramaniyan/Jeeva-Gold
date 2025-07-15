@@ -88,7 +88,7 @@ const CustomerReport = () => {
     setPage(0);
   }, [selectedCustomer, startDate, endDate, bills]);
 
-  /* const calculateBillBalance = (bill, customerId) => {
+  const calculateBillBalance = (bill, customerId) => {
     if (!bill?.receivedDetails || !Array.isArray(bill.receivedDetails)) {
       return {
         balance: bill?.totalPurity || 0,
@@ -142,82 +142,6 @@ const CustomerReport = () => {
     remainingAdvance -= advanceUsed;
 
     console.log("balance", balance, advanceUsed, remainingAdvance);
-
-    return {
-      balance,
-      advanceUsed,
-      remainingAdvance,
-    };
-  }; */
-
-  const calculateBillBalance = (bill, customerId) => {
-    if (!bill?.receivedDetails || !Array.isArray(bill.receivedDetails)) {
-      return {
-        balance: bill?.totalPurity || 0,
-        advanceUsed: 0,
-        remainingAdvance: 0,
-      };
-    }
-
-    // Get all transactions (advances) for this customer before bill date
-    const customerAdvances = transactions
-      .filter(
-        (txn) =>
-          txn.customerId === customerId &&
-          new Date(txn.date) <= new Date(bill.date)
-      )
-      .sort((a, b) => new Date(a.date) - new Date(b.date));
-
-    // Calculate total advance available
-    let totalAdvance = customerAdvances.reduce(
-      (sum, txn) => sum + (txn.purity || 0),
-      0
-    );
-
-    // Get all bills for this customer before current bill
-    const previousBills = bills
-      .filter(
-        (b) =>
-          b.customerId === customerId && new Date(b.date) < new Date(bill.date)
-      )
-      .sort((a, b) => new Date(a.date) - new Date(b.date));
-
-    // Calculate advance used in previous bills
-    let advanceUsedInPreviousBills = 0;
-    previousBills.forEach((prevBill) => {
-      const prevBalance = calculateBillBalance(prevBill, customerId);
-      advanceUsedInPreviousBills += prevBalance.advanceUsed;
-    });
-
-    // Calculate remaining advance for current bill
-    let remainingAdvance = totalAdvance - advanceUsedInPreviousBills;
-
-    // Calculate received purity from current bill's receivedDetails
-    let receivedPurity = bill.receivedDetails.reduce((sum, detail) => {
-      if (detail.paidAmount) {
-        return sum - (detail.purityWeight || 0);
-      }
-      return sum + (detail.purityWeight || 0);
-    }, 0);
-
-    // Apply remaining advance to current bill
-    let advanceUsed = 0;
-    if (remainingAdvance > 0) {
-      const balanceBeforeAdvance = bill.totalPurity - receivedPurity;
-      advanceUsed = Math.min(remainingAdvance, balanceBeforeAdvance);
-      receivedPurity += advanceUsed;
-    }
-
-    const balance = bill.totalPurity - receivedPurity;
-    remainingAdvance -= advanceUsed;
-
-    console.log(
-      "saikluaafaaaaaaaaaaaa",
-      bill,
-      balance,
-      advanceUsed,
-      remainingAdvance
-    );
 
     return {
       balance,
@@ -395,14 +319,11 @@ const CustomerReport = () => {
                 <strong>
                   {filteredBills
                     .reduce((sum, bill) => {
-                      const { balance, advanceUsed } =
-                        calculateBillBalance(bill);
-                      if (balance > 0) {
-                        const adjustedBalance =
-                          advanceUsed > 0 ? balance - advanceUsed : balance;
-                        return sum + adjustedBalance;
-                      }
-                      return sum;
+                      const { balance } = calculateBillBalance(
+                        bill,
+                        bill.customerId
+                      );
+                      return sum + (balance > 0 ? balance : 0);
                     }, 0)
                     .toFixed(3)}
                   g
@@ -412,18 +333,14 @@ const CustomerReport = () => {
                 <strong>
                   {filteredBills
                     .reduce((sum, bill) => {
-                      const { balance, advanceUsed } =
-                        calculateBillBalance(bill);
-                      if (balance < 0) {
-                        const adjustedBalance =
-                          advanceUsed > 0
-                            ? Math.abs(balance) - advanceUsed
-                            : Math.abs(balance);
-                        return sum + adjustedBalance;
-                      }
-                      return sum;
+                      const { balance } = calculateBillBalance(
+                        bill,
+                        bill.customerId
+                      );
+                      return sum + (balance < 0 ? Math.abs(balance) : 0);
                     }, 0)
                     .toFixed(3)}
+                  g
                 </strong>
               </TableCell>
               <TableCell></TableCell>
