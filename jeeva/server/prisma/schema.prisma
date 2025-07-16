@@ -123,7 +123,7 @@ model Bill {
 
 model BillItem {
   id         Int      @id @default(autoincrement())
-  bill       Bill     @relation(fields: [billId], references: [id])
+  bill       Bill     @relation(fields: [billId], references: [id],  onDelete: Cascade)
   billId     Int
   coinValue  Float
   quantity   Int
@@ -138,7 +138,7 @@ model BillItem {
 
 model ReceivedDetail {
   id           Int      @id @default(autoincrement())
-  bill         Bill     @relation(fields: [billId], references: [id])
+  bill         Bill     @relation(fields: [billId], references: [id], onDelete: Cascade)
   billId       Int
   date         DateTime
   goldRate     Float

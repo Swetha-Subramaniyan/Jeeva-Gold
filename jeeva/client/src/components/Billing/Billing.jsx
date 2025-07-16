@@ -21,8 +21,6 @@ import BillDetails from "./BillDetails";
 import ReceivedDetails from "./ReceivedDetails";
 import ViewBill from "./ViewBill";
 
-
-
 const Billing = () => {
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [billItems, setBillItems] = useState([]);
@@ -32,7 +30,7 @@ const Billing = () => {
   const [goldRate, setGoldRate] = useState("");
   const [hallmarkCharges, setHallmarkCharges] = useState(0);
   const [displayHallmarkCharges, setDisplayHallmarkCharges] = useState(0);
-  
+
   const [rows, setRows] = useState([
     {
       date: new Date().toISOString().slice(0, 10),
@@ -41,14 +39,12 @@ const Billing = () => {
       touch: "",
       purityWeight: "",
       amount: "",
-      paidAmount:"",
-      mode: "", 
-
+      paidAmount: "",
+      mode: "",
     },
   ]);
 
   const [pureBalance, setPureBalance] = useState(0);
-
 
   const [totalBalance, setTotalBalance] = useState(0);
   const [hallmarkBalance, setHallmarkBalance] = useState(0);
@@ -76,18 +72,18 @@ const Billing = () => {
         const [customersRes, stocksRes, billsRes] = await Promise.all([
           fetch(`${BACKEND_SERVER_URL}/api/customers`),
           fetch(`${BACKEND_SERVER_URL}/api/v1/stocks`),
-          fetch(`${BACKEND_SERVER_URL}/api/bills`)
+          fetch(`${BACKEND_SERVER_URL}/api/bills`),
         ]);
 
         const [customersData, stocksData, billsData] = await Promise.all([
           customersRes.json(),
           stocksRes.json(),
-          billsRes.json()
+          billsRes.json(),
         ]);
 
         setCustomers(customersData);
         setStockData(stocksData);
-        
+
         const latest = billsData.length > 0 ? billsData[0] : null;
         setLatestBill(latest);
         setBillNo(latest ? `BILL-${parseInt(latest.id) + 1}` : "BILL-1");
@@ -101,7 +97,6 @@ const Billing = () => {
   }, []);
 
   useEffect(() => {
-    
     if (billItems.length > 0) {
       const totalPurity = billItems.reduce(
         (sum, item) => sum + parseFloat(item.purity || 0),
@@ -116,7 +111,9 @@ const Billing = () => {
       }, 0);
 
       setPureBalance(totalPurity.toFixed(3));
-      setTotalBalance((totalAmount + parseFloat(hallmarkCharges || 0)).toFixed(2));
+      setTotalBalance(
+        (totalAmount + parseFloat(hallmarkCharges || 0)).toFixed(2)
+      );
       setHallmarkBalance(parseFloat(hallmarkCharges || 0).toFixed(2));
     } else {
       setPureBalance(0);
@@ -124,7 +121,6 @@ const Billing = () => {
       setHallmarkBalance(0);
     }
   }, [billItems, hallmarkCharges]);
-
 
   useEffect(() => {
     const updateTime = () => {
@@ -172,13 +168,89 @@ const Billing = () => {
     }
   };
 
+  const addStockForBill = async (items) => {
+    try {
+      console.log("innnnnnnnnnnnnnnnnnnnnnn", items);
+      const results = await Promise.allSettled(
+        items.map(async (item) => {
+          const response = await fetch(
+            `${BACKEND_SERVER_URL}/api/v1/stocks/add`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                coinType: item.percentage.toString(),
+                gram: item.coinValue.toString(),
+                quantity: item.quantity.toString(),
+                reason: `Deleted the bill which contains(${item.coinValue}g ${item.percentage})`,
+              }),
+            }
+          );
+
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || "Failed to add stock");
+          }
+          return response.json();
+        })
+      );
+
+      return results.map((r) => r.value);
+    } catch (error) {
+      console.error("Stock adding error:", error);
+      throw error;
+    }
+  };
+
+  const deleteBill = async (bill) => {
+    const confirmed = window.confirm(
+      `Are you sure you want to delete bill? This action deletes all the associated bill items and received entries.`
+    );
+
+    if (!confirmed) return;
+    try {
+      const response = await fetch(
+        `${BACKEND_SERVER_URL}/api/bills/${bill.id}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      const items = bill.items.map((item) => ({
+        id: item.id || Date.now().toString(),
+        coinValue: item.coinValue,
+        quantity: item.quantity,
+        percentage: item.percentage,
+        touch: item.touch,
+        weight: item.weight,
+        purity: item.purity,
+        goldRate: item.goldRate ? item.goldRate.toString() : "",
+        amount:
+          item.goldRate && item.purity
+            ? (item.goldRate * item.purity).toFixed(2)
+            : "",
+      }));
+
+      if (response.ok) {
+        await addStockForBill(items);
+        showSnackbar("Bill deleted successfully", "success");
+        setViewMode(false);
+      } else {
+        throw new Error("Deletion failed");
+      }
+    } catch (error) {
+      console.error("Error deleting bills:", error);
+      showSnackbar("Failed to delete bills", "error");
+    }
+  };
+
   const viewBill = (bill) => {
     setViewMode(true);
     setSelectedBill(bill);
     setSelectedCustomer(customers.find((c) => c.id === bill.customerId));
     setGoldRate(bill.goldRate.toString());
     setHallmarkCharges(bill.hallmarkBalance.toString());
-    
+
     setBillItems(
       bill.items.map((item) => ({
         id: item.id || Date.now().toString(),
@@ -225,7 +297,7 @@ const Billing = () => {
         purityWeight: "",
         amount: "",
         mode: "",
-        paidAmount:""
+        paidAmount: "",
       },
     ]);
     setSelectedCustomer(null);
@@ -265,16 +337,65 @@ const Billing = () => {
       if (addIconWrapper) addIconWrapper.style.display = "";
 
       const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF("l", "mm", "a5");
+      /*  const pdf = new jsPDF("l", "mm", "a5");
       const pageWidth = pdf.internal.pageSize.getWidth();
       const pageHeight = pdf.internal.pageSize.getHeight();
 
       pdf.addImage(imgData, "PNG", 0, 0, pageWidth, pageHeight);
-      pdf.save("bill.pdf");
+      pdf.save("bill.pdf"); */
+      const iframe = document.createElement("iframe");
+      iframe.style.position = "fixed";
+      iframe.style.right = "0";
+      iframe.style.bottom = "0";
+      iframe.style.width = "0";
+      iframe.style.height = "0";
+      iframe.style.border = "0";
+
+      iframe.onload = () => {
+        setTimeout(() => {
+          iframe.contentWindow.focus();
+          iframe.contentWindow.print();
+          document.body.removeChild(iframe);
+        }, 100);
+      };
+
+      iframe.srcdoc = `
+        <html>
+          <head>
+            <title>Print Bill</title>
+            <style>
+              body { margin: 0; padding: 0; }
+              img { width: 100%; height: auto; }
+            </style>
+          </head>
+          <body>
+            <img src="${imgData}" />
+          </body>
+        </html>
+      `;
+
+      document.body.appendChild(iframe);
     }
   };
-  
-  
+
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      // Check for Ctrl+P (or Cmd+P on Mac)
+      if ((event.ctrlKey || event.metaKey) && event.key === "p") {
+        event.preventDefault(); // Prevent the default print dialog
+        handlePrint(); // Trigger your custom print function
+      }
+    };
+
+    // Add event listener when component mounts
+    window.addEventListener("keydown", handleKeyDown);
+
+    // Remove event listener when component unmounts
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
+
   const reduceStockForBill = async (items) => {
     try {
       const results = await Promise.allSettled(
@@ -316,7 +437,7 @@ const Billing = () => {
     }
   };
 
-   const handleSubmitBill = async () => {
+  const handleSubmitBill = async () => {
     if (!selectedCustomer || billItems.length === 0) {
       showSnackbar("Please fill all required fields", "error");
       return;
@@ -341,7 +462,6 @@ const Billing = () => {
       }, 0);
 
       const totalAmount = totalAmountCalc + parseFloat(hallmarkCharges || 0);
-
 
       const billData = {
         customerId: selectedCustomer.id,
@@ -368,10 +488,9 @@ const Billing = () => {
           touch: parseFloat(row.touch || 0),
           purityWeight: parseFloat(row.purityWeight || 0),
           amount: parseFloat(row.amount || 0),
-          paidAmount :parseFloat(row.paidAmount || 0 ),
+          paidAmount: parseFloat(row.paidAmount || 0),
         })),
       };
-
 
       const response = await fetch(`${BACKEND_SERVER_URL}/api/bills`, {
         method: "POST",
@@ -471,7 +590,6 @@ const Billing = () => {
     }
   };
 
-
   return (
     <>
       <Box className="sidebar">
@@ -549,7 +667,7 @@ const Billing = () => {
 
         {viewMode && selectedBill && (
           <Tooltip title="Update Bill" arrow placement="right">
-           <div
+            <div
               className="sidebar-button"
               onClick={handleUpdateBill}
               style={{
@@ -558,7 +676,7 @@ const Billing = () => {
               }}
             >
               <span>Update</span>
-            </div> 
+            </div>
           </Tooltip>
         )}
 
@@ -578,6 +696,7 @@ const Billing = () => {
           fetchedBills={fetchedBills}
           customers={customers}
           viewBill={viewBill}
+          deleteBill={deleteBill}
           setViewMode={setViewMode}
         />
       )}

@@ -141,8 +141,6 @@ const CustomerReport = () => {
     const balance = (bill.totalPurity || 0) - receivedPurity;
     remainingAdvance -= advanceUsed;
 
-    console.log("balance", balance, advanceUsed, remainingAdvance);
-
     return {
       balance,
       advanceUsed,
@@ -226,6 +224,20 @@ const CustomerReport = () => {
     }, 0);
   };
 
+  const calculateTotalPurity = () => {
+    return filteredBills.reduce(
+      (sum, bill) => sum + (bill.totalPurity || 0),
+      0
+    );
+  };
+
+  const calculateTotalAdvanceAvailable = () => {
+    if (!transactions || !Array.isArray(transactions)) return 0;
+    return transactions.reduce((sum, txn) => {
+      return sum + (txn.purity || 0);
+    }, 0);
+  };
+
   return (
     <Box sx={{ p: 3 }}>
       <Typography style={{ textAlign: "center" }} variant="h5" gutterBottom>
@@ -286,7 +298,7 @@ const CustomerReport = () => {
                 const customerBalance =
                   balanceInfo.balance > 0 ? balanceInfo.balance : 0;
                 const ownerBalance =
-                  balanceInfo.balance < 0 ? Math.abs(balanceInfo.balance) : 0;
+                  balanceInfo.balance < 0 ? balanceInfo.balance : 0;
 
                 return (
                   <TableRow key={bill.id}>
@@ -309,12 +321,42 @@ const CustomerReport = () => {
           </TableBody>
           <TableFooter>
             <TableRow>
-              <TableCell colSpan={3} align="right">
+              <TableCell colSpan={2} align="right">
                 <strong>Totals:</strong>
               </TableCell>
               <TableCell>
-                <strong>{calculateTotalReceived().toFixed(3)}g</strong>
+                <strong>{calculateTotalPurity().toFixed(3)}g</strong>
               </TableCell>
+              <TableCell>
+                <div>
+                  <strong>
+                    Received: {calculateTotalReceived().toFixed(3)}g
+                  </strong>
+                </div>
+                <div>
+                  <strong>
+                    Advance Available:{" "}
+                    {calculateTotalAdvanceAvailable().toFixed(3)}g
+                  </strong>
+                </div>
+                <div
+                  style={{
+                    borderTop: "1px solid #ccc",
+                    marginTop: 4,
+                    paddingTop: 4,
+                  }}
+                >
+                  <strong>
+                    Total:{" "}
+                    {(
+                      calculateTotalReceived() +
+                      calculateTotalAdvanceAvailable()
+                    ).toFixed(3)}
+                    g
+                  </strong>
+                </div>
+              </TableCell>
+
               <TableCell>
                 <strong>
                   {filteredBills
