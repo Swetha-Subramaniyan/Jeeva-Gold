@@ -10,9 +10,15 @@ import {
   TableRow,
   TableCell,
 } from "@mui/material";
-import "./Billing.css"
+import "./Billing.css";
 
-const ViewBill = ({ fetchedBills, customers, viewBill, setViewMode }) => {
+const ViewBill = ({
+  fetchedBills,
+  customers,
+  viewBill,
+  deleteBill,
+  setViewMode,
+}) => {
   return (
     <Modal
       open={true}
@@ -47,9 +53,14 @@ const ViewBill = ({ fetchedBills, customers, viewBill, setViewMode }) => {
                   {new Date(bill.createdAt).toLocaleDateString()}
                 </TableCell>
                 <TableCell className="td">
-                  <Button variant="outlined" onClick={() => viewBill(bill)}>
-                    View
-                  </Button>
+                  <Box display="flex" gap={1}>
+                    <Button variant="outlined" onClick={() => viewBill(bill)}>
+                      View
+                    </Button>
+                    <Button variant="outlined" onClick={() => deleteBill(bill)}>
+                      Delete
+                    </Button>
+                  </Box>
                 </TableCell>
               </TableRow>
             ))}

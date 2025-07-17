@@ -141,8 +141,6 @@ const CustomerReport = () => {
     const balance = (bill.totalPurity || 0) - receivedPurity;
     remainingAdvance -= advanceUsed;
 
-    console.log("balance", balance, advanceUsed, remainingAdvance);
-
     return {
       balance,
       advanceUsed,
@@ -220,9 +218,75 @@ const CustomerReport = () => {
     }, 0);
   };
 
-  const calculateTotalBalance = () => {
+  const calculateTotalPurity = () => {
+    return filteredBills.reduce(
+      (sum, bill) => sum + (bill.totalPurity || 0),
+      0
+    );
+  };
+
+  const getFilteredTransactions = () => {
+    let result = transactions;
+
+    if (selectedCustomer) {
+      result = result.filter((txn) => txn.customerId === selectedCustomer.id);
+    }
+
+    if (startDate) {
+      result = result.filter(
+        (txn) => new Date(txn.date) >= new Date(startDate)
+      );
+    }
+
+    if (endDate) {
+      result = result.filter(
+        (txn) => new Date(txn.date) <= new Date(endDate + "T23:59:59")
+      );
+    }
+
+    return result;
+  };
+
+  const calculateTotalAdvanceAvailable = () => {
+    const filteredTxns = getFilteredTransactions();
+    return filteredTxns.reduce((sum, txn) => sum + (txn.purity || 0), 0);
+  };
+
+  const calculateCashBalances = (bill) => {
+    if (!bill.receivedDetails || !Array.isArray(bill.receivedDetails)) {
+      return {
+        customerCashBalance: 0,
+        ownerCashBalance: 0,
+      };
+    }
+
+    const recentDetail = [...bill.receivedDetails]
+      .sort((a, b) => new Date(b.date) - new Date(a.date))
+      .find((detail) => detail.goldRate);
+
+    const goldRate = recentDetail?.goldRate || 0;
+
+    const balanceInfo = calculateBillBalance(bill, bill.customerId);
+    const customerBalance = balanceInfo.balance > 0 ? balanceInfo.balance : 0;
+    const ownerBalance = balanceInfo.balance < 0 ? balanceInfo.balance : 0;
+
+    return {
+      customerCashBalance: customerBalance * goldRate + bill.hallmarkBalance,
+      ownerCashBalance: ownerBalance * goldRate,
+    };
+  };
+
+  const calculateTotalCustomerCashBalance = () => {
     return filteredBills.reduce((total, bill) => {
-      return total + calculateBillBalance(bill);
+      const cashBalances = calculateCashBalances(bill);
+      return total + cashBalances.customerCashBalance;
+    }, 0);
+  };
+
+  const calculateTotalOwnerCashBalance = () => {
+    return filteredBills.reduce((total, bill) => {
+      const cashBalances = calculateCashBalances(bill);
+      return total + cashBalances.ownerCashBalance;
     }, 0);
   };
 
@@ -274,7 +338,9 @@ const CustomerReport = () => {
               <TableCell>Description</TableCell>
               <TableCell>Received Details</TableCell>
               <TableCell>Customer Balance</TableCell>
+              <TableCell>Customer Cash Balance</TableCell>
               <TableCell>Owner Balance</TableCell>
+              <TableCell>Owner Cash Balance</TableCell>
               <TableCell>Action</TableCell>
             </TableRow>
           </TableHead>
@@ -286,7 +352,9 @@ const CustomerReport = () => {
                 const customerBalance =
                   balanceInfo.balance > 0 ? balanceInfo.balance : 0;
                 const ownerBalance =
-                  balanceInfo.balance < 0 ? Math.abs(balanceInfo.balance) : 0;
+                  balanceInfo.balance < 0 ? balanceInfo.balance : 0;
+
+                const cashBalances = calculateCashBalances(bill);
 
                 return (
                   <TableRow key={bill.id}>
@@ -297,7 +365,13 @@ const CustomerReport = () => {
                     <TableCell>{getBillDescription(bill)}</TableCell>
                     <TableCell>{getReceivedDetailsSummary(bill)}</TableCell>
                     <TableCell>{customerBalance.toFixed(3)}</TableCell>
+                    <TableCell>
+                      ₹{cashBalances.customerCashBalance.toFixed(2)}
+                    </TableCell>
                     <TableCell>{ownerBalance.toFixed(3)}</TableCell>
+                    <TableCell>
+                      ₹{cashBalances.ownerCashBalance.toFixed(2)}
+                    </TableCell>
                     <TableCell>
                       <IconButton onClick={() => handleViewBill(bill)}>
                         <VisibilityIcon color="primary" />
@@ -309,12 +383,42 @@ const CustomerReport = () => {
           </TableBody>
           <TableFooter>
             <TableRow>
-              <TableCell colSpan={3} align="right">
+              <TableCell colSpan={2} align="right">
                 <strong>Totals:</strong>
               </TableCell>
               <TableCell>
-                <strong>{calculateTotalReceived().toFixed(3)}g</strong>
+                <strong>{calculateTotalPurity().toFixed(3)}g</strong>
               </TableCell>
+              <TableCell>
+                <div>
+                  <strong>
+                    Received: {calculateTotalReceived().toFixed(3)}g
+                  </strong>
+                </div>
+                <div>
+                  <strong>
+                    Advance Available:{" "}
+                    {calculateTotalAdvanceAvailable().toFixed(3)}g
+                  </strong>
+                </div>
+                <div
+                  style={{
+                    borderTop: "1px solid #ccc",
+                    marginTop: 4,
+                    paddingTop: 4,
+                  }}
+                >
+                  <strong>
+                    Total:{" "}
+                    {(
+                      calculateTotalReceived() +
+                      calculateTotalAdvanceAvailable()
+                    ).toFixed(3)}
+                    g
+                  </strong>
+                </div>
+              </TableCell>
+
               <TableCell>
                 <strong>
                   {filteredBills
@@ -330,6 +434,9 @@ const CustomerReport = () => {
                 </strong>
               </TableCell>
               <TableCell>
+                {calculateTotalCustomerCashBalance().toFixed(3)}
+              </TableCell>
+              <TableCell>
                 <strong>
                   {filteredBills
                     .reduce((sum, bill) => {
@@ -337,11 +444,15 @@ const CustomerReport = () => {
                         bill,
                         bill.customerId
                       );
-                      return sum + (balance < 0 ? Math.abs(balance) : 0);
+                      return sum + (balance < 0 ? balance : 0);
                     }, 0)
                     .toFixed(3)}
                   g
                 </strong>
+              </TableCell>
+
+              <TableCell>
+                {calculateTotalOwnerCashBalance().toFixed(3)}
               </TableCell>
               <TableCell></TableCell>
             </TableRow>
@@ -396,13 +507,15 @@ const CustomerReport = () => {
                 </Typography>
                 <Typography variant="body1">
                   <strong>Balance:</strong>{" "}
-                  {calculateBillBalance(selectedBill) > 0
-                    ? `Customer owes: ${calculateBillBalance(
-                        selectedBill
-                      ).toFixed(3)}g`
-                    : `Owner owes: ${Math.abs(
-                        calculateBillBalance(selectedBill)
-                      ).toFixed(3)}g`}
+                  {(() => {
+                    const { balance } = calculateBillBalance(
+                      selectedBill,
+                      selectedBill.customerId
+                    );
+                    return balance > 0
+                      ? `Customer owes: ${balance.toFixed(3)}g`
+                      : `Owner owes: ${Math.abs(balance).toFixed(3)}g`;
+                  })()}
                 </Typography>
               </Box>
 

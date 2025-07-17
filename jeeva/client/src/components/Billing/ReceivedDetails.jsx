@@ -27,44 +27,36 @@ const ReceivedDetails = ({
     return isNaN(num) ? 0 : num;
   };
 
-  console.log("initial in received", initialPureBalance, initialTotalBalance);
-
   const calculateBalances = () => {
     let pure = parseFloatSafe(initialPureBalance);
     let total = parseFloatSafe(initialTotalBalance);
     let hallmark = parseFloatSafe(initialHallmarkBalance);
-    let paidOnlyPurity = 0;
 
     rows.forEach((row) => {
       if (row.mode === "weight" && row.purityWeight) {
-        console.log("in 1");
         if (row.paidAmount > 0) {
           pure += parseFloatSafe(row.purityWeight);
         } else {
           pure -= parseFloatSafe(row.purityWeight);
         }
       } else if (row.mode === "amount" && parseFloatSafe(row.amount) > 0) {
-        console.log("in 2");
         const amount = parseFloatSafe(row.amount);
         const hallmarkDeduction = Math.min(amount, hallmark);
 
         hallmark -= hallmarkDeduction;
         const amountAfterHallmark = amount - hallmarkDeduction;
-        //total -= amountAfterHallmark;
 
         if (amountAfterHallmark > 0 && row.goldRate) {
           const purity = amountAfterHallmark / parseFloatSafe(row.goldRate);
           pure -= purity;
-        }
-      }
-      else if (row.mode === "amount" && parseFloatSafe(row.paidAmount) > 0) {
+        } 
+      } else if (row.mode === "amount" && parseFloatSafe(row.paidAmount) > 0) {
         console.log("in 2");
         const amount = parseFloatSafe(row.paidAmount);
         const hallmarkDeduction = Math.min(amount, hallmark);
 
         hallmark -= hallmarkDeduction;
         const amountAfterHallmark = amount - hallmarkDeduction;
-        //total -= amountAfterHallmark;
 
         if (amountAfterHallmark > 0 && row.goldRate) {
           const purity = amountAfterHallmark / parseFloatSafe(row.goldRate);
@@ -82,20 +74,29 @@ const ReceivedDetails = ({
 
   const currentBalances = calculateBalances();
 
-  console.log("pure", currentBalances.pureBalance);
-
   useEffect(() => {
     const goldRateRows = rows.filter(
       (row) => row.goldRate && parseFloatSafe(row.goldRate) > 0
     );
+
+    const receivedAmountRows = rows.filter(
+      (row) => row.amount && parseFloatSafe(row.amount) > 0
+    );
+
+
+    let newTotalBalance;
+
+    let latestGoldRate = 0;
+
     if (goldRateRows.length > 0) {
-      const latestGoldRate = parseFloatSafe(
+      latestGoldRate = parseFloatSafe(
         goldRateRows[goldRateRows.length - 1].goldRate
       );
 
-      let newTotalBalance;
-
-      if (currentBalances.pureBalance > 0) {
+      if (
+        currentBalances.pureBalance > 0 ||
+        currentBalances.hallmarkBalance > 0
+      ) {
         newTotalBalance =
           parseFloatSafe(currentBalances.pureBalance) * latestGoldRate +
           parseFloatSafe(currentBalances.hallmarkBalance);
@@ -103,8 +104,17 @@ const ReceivedDetails = ({
         newTotalBalance =
           parseFloatSafe(currentBalances.pureBalance) * latestGoldRate;
       }
-      setTotalBalance(newTotalBalance);
+    } else if (receivedAmountRows.length > 0) {
+      newTotalBalance =
+        parseFloatSafe(currentBalances.pureBalance) * latestGoldRate +
+        parseFloatSafe(currentBalances.hallmarkBalance);
+
+        console.log("ssssssssssssssssssssss", newTotalBalance)
+    }else{
+      newTotalBalance = parseFloatSafe(currentBalances.hallmarkBalance);
     }
+
+    setTotalBalance(newTotalBalance);
   }, [rows, currentBalances.pureBalance, currentBalances.hallmarkBalance]);
 
   useEffect(() => {
@@ -394,7 +404,7 @@ const ReceivedDetails = ({
           <b>Hallmark Balance: {currentBalances.hallmarkBalance?.toFixed(2)}</b>
         </div>
         <div>
-          <b>Total Balance: {currentBalances.totalBalance?.toFixed(2)}</b>
+          <b>Total Balance: {currentBalances.totalBalance?.toFixed(2) }</b>
         </div>
       </div>
 
