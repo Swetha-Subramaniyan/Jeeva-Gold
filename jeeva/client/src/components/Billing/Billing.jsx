@@ -683,7 +683,7 @@ const Billing = () => {
         <Tooltip title="Delete Bill" arrow placement="right">
           <div
             className="sidebar-button"
-            onClick={() => selectedBill && handleDeleteBill(selectedBill.id)}
+            onClick={() => selectedBill && handleDeleteBill(selectedBill)}
             style={{ backgroundColor: "#ffebee" }}
           >
             <span style={{ color: "#c62828" }}>Delete</span>
