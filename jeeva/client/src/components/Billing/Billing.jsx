@@ -20,6 +20,7 @@ import { BACKEND_SERVER_URL } from "../../Config/Config";
 import BillDetails from "./BillDetails";
 import ReceivedDetails from "./ReceivedDetails";
 import ViewBill from "./ViewBill";
+import { formatINRCurrency } from "../../utils/formatCurrency";
 
 const Billing = () => {
   const [selectedCustomer, setSelectedCustomer] = useState(null);
@@ -29,7 +30,7 @@ const Billing = () => {
   const [time, setTime] = useState("");
   const [goldRate, setGoldRate] = useState("");
   const [hallmarkCharges, setHallmarkCharges] = useState(0);
-  const [displayHallmarkCharges, setDisplayHallmarkCharges] = useState(0);
+  const [displayHallmarkCharges, setDisplayHallmarkCharges] = useState("");
 
   const [rows, setRows] = useState([
     {
@@ -112,7 +113,7 @@ const Billing = () => {
 
       setPureBalance(totalPurity.toFixed(3));
       setTotalBalance(
-        (totalAmount + parseFloat(hallmarkCharges || 0)).toFixed(2)
+        (parseFloat(totalAmount) + parseFloat(hallmarkCharges || 0)).toFixed(2)
       );
       setHallmarkBalance(parseFloat(hallmarkCharges || 0).toFixed(2));
     } else {
@@ -590,6 +591,33 @@ const Billing = () => {
     }
   };
 
+  const handleHallmarkChange = (e) => {
+    const rawValue = e.target.value;
+
+    const sanitizedValue = rawValue.replace(/[^0-9.]/g, "");
+
+    const decimalParts = sanitizedValue.split(".");
+    if (decimalParts.length > 2) {
+      const validValue = decimalParts[0] + "." + decimalParts[1];
+      setDisplayHallmarkCharges(validValue);
+      setHallmarkCharges(parseFloat(validValue));
+      return;
+    }
+
+    if (sanitizedValue === "" || sanitizedValue === ".") {
+      setDisplayHallmarkCharges("");
+      setHallmarkCharges(0);
+      return;
+    }
+
+    setDisplayHallmarkCharges(sanitizedValue);
+
+    const numberValue = parseFloat(sanitizedValue);
+    if (!isNaN(numberValue)) {
+      setHallmarkCharges(numberValue);
+    }
+  };
+
   return (
     <>
       <Box className="sidebar">
@@ -754,8 +782,7 @@ const Billing = () => {
             totalPurity={calculateTotals().totalPurity}
             totalAmount={calculateTotals().totalAmount}
             displayHallmarkCharges={displayHallmarkCharges}
-            setDisplayHallmarkCharges={setDisplayHallmarkCharges}
-            setHallmarkCharges={setHallmarkCharges}
+            handleHallmarkChange={handleHallmarkChange}
             viewMode={viewMode}
             selectedBill={selectedBill}
             openAddItem={openAddItem}

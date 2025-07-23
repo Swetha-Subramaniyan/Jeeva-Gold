@@ -135,6 +135,37 @@ function Cashgold() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    console.log("formdata ", formData)
+
+    if (formData.type === "Select") {
+    toast.error("Please select a valid type: Cash or Gold");
+    return;
+  }
+
+  if (formData.type === "Cash") {
+    if (!formData.cashAmount || isNaN(formData.cashAmount)) {
+      toast.error("Please enter a valid Cash Amount");
+      return;
+    }
+
+    if (!goldRate || isNaN(goldRate)) {
+      toast.error("Please enter a valid Gold Rate");
+      return;
+    }
+  }
+
+  if (formData.type === "Gold") {
+    if (!formData.goldValue || isNaN(formData.goldValue)) {
+      toast.error("Please enter a valid Gold Value");
+      return;
+    }
+
+    if (!formData.touch || isNaN(formData.touch)) {
+      toast.error("Please enter a valid Touch value");
+      return;
+    }
+  }
+
     const payload = {
       date: formData.date,
       type: formData.type,

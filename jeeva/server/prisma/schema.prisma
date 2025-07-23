@@ -17,7 +17,7 @@ model User {
 model Customer {
   id           Int           @id @default(autoincrement())
   name         String
-  phone        String?
+  phone        String?       @unique
   address      String?
   createdAt    DateTime      @default(now())
   bill         Bill[]
@@ -123,7 +123,7 @@ model Bill {
 
 model BillItem {
   id         Int      @id @default(autoincrement())
-  bill       Bill     @relation(fields: [billId], references: [id],  onDelete: Cascade)
+  bill       Bill     @relation(fields: [billId], references: [id], onDelete: Cascade)
   billId     Int
   coinValue  Float
   quantity   Int

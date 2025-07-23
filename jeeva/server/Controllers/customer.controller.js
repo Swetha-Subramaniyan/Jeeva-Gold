@@ -1,6 +1,6 @@
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
-
+ 
 
 exports.createCustomer = async (req, res) => {
   const { name, phone, address } = req.body;
@@ -10,6 +10,17 @@ exports.createCustomer = async (req, res) => {
   }
 
   try {
+
+     if (phone) {
+      const existingCustomer = await prisma.customer.findUnique({
+        where: { phone },
+      });
+
+      if (existingCustomer) {
+        return res.status(400).json({ message: "Phone number already exists." });
+      }
+    }
+    
     const newCustomer = await prisma.customer.create({
       data: {
         name,

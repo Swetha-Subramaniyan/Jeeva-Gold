@@ -36,7 +36,27 @@ function MasterCustomer() {
       alert("Customer name is required.");
       return;
     }
+    const trimmedPhone = phoneNumber.trim();
 
+    if (!/^\d+$/.test(trimmedPhone)) {
+      toast.error("Phone number must contain only digits (0–9).");
+      return;
+    }
+
+    if (trimmedPhone.length < 10) {
+      toast.error("Phone number must be exactly 10 digits.");
+      return;
+    }
+
+    if (trimmedPhone.length > 10) {
+      toast.error("Phone number must not exceed 10 digits.");
+      return;
+    }
+
+    if (!/^[6-9]/.test(trimmedPhone)) {
+      toast.error("Phone number must start with 6, 7, 8, or 9.");
+      return;
+    }
     const customerData = {
       name: customerName,
       phone: phoneNumber,
@@ -44,13 +64,13 @@ function MasterCustomer() {
     };
 
     try {
-     const response = await fetch(`${BACKEND_SERVER_URL}/api/customers`, {
-       method: "POST",
-       headers: {
-         "Content-Type": "application/json",
-       },
-       body: JSON.stringify(customerData),
-     });
+      const response = await fetch(`${BACKEND_SERVER_URL}/api/customers`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(customerData),
+      });
 
       if (response.ok) {
         const newCustomer = await response.json();

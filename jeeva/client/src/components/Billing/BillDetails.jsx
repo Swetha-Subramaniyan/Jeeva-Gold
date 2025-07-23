@@ -8,6 +8,8 @@ import {
   Alert,
 } from "@mui/material";
 
+import { formatINRCurrency } from "../../utils/formatCurrency";
+
 const BillDetails = ({
   billItems,
   setBillItems,
@@ -15,8 +17,7 @@ const BillDetails = ({
   totalPurity,
   totalAmount,
   displayHallmarkCharges,
-  setDisplayHallmarkCharges,
-  setHallmarkCharges,
+  handleHallmarkChange,
   viewMode,
   selectedBill,
   openAddItem,
@@ -81,6 +82,8 @@ const BillDetails = ({
   const handleInputChange = (e) => {
     const { name, value } = e.target;
 
+    if (name === "no" && Number(value) < 0) return;
+
     setNewItem((prev) => {
       const updated = {
         ...prev,
@@ -117,7 +120,7 @@ const BillDetails = ({
       return updated;
     });
   };
-  
+
   const handleSaveItem = () => {
     if (!newItem.name || !newItem.no || !newItem.percentage) {
       showSnackbar("Please fill all required fields", "error");
@@ -164,7 +167,6 @@ const BillDetails = ({
 
     setBillItems(updatedBillItems);
   };
-  //fixed removed
 
   return (
     <Box className="itemsSection">
@@ -193,9 +195,7 @@ const BillDetails = ({
               <td className="td">{item.touch}</td>
               <td className="td">{item.weight}</td>
               <td className="td">{item.purity}</td>
-              <td className="td">
-                {item.goldRate ? item.amount  : ""}
-              </td>
+              <td className="td">{item.goldRate ? formatINRCurrency(item.amount) : ""}</td>
 
               <td className="td">
                 <TextField
@@ -204,7 +204,7 @@ const BillDetails = ({
                   onChange={(e) =>
                     handleBillItemChange(index, "goldRate", e.target.value)
                   }
-                  type="number"
+                  type="text"
                   disabled={viewMode && selectedBill}
                   inputProps={{ min: 0 }}
                 />
@@ -232,7 +232,7 @@ const BillDetails = ({
               <strong>{totalPurity.toFixed(3)}</strong>
             </td>
             <td className="td">
-              <strong>{totalAmount.toFixed(2)}</strong>
+              <strong>{formatINRCurrency(totalAmount.toFixed(2))}</strong>
             </td>
             <td className="td"></td>
           </tr>
@@ -244,14 +244,9 @@ const BillDetails = ({
             <td className="td">
               <TextField
                 size="small"
-                style={{ width: "120px" }}
                 value={displayHallmarkCharges}
-                onChange={(e) => {
-                  const value = parseFloat(e.target.value);
-                  setDisplayHallmarkCharges(value);
-                  setHallmarkCharges(value);
-                }}
-                type="number"
+                onChange={handleHallmarkChange}
+                type="text"
                 disabled={viewMode && selectedBill}
               />
             </td>
@@ -263,14 +258,15 @@ const BillDetails = ({
             </td>
             <td className="td">
               <strong>
+                
                 {selectedBill
-                  ? (
-                      totalAmount +
+                  ? formatINRCurrency((
+                      parseFloat(totalAmount) +
                       parseFloat(selectedBill?.hallmarkCharges || 0)
-                    ).toFixed(2)
-                  : (
-                      totalAmount + parseFloat(displayHallmarkCharges || 0)
-                    ).toFixed(2)}
+                    ))
+                  : formatINRCurrency((
+                      parseFloat(totalAmount) + parseFloat(displayHallmarkCharges || 0)
+                    ))}
               </strong>
             </td>
             <td className="td"></td>
@@ -379,7 +375,6 @@ const BillDetails = ({
               value={newItem.no}
               onChange={handleInputChange}
               margin="normal"
-              type="number"
               required
               disabled={viewMode && selectedBill}
             />
@@ -391,7 +386,6 @@ const BillDetails = ({
               value={newItem.touch || ""}
               onChange={handleInputChange}
               margin="normal"
-              type="number"
               required
               disabled={viewMode && selectedBill}
             />
@@ -403,7 +397,6 @@ const BillDetails = ({
               value={newItem.weight}
               onChange={handleInputChange}
               margin="normal"
-              type="number"
               inputProps={{ step: "0.001" }}
             />
 
@@ -439,7 +432,6 @@ const BillDetails = ({
                 }
               }}
               margin="normal"
-              type="number"
               inputProps={{ step: "0.001" }}
             />
 
