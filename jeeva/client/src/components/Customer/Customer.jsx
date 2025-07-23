@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import {
   Container,
@@ -19,6 +18,7 @@ import {
   DialogActions,
   Button,
 } from "@mui/material";
+ import Tooltip from '@mui/material/Tooltip';
 import SearchIcon from "@mui/icons-material/Search";
 import PreviewIcon from "@mui/icons-material/Preview";
 import EditIcon from "@mui/icons-material/Edit";
@@ -185,24 +185,33 @@ const Customer = () => {
                     <TableCell align="center">{customer.name}</TableCell>
                     <TableCell align="center">{customer.phone}</TableCell>
                     <TableCell align="center">{customer.address}</TableCell>
+                   
                     <TableCell align="center">
-                      <IconButton
-                        onClick={() =>
-                          navigate(
-                            `/customertrans?id=${
-                              customer.id
-                            }&name=${encodeURIComponent(customer.name)}`
-                          )
-                        }
-                      >
-                        <PreviewIcon color="primary" />
-                      </IconButton>
-                      <IconButton onClick={() => handleEdit(customer)}>
-                        <EditIcon color="secondary" />
-                      </IconButton>
-                      <IconButton onClick={() => handleDelete(customer.id)}>
-                        <DeleteIcon color="error" />
-                      </IconButton>
+                      <Tooltip title="View Customer">
+                        <IconButton
+                          onClick={() =>
+                            navigate(
+                              `/customertrans?id=${
+                                customer.id
+                              }&name=${encodeURIComponent(customer.name)}`
+                            )
+                          }
+                        >
+                          <PreviewIcon color="primary" />
+                        </IconButton>
+                      </Tooltip>
+
+                      <Tooltip title="Edit Customer">
+                        <IconButton onClick={() => handleEdit(customer)}>
+                          <EditIcon color="secondary" />
+                        </IconButton>
+                      </Tooltip>
+
+                      <Tooltip title="Delete Customer">
+                        <IconButton onClick={() => handleDelete(customer.id)}>
+                          <DeleteIcon color="error" />
+                        </IconButton>
+                      </Tooltip>
                     </TableCell>
                   </TableRow>
                 ))}

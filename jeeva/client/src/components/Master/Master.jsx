@@ -80,6 +80,20 @@ const handleCashGold =()=>{
             justifyContent: "center",
           }}
         >
+
+           <li style={{ marginRight: "20px" }}>
+            <button
+              onClick={() => navigate("/customer")}
+              className="nav-button"
+              onMouseOver={(e) => (e.target.style.backgroundColor = "#333")}
+              onMouseOut={(e) =>
+                (e.target.style.backgroundColor = "transparent")
+              }
+            >
+              Home
+            </button>
+          </li>
+
           <li style={{ marginRight: "20px" }}>
             <button
               onClick={handleAddCustomerClick}

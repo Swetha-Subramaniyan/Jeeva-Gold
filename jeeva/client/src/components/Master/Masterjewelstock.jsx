@@ -80,21 +80,9 @@ const Masterjewelstock = () => {
 
       if (!response.ok) throw new Error("Failed to save entry");
 
-      const newEntry = await response.json();
-
-      let updatedEntries;
-      if (isEditMode) {
-        updatedEntries = entries.map((entry) =>
-          entry.id === editId ? newEntry : entry
-        );
-        toast.success("Entry updated successfully!");
-      } else {
-        updatedEntries = [...entries, newEntry];
-        toast.success("Stock added successfully!");
-      }
-
-      setEntries(updatedEntries);
-      calculateTotalPurity(updatedEntries);
+     fetchEntries();
+      setEntries(entries);
+      calculateTotalPurity(entries);
       resetForm();
       setShowFormPopup(false);
     } catch (error) {
@@ -166,7 +154,7 @@ const Masterjewelstock = () => {
 
       {showFormPopup && (
         <div className="popup-overlay">
-          <div className="popup-content">
+          <div className="popup-contents">
             <h3>{isEditMode ? "Edit" : "Enter"} Jewel Stock Details</h3>
             <button
               className="close-btn"
@@ -308,12 +296,12 @@ const Masterjewelstock = () => {
             <tfoot>
               <tr>
                 <td
-                  colSpan="7"
+                  colSpan="6"
                   style={{ textAlign: "right", fontWeight: "bold" }}
                 >
                   Total Purity:
                 </td>
-                <td colSpan="2" style={{ fontWeight: "bold" }}>
+                <td colSpan="3" style={{ fontWeight: "bold" }}>
                   {totalPurity}
                 </td>
               </tr>
