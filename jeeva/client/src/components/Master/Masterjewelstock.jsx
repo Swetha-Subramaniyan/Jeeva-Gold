@@ -191,7 +191,6 @@ const Masterjewelstock = () => {
               <div className="form-group">
                 <label>Weight (grams):</label>
                 <input
-                  type="number"
                   name="weight"
                   value={formData.weight}
                   onChange={handleChange}
@@ -203,7 +202,6 @@ const Masterjewelstock = () => {
               <div className="form-group">
                 <label>Stone Weight (grams):</label>
                 <input
-                  type="number"
                   name="stoneWeight"
                   value={formData.stoneWeight}
                   onChange={handleChange}
@@ -214,7 +212,6 @@ const Masterjewelstock = () => {
               <div className="form-group">
                 <label>Final Weight (grams):</label>
                 <input
-                  type="number"
                   name="finalWeight"
                   value={formData.finalWeight}
                   onChange={handleChange}
@@ -227,7 +224,6 @@ const Masterjewelstock = () => {
               <div className="form-group">
                 <label>Touch (%):</label>
                 <input
-                  type="number"
                   name="touch"
                   value={formData.touch}
                   onChange={handleChange}
@@ -240,7 +236,6 @@ const Masterjewelstock = () => {
               <div className="form-group">
                 <label>Purity Value (grams):</label>
                 <input
-                  type="number"
                   name="purityValue"
                   value={formData.purityValue}
                   onChange={handleChange}

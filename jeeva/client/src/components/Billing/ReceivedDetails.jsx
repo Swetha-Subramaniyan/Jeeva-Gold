@@ -3,6 +3,7 @@ import { TextField, IconButton, Box, Alert, Snackbar } from "@mui/material";
 import { MdDeleteForever } from "react-icons/md";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import "./Billing.css";
+import { formatINRCurrency } from "../../utils/formatCurrency";
 
 const ReceivedDetails = ({
   rows,
@@ -49,7 +50,7 @@ const ReceivedDetails = ({
         if (amountAfterHallmark > 0 && row.goldRate) {
           const purity = amountAfterHallmark / parseFloatSafe(row.goldRate);
           pure -= purity;
-        } 
+        }
       } else if (row.mode === "amount" && parseFloatSafe(row.paidAmount) > 0) {
         console.log("in 2");
         const amount = parseFloatSafe(row.paidAmount);
@@ -83,7 +84,6 @@ const ReceivedDetails = ({
       (row) => row.amount && parseFloatSafe(row.amount) > 0
     );
 
-
     let newTotalBalance;
 
     let latestGoldRate = 0;
@@ -109,9 +109,9 @@ const ReceivedDetails = ({
         parseFloatSafe(currentBalances.pureBalance) * latestGoldRate +
         parseFloatSafe(currentBalances.hallmarkBalance);
 
-        console.log("ssssssssssssssssssssss", newTotalBalance)
-    }else{
-      newTotalBalance = parseFloatSafe(currentBalances.hallmarkBalance);
+      console.log("ssssssssssssssssssssss", newTotalBalance);
+    } else {
+      newTotalBalance = initialTotalBalance;
     }
 
     setTotalBalance(newTotalBalance);
@@ -231,8 +231,14 @@ const ReceivedDetails = ({
           currentBalances.hallmarkBalance
         );
 
-        const hallmarkDeduction = Math.min(amount, availableHallmark);
-        const remainingAmount = amount - initialHallmarkBalance;
+        const firstAmountIndex = updatedRows.findIndex(
+          (r) => parseFloatSafe(r.amount) > 0
+        );
+        const hallmarkDeduction =
+          index === firstAmountIndex ? Math.min(amount, availableHallmark) : 0;
+        let remainingAmount = amount - hallmarkDeduction;
+
+        console.log("reeemmmmmmmmmm", remainingAmount);
 
         let purityWeight = 0;
         if (availableHallmark == 0) {
@@ -275,7 +281,9 @@ const ReceivedDetails = ({
             <th className="th">Date</th>
             <th className="th">Gold WT</th>
             <th className="th">Gold Rate</th>
-            <th className="th">%</th>
+            <th className="th" style={{ minWidth: "5rem" }}>
+              %
+            </th>
             <th className="th">Purity WT</th>
             <th className="th">Received Amount</th>
             <th className="th">Paid Amount</th>
@@ -305,7 +313,6 @@ const ReceivedDetails = ({
                   onChange={(e) =>
                     handleRowChange(index, "givenGold", e.target.value)
                   }
-                  type="number"
                   disabled={
                     (isViewMode && !row.isNew) ||
                     (row.mode === "amount" && !(isViewMode && row.isNew))
@@ -321,7 +328,6 @@ const ReceivedDetails = ({
                     handleRowChange(index, "goldRate", e.target.value);
                     calculateBalances();
                   }}
-                  type="number"
                   disabled={
                     (isViewMode && !row.isNew) ||
                     (row.mode === "weight" && !(isViewMode && row.isNew))
@@ -336,7 +342,6 @@ const ReceivedDetails = ({
                   onChange={(e) =>
                     handleRowChange(index, "touch", e.target.value)
                   }
-                  type="number"
                   disabled={
                     (isViewMode && !row.isNew) ||
                     (row.mode === "amount" && !(isViewMode && row.isNew))
@@ -348,7 +353,7 @@ const ReceivedDetails = ({
                 <TextField
                   size="small"
                   value={
-                    row.purityWeight ? Number(row.purityWeight).toFixed(2) : ""
+                    row.purityWeight ? Number(row.purityWeight).toFixed(3) : ""
                   }
                   InputProps={{ readOnly: true }}
                 />
@@ -360,7 +365,6 @@ const ReceivedDetails = ({
                   onChange={(e) =>
                     handleRowChange(index, "amount", e.target.value)
                   }
-                  type="number"
                   disabled={
                     (isViewMode && !row.isNew) ||
                     (row.mode === "weight" && !(isViewMode && row.isNew))
@@ -375,7 +379,6 @@ const ReceivedDetails = ({
                   onChange={(e) =>
                     handleRowChange(index, "paidAmount", e.target.value)
                   }
-                  type="number"
                   disabled={
                     (isViewMode && !row.isNew) ||
                     (row.mode === "weight" && !(isViewMode && row.isNew))
@@ -404,7 +407,9 @@ const ReceivedDetails = ({
           <b>Hallmark Balance: {currentBalances.hallmarkBalance?.toFixed(2)}</b>
         </div>
         <div>
-          <b>Total Balance: {currentBalances.totalBalance?.toFixed(2) }</b>
+          <b>
+            Total Balance: {formatINRCurrency(currentBalances.totalBalance)}
+          </b>
         </div>
       </div>
 
