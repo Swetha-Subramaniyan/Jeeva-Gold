@@ -1,4 +1,3 @@
-
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
@@ -7,21 +6,51 @@ exports.createJewelStock = async (req, res) => {
     const { jewelName, weight, stoneWeight, finalWeight, touch, purityValue } =
       req.body;
 
-    const newEntry = await prisma.jewelStock.create({
-      data: {
-        jewelName,
-        weight: parseFloat(weight),
-        stoneWeight: parseFloat(stoneWeight || 0), 
-        finalWeight: parseFloat(finalWeight),
-        touch: parseFloat(touch),
-        purityValue: parseFloat(purityValue),
+    const parsedWeight = parseFloat(weight);
+    const parsedStoneWeight = parseFloat(stoneWeight || 0);
+    const parsedFinalWeight = parseFloat(finalWeight);
+    const parsedTouch = parseFloat(touch);
+    const parsedPurityValue = parseFloat(purityValue);
+    const normalizedJewelName = jewelName.toLowerCase();
+
+    const existingEntry = await prisma.jewelStock.findFirst({
+      where: {
+        jewelName:normalizedJewelName,
+        weight: parsedWeight,
+        stoneWeight: parsedStoneWeight,
+        touch: parsedTouch,
       },
     });
 
-    res.status(201).json(newEntry);
+    let result;
+
+    if (existingEntry) {
+      result = await prisma.jewelStock.update({
+        where: { id: existingEntry.id },
+        data: {
+          weight: existingEntry.weight + parsedWeight,
+          stoneWeight: existingEntry.stoneWeight + parsedStoneWeight,
+          finalWeight: existingEntry.finalWeight + parsedFinalWeight,
+          purityValue: existingEntry.purityValue + parsedPurityValue,
+        },
+      });
+    } else {
+      result = await prisma.jewelStock.create({
+        data: {
+          jewelName,
+          weight: parsedWeight,
+          stoneWeight: parsedStoneWeight,
+          finalWeight: parsedFinalWeight,
+          touch: parsedTouch,
+          purityValue: parsedPurityValue,
+        },
+      });
+    }
+
+    res.status(201).json(result);
   } catch (error) {
-    console.error("Error creating jewel stock:", error);
-    res.status(500).json({ error: "Failed to create jewel stock entry" });
+    console.error("Error creating/updating jewel stock:", error);
+    res.status(500).json({ error: "Failed to process jewel stock entry" });
   }
 };
 
@@ -45,24 +74,69 @@ exports.updateJewelStock = async (req, res) => {
     const { jewelName, weight, stoneWeight, finalWeight, touch, purityValue } =
       req.body;
 
-    const updatedEntry = await prisma.jewelStock.update({
-      where: { id: parseInt(id) },
-      data: {
-        jewelName,
-        weight: parseFloat(weight),
-        stoneWeight: parseFloat(stoneWeight || 0), 
-        finalWeight: parseFloat(finalWeight),
-        touch: parseFloat(touch),
-        purityValue: parseFloat(purityValue),
+    const parsedWeight = parseFloat(weight);
+    const parsedStoneWeight = parseFloat(stoneWeight || 0);
+    const parsedFinalWeight = parseFloat(finalWeight);
+    const parsedTouch = parseFloat(touch);
+    const parsedPurityValue = parseFloat(purityValue);
+    const parsedId = parseInt(id);
+    const normalizedJewelName = jewelName.toLowerCase();
+
+    const currentEntry = await prisma.jewelStock.findUnique({
+      where: { id: parsedId },
+    });
+
+    if (!currentEntry) {
+      return res.status(404).json({ error: "Entry not found" });
+    }
+
+    const duplicateEntry = await prisma.jewelStock.findFirst({
+      where: {
+        id: { not: parsedId }, 
+        jewelName: normalizedJewelName,
+        weight: parsedWeight,
+        stoneWeight: parsedStoneWeight,
+        touch: parsedTouch,
       },
     });
 
-    res.status(200).json(updatedEntry);
+    let result;
+
+    if (duplicateEntry) {
+      await prisma.jewelStock.delete({
+        where: { id: parsedId },
+      });
+
+      result = await prisma.jewelStock.update({
+        where: { id: duplicateEntry.id },
+        data: {
+          weight: duplicateEntry.weight + currentEntry.weight,
+          stoneWeight: duplicateEntry.stoneWeight + currentEntry.stoneWeight,
+          finalWeight: duplicateEntry.finalWeight + currentEntry.finalWeight,
+          purityValue: duplicateEntry.purityValue + currentEntry.purityValue,
+        },
+      });
+    } else {
+      result = await prisma.jewelStock.update({
+        where: { id: parsedId },
+        data: {
+          jewelName,
+          weight: parsedWeight,
+          stoneWeight: parsedStoneWeight,
+          finalWeight: parsedFinalWeight,
+          touch: parsedTouch,
+          purityValue: parsedPurityValue,
+        },
+      });
+    }
+
+    res.status(200).json(result);
   } catch (error) {
     console.error("Error updating jewel stock:", error);
     res.status(500).json({ error: "Failed to update jewel stock entry" });
   }
 };
+
 exports.deleteJewelStock = async (req, res) => {
   try {
     const { id } = req.params;

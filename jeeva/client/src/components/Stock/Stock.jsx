@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useEffect, useRef } from "react";
 import "./Stock.css";
 import { toast, ToastContainer } from "react-toastify";
@@ -65,6 +64,16 @@ const Stock = () => {
       !formData.touch
     ) {
       toast.error("Please fill in all required fields!");
+      return;
+    }
+
+    if (
+      parseFloat(formData.coinType) < 0 ||
+      parseFloat(formData.gram) < 0 ||
+      parseFloat(formData.touch) < 0 ||
+      parseFloat(formData.quantity) < 0
+    ) {
+      toast.error("Negative values are not allowed.");
       return;
     }
 
@@ -261,11 +270,10 @@ const Stock = () => {
 
   const handleKeyDown = (e, nextRef) => {
     if (e.key === "Enter") {
-      e.preventDefault(); 
+      e.preventDefault();
       if (nextRef && nextRef.current) {
         nextRef.current.focus();
       } else {
-     
         if (saveBtnRef && saveBtnRef.current) {
           saveBtnRef.current.focus();
         }
@@ -397,116 +405,141 @@ const Stock = () => {
             >
               {editIndex !== null ? "Edit Coin Stock" : "Add Coin Stock"}
             </h3>
-            <input
-              type="text"
-              name="coinType"
-              placeholder="Coin Type Eg:916,999"
-              value={formData.coinType}
-              onChange={handleChange}
-              onKeyDown={(e) => handleKeyDown(e, gramRef)}
-              required
-              ref={coinTypeRef}
-              style={{
-                padding: "0.75rem 1rem",
-                borderRadius: "0.75rem",
-                border: "1px solid #d1d5db",
-                fontSize: "1rem",
-                outline: "none",
-              }}
-              aria-label="Coin Type"
-            />
-            <input
-              type="number"
-              name="gram"
-              placeholder="Gram"
-              value={formData.gram}
-              onChange={handleChange}
-              onKeyDown={(e) => handleKeyDown(e, quantityRef)}
-              ref={gramRef}
-              step="0.01"
-              min="0"
-              required
-              style={{
-                padding: "0.75rem 1rem",
-                borderRadius: "0.75rem",
-                border: "1px solid #d1d5db",
-                fontSize: "1rem",
-                outline: "none",
-              }}
-              aria-label="Gram"
-            />
-            <input
-              type="number"
-              name="quantity"
-              placeholder="Quantity"
-              value={formData.quantity}
-              onChange={handleChange}
-              onKeyDown={(e) => handleKeyDown(e, touchRef)}
-              ref={quantityRef}
-              min="1"
-              required
-              style={{
-                padding: "0.75rem 1rem",
-                borderRadius: "0.75rem",
-                border: "1px solid #d1d5db",
-                fontSize: "1rem",
-                outline: "none",
-              }}
-              aria-label="Quantity"
-            />
-            <input
-              type="number"
-              name="touch"
-              placeholder="Touch"
-              value={formData.touch}
-              onChange={handleChange}
-              onKeyDown={(e) => handleKeyDown(e, saveBtnRef)}
-              ref={touchRef}
-              step="0.01"
-              min="0"
-              max="999.9"
-              required
-              style={{
-                padding: "0.75rem 1rem",
-                borderRadius: "0.75rem",
-                border: "1px solid #d1d5db",
-                fontSize: "1rem",
-                outline: "none",
-              }}
-              aria-label="Touch"
-            />
-            <input
-              type="number"
-              name="totalWeight"
-              placeholder="Total Weight"
-              value={formData.totalWeight}
-              readOnly
-              style={{
-                padding: "0.75rem 1rem",
-                borderRadius: "0.75rem",
-                border: "1px solid #e5e7eb",
-                backgroundColor: "#f9fafb",
-                fontSize: "1rem",
-                color: "#6b7280",
-              }}
-              aria-label="Total Weight"
-            />
-            <input
-              type="number"
-              name="purity"
-              placeholder="Purity"
-              value={formData.purity}
-              readOnly
-              style={{
-                padding: "0.75rem 1rem",
-                borderRadius: "0.75rem",
-                border: "1px solid #e5e7eb",
-                backgroundColor: "#f9fafb",
-                fontSize: "1rem",
-                color: "#6b7280",
-              }}
-              aria-label="Purity"
-            />
+
+            <div className="form-group">
+              <label htmlFor="coinType">Coin Type</label>
+              <input
+                id="coinType"
+                type="text"
+                name="coinType"
+                placeholder="Coin Type Eg:916,999"
+                value={formData.coinType}
+                onChange={handleChange}
+                onKeyDown={(e) => handleKeyDown(e, gramRef)}
+                required
+                ref={coinTypeRef}
+                style={{
+                  padding: "0.75rem 1rem",
+                  borderRadius: "0.75rem",
+                  border: "1px solid #d1d5db",
+                  fontSize: "1rem",
+                  outline: "none",
+                }}
+                aria-label="Coin Type"
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="gram">Gram</label>
+              <input
+                id="gram"
+                type="number"
+                name="gram"
+                placeholder="Gram"
+                value={formData.gram}
+                onChange={handleChange}
+                onKeyDown={(e) => handleKeyDown(e, quantityRef)}
+                ref={gramRef}
+                step="0.01"
+                min="0"
+                required
+                style={{
+                  padding: "0.75rem 1rem",
+                  borderRadius: "0.75rem",
+                  border: "1px solid #d1d5db",
+                  fontSize: "1rem",
+                  outline: "none",
+                }}
+                aria-label="Gram"
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="quantity">Quantity</label>
+              <input
+                id="quantity"
+                type="number"
+                name="quantity"
+                placeholder="Quantity"
+                value={formData.quantity}
+                onChange={handleChange}
+                onKeyDown={(e) => handleKeyDown(e, touchRef)}
+                ref={quantityRef}
+                min="1"
+                required
+                style={{
+                  padding: "0.75rem 1rem",
+                  borderRadius: "0.75rem",
+                  border: "1px solid #d1d5db",
+                  fontSize: "1rem",
+                  outline: "none",
+                }}
+                aria-label="Quantity"
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="touch">Touch</label>
+              <input
+                id="touch"
+                type="number"
+                name="touch"
+                placeholder="Touch"
+                value={formData.touch}
+                onChange={handleChange}
+                onKeyDown={(e) => handleKeyDown(e, saveBtnRef)}
+                ref={touchRef}
+                step="0.01"
+                min="0"
+                max="999.9"
+                required
+                style={{
+                  padding: "0.75rem 1rem",
+                  borderRadius: "0.75rem",
+                  border: "1px solid #d1d5db",
+                  fontSize: "1rem",
+                  outline: "none",
+                }}
+                aria-label="Touch"
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="totalWeight">Total Weight</label>
+              <input
+                id="totalWeight"
+                type="number"
+                name="totalWeight"
+                placeholder="Total Weight"
+                value={formData.totalWeight}
+                readOnly
+                style={{
+                  padding: "0.75rem 1rem",
+                  borderRadius: "0.75rem",
+                  border: "1px solid #e5e7eb",
+                  backgroundColor: "#f9fafb",
+                  fontSize: "1rem",
+                  color: "#6b7280",
+                }}
+                aria-label="Total Weight"
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="purity">Purity</label>
+              <input
+                id="purity"
+                type="number"
+                name="purity"
+                placeholder="Purity"
+                value={formData.purity}
+                readOnly
+                style={{
+                  padding: "0.75rem 1rem",
+                  borderRadius: "0.75rem",
+                  border: "1px solid #e5e7eb",
+                  backgroundColor: "#f9fafb",
+                  fontSize: "1rem",
+                  color: "#6b7280",
+                }}
+                aria-label="Purity"
+              />
+            </div>
 
             <div
               className="popup-buttons"
@@ -596,6 +629,17 @@ const Stock = () => {
                   color: "#111827",
                 }}
               >
+                Date
+              </th>
+              <th
+                style={{
+                  textAlign: "left",
+                  padding: "1rem",
+                  borderBottom: "2px solid #e5e7eb",
+                  fontWeight: 700,
+                  color: "#111827",
+                }}
+              >
                 Coin Type
               </th>
               <th
@@ -667,91 +711,107 @@ const Stock = () => {
             </tr>
           </thead>
           <tbody>
-            {filteredStockItems.map((item, index) => (
-              <tr
-                key={item.id || index}
-                style={{
-                  borderBottom: "1px solid #f3f4f6",
-                  transition: "background-color 0.2s ease",
-                }}
-                tabIndex={0}
-                aria-label={`Stock item ${item.coinType}, Gram ${item.gram}`}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") handleEdit(index);
-                }}
-              >
-                <td style={{ padding: "0.75rem 1rem", color: "#374151" }}>
-                  {item.coinType}
-                </td>
-                <td style={{ padding: "0.75rem 1rem", color: "#374151" }}>
-                  {item.gram}
-                </td>
-                <td style={{ padding: "0.75rem 1rem", color: "#374151" }}>
-                  {item.quantity}
-                </td>
-                <td style={{ padding: "0.75rem 1rem", color: "#374151" }}>
-                  {item.touch}
-                </td>
-                <td style={{ padding: "0.75rem 1rem", color: "#374151" }}>
-                  {parseFloat(item.totalWeight).toFixed(2)}
-                </td>
-                <td style={{ padding: "0.75rem 1rem", color: "#374151" }}>
-                  {parseFloat(item.purity).toFixed(3)}
-                </td>
-                <td
+            {filteredStockItems
+              .slice()
+              .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
+              .map((item, index) => (
+                <tr
+                  key={item.id || index}
                   style={{
-                    padding: "0.75rem 1rem",
-                    display: "flex",
-                    gap: "0.5rem",
+                    borderBottom: "1px solid #f3f4f6",
+                    transition: "background-color 0.2s ease",
+                  }}
+                  tabIndex={0}
+                  aria-label={`Stock item ${item.coinType}, Gram ${item.gram}`}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleEdit(index);
                   }}
                 >
-                  <button
-                    className="edit-btn"
-                    onClick={() => handleEdit(index)}
+                  <td style={{ padding: "0.75rem 1rem", color: "#374151" }}>
+                    {((dateStr) => {
+                      const d = new Date(dateStr);
+                      return `${String(d.getUTCDate()).padStart(
+                        2,
+                        "0"
+                      )}-${String(d.getUTCMonth() + 1).padStart(
+                        2,
+                        "0"
+                      )}-${d.getUTCFullYear()}`;
+                    })(item.updatedAt)}
+                  </td>
+
+                  <td style={{ padding: "0.75rem 1rem", color: "#374151" }}>
+                    {item.coinType}
+                  </td>
+                  <td style={{ padding: "0.75rem 1rem", color: "#374151" }}>
+                    {item.gram}
+                  </td>
+                  <td style={{ padding: "0.75rem 1rem", color: "#374151" }}>
+                    {item.quantity}
+                  </td>
+                  <td style={{ padding: "0.75rem 1rem", color: "#374151" }}>
+                    {item.touch}
+                  </td>
+                  <td style={{ padding: "0.75rem 1rem", color: "#374151" }}>
+                    {parseFloat(item.totalWeight).toFixed(2)}
+                  </td>
+                  <td style={{ padding: "0.75rem 1rem", color: "#374151" }}>
+                    {parseFloat(item.purity).toFixed(3)}
+                  </td>
+                  <td
                     style={{
-                      backgroundColor: "#2563eb",
-                      color: "#fff",
-                      borderRadius: "0.5rem",
-                      border: "none",
-                      padding: "0.375rem 0.75rem",
-                      cursor: "pointer",
-                      transition: "background-color 0.3s ease",
+                      padding: "0.75rem 1rem",
+                      display: "flex",
+                      gap: "0.5rem",
                     }}
-                    onMouseEnter={(e) =>
-                      (e.currentTarget.style.backgroundColor = "#1d4ed8")
-                    }
-                    onMouseLeave={(e) =>
-                      (e.currentTarget.style.backgroundColor = "#2563eb")
-                    }
-                    aria-label={`Edit stock item ${item.coinType}`}
                   >
-                    Edit
-                  </button>
-                  <button
-                    className="delete-btn"
-                    onClick={() => handleDelete(index)}
-                    style={{
-                      backgroundColor: "#ef4444",
-                      color: "#fff",
-                      borderRadius: "0.5rem",
-                      border: "none",
-                      padding: "0.375rem 0.75rem",
-                      cursor: "pointer",
-                      transition: "background-color 0.3s ease",
-                    }}
-                    onMouseEnter={(e) =>
-                      (e.currentTarget.style.backgroundColor = "#b91c1c")
-                    }
-                    onMouseLeave={(e) =>
-                      (e.currentTarget.style.backgroundColor = "#ef4444")
-                    }
-                    aria-label={`Delete stock item ${item.coinType}`}
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
+                    <button
+                      className="edit-btn"
+                      onClick={() => handleEdit(index)}
+                      style={{
+                        backgroundColor: "#2563eb",
+                        color: "#fff",
+                        borderRadius: "0.5rem",
+                        border: "none",
+                        padding: "0.375rem 0.75rem",
+                        cursor: "pointer",
+                        transition: "background-color 0.3s ease",
+                      }}
+                      onMouseEnter={(e) =>
+                        (e.currentTarget.style.backgroundColor = "#1d4ed8")
+                      }
+                      onMouseLeave={(e) =>
+                        (e.currentTarget.style.backgroundColor = "#2563eb")
+                      }
+                      aria-label={`Edit stock item ${item.coinType}`}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      className="delete-btn"
+                      onClick={() => handleDelete(index)}
+                      style={{
+                        backgroundColor: "#ef4444",
+                        color: "#fff",
+                        borderRadius: "0.5rem",
+                        border: "none",
+                        padding: "0.375rem 0.75rem",
+                        cursor: "pointer",
+                        transition: "background-color 0.3s ease",
+                      }}
+                      onMouseEnter={(e) =>
+                        (e.currentTarget.style.backgroundColor = "#b91c1c")
+                      }
+                      onMouseLeave={(e) =>
+                        (e.currentTarget.style.backgroundColor = "#ef4444")
+                      }
+                      aria-label={`Delete stock item ${item.coinType}`}
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
           </tbody>
           <tfoot>
             <tr
@@ -776,10 +836,3 @@ const Stock = () => {
 };
 
 export default Stock;
-
-
-
-
-
-
-

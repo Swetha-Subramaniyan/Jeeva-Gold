@@ -39,7 +39,7 @@ function Cashgold() {
 
           if (!purityMap[date]) purityMap[date] = 0;
 
-          console.log("sssssssssssss", purityMap[date], purity)
+          console.log("sssssssssssss", purityMap[date], purity);
 
           if (paid > 0) {
             purityMap[date] -= Math.abs(purity);
@@ -102,6 +102,17 @@ function Cashgold() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+
+    if (
+      ["cashAmount", "goldValue", "touch", "purity", "goldRate"].includes(
+        name
+      ) &&
+      parseFloat(value) < 0
+    ) {
+      toast.warning("Negative values are not allowed.");
+      return;
+    }
+
     const updatedForm = { ...formData, [name]: value };
 
     if (name === "goldValue" || name === "touch") {
@@ -135,36 +146,47 @@ function Cashgold() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    console.log("formdata ", formData)
+    console.log("formdata ", formData);
 
     if (formData.type === "Select") {
-    toast.error("Please select a valid type: Cash or Gold");
-    return;
-  }
-
-  if (formData.type === "Cash") {
-    if (!formData.cashAmount || isNaN(formData.cashAmount)) {
-      toast.error("Please enter a valid Cash Amount");
+      toast.error("Please select a valid type: Cash or Gold");
       return;
     }
 
-    if (!goldRate || isNaN(goldRate)) {
-      toast.error("Please enter a valid Gold Rate");
-      return;
-    }
-  }
+    if (formData.type === "Cash") {
+      if (!formData.cashAmount || isNaN(formData.cashAmount)) {
+        toast.error("Please enter a valid Cash Amount");
+        return;
+      }
 
-  if (formData.type === "Gold") {
-    if (!formData.goldValue || isNaN(formData.goldValue)) {
-      toast.error("Please enter a valid Gold Value");
-      return;
+      if (!goldRate || isNaN(goldRate)) {
+        toast.error("Please enter a valid Gold Rate");
+        return;
+      }
     }
 
-    if (!formData.touch || isNaN(formData.touch)) {
-      toast.error("Please enter a valid Touch value");
+    if (formData.type === "Gold") {
+      if (!formData.goldValue || isNaN(formData.goldValue)) {
+        toast.error("Please enter a valid Gold Value");
+        return;
+      }
+
+      if (!formData.touch || isNaN(formData.touch)) {
+        toast.error("Please enter a valid Touch value");
+        return;
+      }
+    }
+
+    if (
+      parseFloat(formData.cashAmount) < 0 ||
+      parseFloat(formData.goldValue) < 0 ||
+      parseFloat(formData.touch) < 0 ||
+      parseFloat(formData.purity) < 0 ||
+      parseFloat(goldRate) < 0
+    ) {
+      toast.error("Negative values are not allowed.");
       return;
     }
-  }
 
     const payload = {
       date: formData.date,
@@ -260,11 +282,14 @@ function Cashgold() {
 
       {showFormPopup && (
         <div className="popup-overlay">
-          <div className="popup-content">
+          <div className="popup-contentss">
             <h3>{isEditMode ? "Edit Entry" : "Enter Cash or Gold Details"}</h3>
             <button
               className="close-btn"
-              onClick={() => setShowFormPopup(false)}
+              onClick={() => {
+                setShowFormPopup(false);
+                resetForm();
+              }}
             >
               ×
             </button>
@@ -297,7 +322,6 @@ function Cashgold() {
                   <div className="form-group">
                     <label>Cash Amount:</label>
                     <input
-                      type="number"
                       name="cashAmount"
                       value={formData.cashAmount}
                       onChange={handleChange}
@@ -308,7 +332,6 @@ function Cashgold() {
                   <div className="form-group">
                     <label>Gold Rate (per gram):</label>
                     <input
-                      type="number"
                       value={goldRate}
                       onChange={(e) => setGoldRate(e.target.value)}
                       step="0.01"
@@ -322,7 +345,6 @@ function Cashgold() {
                   <div className="form-group">
                     <label>Gold Value (g):</label>
                     <input
-                      type="number"
                       name="goldValue"
                       value={formData.goldValue}
                       onChange={handleChange}
@@ -333,7 +355,6 @@ function Cashgold() {
                   <div className="form-group">
                     <label>Touch (%):</label>
                     <input
-                      type="number"
                       name="touch"
                       value={formData.touch}
                       onChange={handleChange}
@@ -347,7 +368,6 @@ function Cashgold() {
               <div className="form-group">
                 <label>Purity (g):</label>
                 <input
-                  type="number"
                   name="purity"
                   value={formData.purity}
                   onChange={handleChange}
@@ -430,6 +450,7 @@ function Cashgold() {
                       <button
                         className="edit-btn"
                         onClick={() => handleEdit(entry)}
+                        title="Edit"
                       >
                         ✏️
                       </button>
