@@ -32,6 +32,11 @@ const ViewBill = ({
         <Typography variant="h6" gutterBottom>
           Select a Bill to View
         </Typography>
+
+        <button className="close-btnsss" onClick={() => setViewMode(false)}>
+          ×
+        </button>
+
         <Table>
           <TableHead>
             <TableRow>
@@ -50,7 +55,7 @@ const ViewBill = ({
                     "Unknown"}
                 </TableCell>
                 <TableCell className="td">
-                  {new Date(bill.createdAt).toLocaleDateString()}
+                 {new Date(bill.createdAt).toLocaleDateString("en-GB")}
                 </TableCell>
                 <TableCell className="td">
                   <Box display="flex" gap={1}>
@@ -66,13 +71,6 @@ const ViewBill = ({
             ))}
           </TableBody>
         </Table>
-        <Button
-          onClick={() => setViewMode(false)}
-          style={{ marginTop: "1rem" }}
-          variant="contained"
-        >
-          Close
-        </Button>
       </Box>
     </Modal>
   );

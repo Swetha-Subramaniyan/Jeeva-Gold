@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import { TextField, IconButton, Box, Alert, Snackbar } from "@mui/material";
 import { MdDeleteForever } from "react-icons/md";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import "./Billing.css";
 import { formatINRCurrency } from "../../utils/formatCurrency";
+import { NumericFormat } from "react-number-format";
 
 const ReceivedDetails = ({
   rows,
@@ -11,6 +12,7 @@ const ReceivedDetails = ({
   initialPureBalance,
   initialTotalBalance,
   initialHallmarkBalance,
+  displayHallmarkCharges,
   setPureBalance,
   setTotalBalance,
   setHallmarkBalance,
@@ -88,6 +90,13 @@ const ReceivedDetails = ({
 
     let latestGoldRate = 0;
 
+    console.log(
+      "rrrrrrrrrrrrr",
+      goldRateRows.length,
+      receivedAmountRows.length,
+      initialTotalBalance
+    );
+
     if (goldRateRows.length > 0) {
       latestGoldRate = parseFloatSafe(
         goldRateRows[goldRateRows.length - 1].goldRate
@@ -110,8 +119,8 @@ const ReceivedDetails = ({
         parseFloatSafe(currentBalances.hallmarkBalance);
 
       console.log("ssssssssssssssssssssss", newTotalBalance);
-    } else {
-      newTotalBalance = initialTotalBalance;
+    } else  {
+      newTotalBalance = displayHallmarkCharges > 0 ? displayHallmarkCharges : 0;
     }
 
     setTotalBalance(newTotalBalance);
@@ -234,19 +243,36 @@ const ReceivedDetails = ({
         const firstAmountIndex = updatedRows.findIndex(
           (r) => parseFloatSafe(r.amount) > 0
         );
+
         const hallmarkDeduction =
           index === firstAmountIndex ? Math.min(amount, availableHallmark) : 0;
+
+        console.log("ssssss", firstAmountIndex, amount, hallmarkDeduction);
+
         let remainingAmount = amount - hallmarkDeduction;
 
         console.log("reeemmmmmmmmmm", remainingAmount);
+
+        let wanttodeducthall = false;
+        let deductedhall = false;
 
         let purityWeight = 0;
         if (availableHallmark == 0) {
           if (usePaidAmount || paidAmount > 0) {
             purityWeight = paidAmount / goldRate;
           } else {
-            purityWeight = remainingAmount / goldRate;
+            wanttodeducthall = true;
+            if (wanttodeducthall === true && deductedhall === false) {
+              const cashtogeneratepurity =
+                remainingAmount - initialHallmarkBalance;
+              purityWeight = Math.abs(cashtogeneratepurity) / goldRate;
+              deductedhall = true;
+            } else {
+              purityWeight = remainingAmount / goldRate;
+            }
           }
+        } else {
+          wanttodeducthall = false;
         }
 
         row.purityWeight = purityWeight;
@@ -321,13 +347,17 @@ const ReceivedDetails = ({
                 />
               </td>
               <td className="td">
-                <TextField
+                <NumericFormat
+                  customInput={TextField}
                   size="small"
                   value={row.goldRate}
-                  onChange={(e) => {
-                    handleRowChange(index, "goldRate", e.target.value);
+                  onValueChange={(e) => {
+                    handleRowChange(index, "goldRate", e.floatValue);
                     calculateBalances();
                   }}
+                  thousandSeparator=","
+                  decimalScale={3}
+                  fixedDecimalScale
                   disabled={
                     (isViewMode && !row.isNew) ||
                     (row.mode === "weight" && !(isViewMode && row.isNew))
@@ -336,17 +366,20 @@ const ReceivedDetails = ({
                 />
               </td>
               <td className="td">
-                <TextField
+                <NumericFormat
+                  customInput={TextField}
                   size="small"
                   value={row.touch}
-                  onChange={(e) =>
-                    handleRowChange(index, "touch", e.target.value)
+                  onValueChange={(e) =>
+                    handleRowChange(index, "touch", e.floatValue)
                   }
+                  thousandSeparator=","
+                  fixedDecimalScale
                   disabled={
                     (isViewMode && !row.isNew) ||
                     (row.mode === "amount" && !(isViewMode && row.isNew))
                   }
-                  inputProps={{ min: 0, max: 100, step: "0.1" }}
+                  inputProps={{ min: 0 }}
                 />
               </td>
               <td className="td">
@@ -359,12 +392,16 @@ const ReceivedDetails = ({
                 />
               </td>
               <td className="td">
-                <TextField
+                <NumericFormat
+                  customInput={TextField}
                   size="small"
                   value={row.amount}
-                  onChange={(e) =>
-                    handleRowChange(index, "amount", e.target.value)
+                  onValueChange={(e) =>
+                    handleRowChange(index, "amount", e.floatValue)
                   }
+                  thousandSeparator=","
+                  decimalScale={3}
+                  fixedDecimalScale
                   disabled={
                     (isViewMode && !row.isNew) ||
                     (row.mode === "weight" && !(isViewMode && row.isNew))
@@ -373,12 +410,16 @@ const ReceivedDetails = ({
                 />
               </td>
               <td className="td">
-                <TextField
+                <NumericFormat
+                  customInput={TextField}
                   size="small"
                   value={row.paidAmount}
-                  onChange={(e) =>
-                    handleRowChange(index, "paidAmount", e.target.value)
+                  onValueChange={(e) =>
+                    handleRowChange(index, "paidAmount", e.floatValue)
                   }
+                  thousandSeparator=","
+                  decimalScale={3}
+                  fixedDecimalScale
                   disabled={
                     (isViewMode && !row.isNew) ||
                     (row.mode === "weight" && !(isViewMode && row.isNew))

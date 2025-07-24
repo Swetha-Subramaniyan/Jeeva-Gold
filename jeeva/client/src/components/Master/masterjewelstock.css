@@ -104,7 +104,7 @@
     z-index: 1000;
   }
   
-  .popup-contents {
+  .popup-contentsss {
     background-color: #fff;
     padding: 30px;
     border-radius: 12px;
@@ -116,11 +116,11 @@
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
   }
   
-  .close-btn {
+  .close-btnss {
     position: absolute;
-    top: 12px;
+    top: 0px;
     right: 15px;
-    background: #ff5c5c;
+    background-color: #dc3545;
     color: #fff;
     border: none;
     border-radius: 50%;

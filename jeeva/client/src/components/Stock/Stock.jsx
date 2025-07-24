@@ -406,7 +406,7 @@ const Stock = () => {
               {editIndex !== null ? "Edit Coin Stock" : "Add Coin Stock"}
             </h3>
 
-            <div className="form-group">
+            <div className="form-groups">
               <label htmlFor="coinType">Coin Type</label>
               <input
                 id="coinType"
@@ -428,7 +428,7 @@ const Stock = () => {
                 aria-label="Coin Type"
               />
             </div>
-            <div className="form-group">
+            <div className="form-groups">
               <label htmlFor="gram">Gram</label>
               <input
                 id="gram"
@@ -452,7 +452,7 @@ const Stock = () => {
                 aria-label="Gram"
               />
             </div>
-            <div className="form-group">
+            <div className="form-groups">
               <label htmlFor="quantity">Quantity</label>
               <input
                 id="quantity"
@@ -475,7 +475,7 @@ const Stock = () => {
                 aria-label="Quantity"
               />
             </div>
-            <div className="form-group">
+            <div className="form-groups">
               <label htmlFor="touch">Touch</label>
               <input
                 id="touch"
@@ -500,7 +500,7 @@ const Stock = () => {
                 aria-label="Touch"
               />
             </div>
-            <div className="form-group">
+            <div className="form-groups">
               <label htmlFor="totalWeight">Total Weight</label>
               <input
                 id="totalWeight"
@@ -520,7 +520,7 @@ const Stock = () => {
                 aria-label="Total Weight"
               />
             </div>
-            <div className="form-group">
+            <div className="form-groups">
               <label htmlFor="purity">Purity</label>
               <input
                 id="purity"

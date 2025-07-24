@@ -7,24 +7,23 @@ import "./Master.css";
 import Masterjewelstock from "./Masterjewelstock";
 import Cashgold from "./Cashgold";
 import { FiLogOut } from "react-icons/fi";
+import Logo from "../../Assets/logo.png";
 
 const Master = () => {
   const [showCustomerDetails, setShowCustomerDetails] = useState(false);
   const [showGoldsmithDetails, setShowGoldsmithDetails] = useState(false);
   const [showAddItemsDetails, setShowAddItemsDetails] = useState(false);
   const [showJewelStock, setShowJewelStock] = useState(false);
-  const [showCashGold, setShowCashGold] = useState(false)
+  const [showCashGold, setShowCashGold] = useState(false);
 
   const navigate = useNavigate();
-
-
 
   const handleAddCustomerClick = () => {
     setShowCustomerDetails(true);
     setShowGoldsmithDetails(false);
     setShowAddItemsDetails(false);
     setShowJewelStock(false);
-    setShowCashGold(false)
+    setShowCashGold(false);
   };
 
   const handleAddGoldsmithClick = () => {
@@ -32,7 +31,7 @@ const Master = () => {
     setShowCustomerDetails(false);
     setShowAddItemsDetails(false);
     setShowJewelStock(false);
-    setShowCashGold(false)
+    setShowCashGold(false);
   };
 
   const handleAddItemsClick = () => {
@@ -40,7 +39,7 @@ const Master = () => {
     setShowCustomerDetails(false);
     setShowGoldsmithDetails(false);
     setShowJewelStock(false);
-    setShowCashGold(false)
+    setShowCashGold(false);
   };
 
   const handleStockClick = () => {
@@ -48,15 +47,15 @@ const Master = () => {
     setShowCustomerDetails(false);
     setShowGoldsmithDetails(false);
     setShowAddItemsDetails(false);
-    setShowCashGold(false)
+    setShowCashGold(false);
   };
-const handleCashGold =()=>{
-  setShowCashGold(true);
-  setShowCustomerDetails(false);
-  setShowGoldsmithDetails(false);
-  setShowAddItemsDetails(false)
-  setShowJewelStock(false);
-}
+  const handleCashGold = () => {
+    setShowCashGold(true);
+    setShowCustomerDetails(false);
+    setShowGoldsmithDetails(false);
+    setShowAddItemsDetails(false);
+    setShowJewelStock(false);
+  };
   const handleLogout = () => {
     navigate("/");
   };
@@ -71,42 +70,46 @@ const handleCashGold =()=>{
           boxShadow: "0 2px 4px rgba(255, 255, 255, 0.1)",
         }}
       >
-        <ul
-          style={{
-            listStyle: "none",
-            display: "flex",
-            margin: 0,
-            padding: 0,
-            justifyContent: "center",
-          }}
-        >
+        <div style={{ display: "flex", alignItems: "center", justifyContent:"space-between" }}>
+          <img
+            src={Logo}
+            alt="Logo"
+            style={{ height: "40px", marginRight: "20px" }}
+          />
 
-           <li style={{ marginRight: "20px" }}>
-            <button
-              onClick={() => navigate("/customer")}
-              className="nav-button"
-              onMouseOver={(e) => (e.target.style.backgroundColor = "#333")}
-              onMouseOut={(e) =>
-                (e.target.style.backgroundColor = "transparent")
-              }
-            >
-              Home
-            </button>
-          </li>
+          <ul
+            style={{
+              listStyle: "none",
+              display: "flex",
+              alignItems: "center",
+            }}
+          >
+            <li>
+              <button
+                onClick={() => navigate("/customer")}
+                className="nav-button"
+                onMouseOver={(e) => (e.target.style.backgroundColor = "#333")}
+                onMouseOut={(e) =>
+                  (e.target.style.backgroundColor = "transparent")
+                }
+              >
+                Home
+              </button>
+            </li>
 
-          <li style={{ marginRight: "20px" }}>
-            <button
-              onClick={handleAddCustomerClick}
-              className="nav-button"
-              onMouseOver={(e) => (e.target.style.backgroundColor = "#333")}
-              onMouseOut={(e) =>
-                (e.target.style.backgroundColor = "transparent")
-              }
-            >
-              Customer
-            </button>
-          </li>
-          {/* <li style={{ marginRight: "20px" }}>
+            <li>
+              <button
+                onClick={handleAddCustomerClick}
+                className="nav-button"
+                onMouseOver={(e) => (e.target.style.backgroundColor = "#333")}
+                onMouseOut={(e) =>
+                  (e.target.style.backgroundColor = "transparent")
+                }
+              >
+                Customer
+              </button>
+            </li>
+            {/* <li style={{ marginRight: "20px" }}>
             <button
               onClick={handleAddGoldsmithClick}
               className="nav-button"
@@ -118,7 +121,7 @@ const handleCashGold =()=>{
               Goldsmith
             </button>
           </li> */}
-          {/* <li style={{ marginRight: "20px" }}>
+            {/* <li style={{ marginRight: "20px" }}>
             <button
               onClick={handleAddItemsClick}
               className="nav-button"
@@ -130,48 +133,50 @@ const handleCashGold =()=>{
               Items
             </button>
           </li> */}
-          <li style={{ marginRight: "20px" }}>
-            <button
-              onClick={handleStockClick}
-              className="nav-button"
-              onMouseOver={(e) => (e.target.style.backgroundColor = "#333")}
-              onMouseOut={(e) =>
-                (e.target.style.backgroundColor = "transparent")
-              }
-            >
-              Jewel Stock
-            </button>
-          </li>
-          <li style={{ marginRight: "20px" }}>
-            <button
-              onClick={handleCashGold}
-              className="nav-button"
-              onMouseOver={(e) => (e.target.style.backgroundColor = "#333")}
-              onMouseOut={(e) =>
-                (e.target.style.backgroundColor = "transparent")
-              }
-            >
-              Cash / Gold
-            </button>
-          </li>
-        </ul>
+            <li>
+              <button
+                onClick={handleStockClick}
+                className="nav-button"
+                onMouseOver={(e) => (e.target.style.backgroundColor = "#333")}
+                onMouseOut={(e) =>
+                  (e.target.style.backgroundColor = "transparent")
+                }
+              >
+                Jewel Stock
+              </button>
+            </li>
+            <li>
+              <button
+                onClick={handleCashGold}
+                className="nav-button"
+                onMouseOver={(e) => (e.target.style.backgroundColor = "#333")}
+                onMouseOut={(e) =>
+                  (e.target.style.backgroundColor = "transparent")
+                }
+              >
+                Cash / Gold
+              </button>
+            </li>
+          </ul>
+          <button
+            onClick={handleLogout}
+            style={logoutButtonStyle}
+            title="Logout"
+          >
+            <FiLogOut size={20} />
+          </button>
+        </div>
       </nav>
       {showCustomerDetails && <MasterCustomer />}
       {showGoldsmithDetails && <Mastergoldsmith />}
       {showAddItemsDetails && <Masteradditems />}
       {showJewelStock && <Masterjewelstock />}
-      {showCashGold && <Cashgold/>}
-      <button onClick={handleLogout} style={logoutButtonStyle} title="Logout">
-        <FiLogOut size={20} />
-      </button>
+      {showCashGold && <Cashgold />}
     </div>
   );
 };
 
 const logoutButtonStyle = {
-  position: "absolute",
-  top: "15px",
-  right: "15px",
   backgroundColor: "transparent",
   border: "none",
   color: "#fff",
@@ -179,12 +184,3 @@ const logoutButtonStyle = {
 };
 
 export default Master;
-
-
-
-
-
-
-
-
-

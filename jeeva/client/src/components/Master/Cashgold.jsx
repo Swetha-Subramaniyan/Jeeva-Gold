@@ -278,14 +278,14 @@ function Cashgold() {
       <h2>Cash/Gold</h2>
       <button className="add-btn" onClick={() => setShowFormPopup(true)}>
         Add Cash or Gold
-      </button>
+      </button>  
 
       {showFormPopup && (
         <div className="popup-overlay">
           <div className="popup-contentss">
             <h3>{isEditMode ? "Edit Entry" : "Enter Cash or Gold Details"}</h3>
             <button
-              className="close-btn"
+              className="close-btns"
               onClick={() => {
                 setShowFormPopup(false);
                 resetForm();

@@ -6,9 +6,12 @@ import {
   Typography,
   Button,
   Alert,
+  IconButton
 } from "@mui/material";
+import { MdDeleteForever } from "react-icons/md";
 
 import { formatINRCurrency } from "../../utils/formatCurrency";
+import { NumericFormat } from "react-number-format";
 
 const BillDetails = ({
   billItems,
@@ -79,10 +82,21 @@ const BillDetails = ({
     setStockError(null);
   };
 
+  const isValidNumericInput = (value) => {
+    return /^(\d+\.?\d{0,3}|\.\d{1,3})?$/.test(value);
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
 
-    if (name === "no" && Number(value) < 0) return;
+    if (
+      ["no", "touch", "weight", "pure"].includes(name) &&
+      !isValidNumericInput(value)
+    ) {
+      return;
+    }
+
+    if (parseFloat(value) < 0) return;
 
     setNewItem((prev) => {
       const updated = {
@@ -96,7 +110,7 @@ const BillDetails = ({
         if (touch && weight) {
           updated.pure = parseFloat((weight * (touch / 100)).toFixed(3));
         }
-      } else if (name === "name" || name === "no" || name === "touch") {
+      } else if (["name", "no", "touch"].includes(name)) {
         const coin = parseFloat(updated.name) || 0;
         const no = parseFloat(updated.no) || 0;
         const touch = parseFloat(updated.touch) || 0;
@@ -105,7 +119,6 @@ const BillDetails = ({
           const weight = coin * no;
           const pure = weight * (touch / 100);
           updated.weight = weight;
-          // updated.pure = parseFloat(pure.toFixed(3));
           updated.pure = pure.toFixed(3);
         }
       } else if (name === "pure") {
@@ -151,6 +164,12 @@ const BillDetails = ({
     handleCloseAddItem();
   };
 
+  const handleDeleteItem = (index) => {
+    const updatedBillItems = [...billItems];
+    updatedBillItems.splice(index, 1);
+    setBillItems(updatedBillItems);
+  };
+
   const handleBillItemChange = (index, field, value) => {
     const updatedBillItems = [...billItems];
     updatedBillItems[index][field] = value;
@@ -183,6 +202,7 @@ const BillDetails = ({
             <th className="th">Purity</th>
             <th className="th">Amount</th>
             <th className="th">Gold Rate</th>
+            <th className="th">Action</th>
           </tr>
         </thead>
         <tbody>
@@ -195,19 +215,37 @@ const BillDetails = ({
               <td className="td">{item.touch}</td>
               <td className="td">{item.weight}</td>
               <td className="td">{item.purity}</td>
-              <td className="td">{item.goldRate ? formatINRCurrency(item.amount) : ""}</td>
+              <td className="td">
+                {item.goldRate ? formatINRCurrency(item.amount) : ""}
+              </td>
 
               <td className="td">
-                <TextField
+                <NumericFormat
+                  customInput={TextField}
                   size="small"
                   value={item.goldRate || ""}
-                  onChange={(e) =>
-                    handleBillItemChange(index, "goldRate", e.target.value)
-                  }
-                  type="text"
+                  onValueChange={(values) => {
+                    handleBillItemChange(index, "goldRate", values.floatValue);
+                  }}
+                  thousandSeparator=","
+                  decimalScale={3}
+                  fixedDecimalScale
                   disabled={viewMode && selectedBill}
                   inputProps={{ min: 0 }}
                 />
+              </td>
+              <td className="td">
+
+                
+                {!viewMode && (
+                   <IconButton
+                   onClick={() => handleDeleteItem(index)}
+                  disabled={viewMode && selectedBill}
+                >
+                  <MdDeleteForever />
+                </IconButton>
+
+                )}
               </td>
             </tr>
           ))}
@@ -235,6 +273,7 @@ const BillDetails = ({
               <strong>{formatINRCurrency(totalAmount.toFixed(2))}</strong>
             </td>
             <td className="td"></td>
+            <td className="td"></td>
           </tr>
 
           <tr>
@@ -242,14 +281,19 @@ const BillDetails = ({
               <strong>Hallmark or MC Charges</strong>
             </td>
             <td className="td">
-              <TextField
+              <NumericFormat
+                customInput={TextField}
                 size="small"
-                value={displayHallmarkCharges}
+                value={displayHallmarkCharges > 0 ? displayHallmarkCharges : ""}
                 onChange={handleHallmarkChange}
-                type="text"
+                thousandSeparator=","
+                decimalScale={3}
+                fixedDecimalScale
                 disabled={viewMode && selectedBill}
+                inputProps={{ min: 0 }}
               />
             </td>
+            <td className="td"></td>
             <td className="td"></td>
           </tr>
           <tr>
@@ -258,17 +302,18 @@ const BillDetails = ({
             </td>
             <td className="td">
               <strong>
-                
                 {selectedBill
-                  ? formatINRCurrency((
+                  ? formatINRCurrency(
                       parseFloat(totalAmount) +
-                      parseFloat(selectedBill?.hallmarkCharges || 0)
-                    ))
-                  : formatINRCurrency((
-                      parseFloat(totalAmount) + parseFloat(displayHallmarkCharges || 0)
-                    ))}
+                        parseFloat(selectedBill?.hallmarkCharges || 0)
+                    )
+                  : formatINRCurrency(
+                      parseFloat(totalAmount) +
+                        parseFloat(displayHallmarkCharges || 0)
+                    )}
               </strong>
             </td>
+            <td className="td"></td>
             <td className="td"></td>
           </tr>
         </tbody>
@@ -377,6 +422,7 @@ const BillDetails = ({
               margin="normal"
               required
               disabled={viewMode && selectedBill}
+              inputProps={{ min: 0 }}
             />
 
             <TextField
@@ -388,6 +434,7 @@ const BillDetails = ({
               margin="normal"
               required
               disabled={viewMode && selectedBill}
+              inputProps={{ min: 0 }}
             />
 
             <TextField
@@ -397,7 +444,7 @@ const BillDetails = ({
               value={newItem.weight}
               onChange={handleInputChange}
               margin="normal"
-              inputProps={{ step: "0.001" }}
+              inputProps={{ step: "0.001", min: 0 }}
             />
 
             {/* <TextField
@@ -432,7 +479,7 @@ const BillDetails = ({
                 }
               }}
               margin="normal"
-              inputProps={{ step: "0.001" }}
+              inputProps={{ step: "0.001", min: 0 }}
             />
 
             <Box className="modal-actions">
