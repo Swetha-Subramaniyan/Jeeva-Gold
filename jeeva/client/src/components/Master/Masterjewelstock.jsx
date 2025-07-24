@@ -80,9 +80,21 @@ const Masterjewelstock = () => {
 
       if (!response.ok) throw new Error("Failed to save entry");
 
-     fetchEntries();
-      setEntries(entries);
-      calculateTotalPurity(entries);
+      const newEntry = await response.json();
+
+      let updatedEntries;
+      if (isEditMode) {
+        updatedEntries = entries.map((entry) =>
+          entry.id === editId ? newEntry : entry
+        );
+        toast.success("Entry updated successfully!");
+      } else {
+        updatedEntries = [...entries, newEntry];
+        toast.success("Stock added successfully!");
+      }
+
+      setEntries(updatedEntries);
+      calculateTotalPurity(updatedEntries);
       resetForm();
       setShowFormPopup(false);
     } catch (error) {
@@ -154,10 +166,10 @@ const Masterjewelstock = () => {
 
       {showFormPopup && (
         <div className="popup-overlay">
-          <div className="popup-contents">
+          <div className="popup-contentsss">
             <h3>{isEditMode ? "Edit" : "Enter"} Jewel Stock Details</h3>
             <button
-              className="close-btn"
+              className="close-btnss"
               onClick={() => {
                 setShowFormPopup(false);
                 resetForm();
@@ -179,6 +191,7 @@ const Masterjewelstock = () => {
               <div className="form-group">
                 <label>Weight (grams):</label>
                 <input
+                  type="number"
                   name="weight"
                   value={formData.weight}
                   onChange={handleChange}
@@ -190,6 +203,7 @@ const Masterjewelstock = () => {
               <div className="form-group">
                 <label>Stone Weight (grams):</label>
                 <input
+                  type="number"
                   name="stoneWeight"
                   value={formData.stoneWeight}
                   onChange={handleChange}
@@ -200,6 +214,7 @@ const Masterjewelstock = () => {
               <div className="form-group">
                 <label>Final Weight (grams):</label>
                 <input
+                  type="number"
                   name="finalWeight"
                   value={formData.finalWeight}
                   onChange={handleChange}
@@ -212,6 +227,7 @@ const Masterjewelstock = () => {
               <div className="form-group">
                 <label>Touch (%):</label>
                 <input
+                  type="number"
                   name="touch"
                   value={formData.touch}
                   onChange={handleChange}
@@ -224,6 +240,7 @@ const Masterjewelstock = () => {
               <div className="form-group">
                 <label>Purity Value (grams):</label>
                 <input
+                  type="number"
                   name="purityValue"
                   value={formData.purityValue}
                   onChange={handleChange}
@@ -296,12 +313,12 @@ const Masterjewelstock = () => {
             <tfoot>
               <tr>
                 <td
-                  colSpan="6"
+                  colSpan="7"
                   style={{ textAlign: "right", fontWeight: "bold" }}
                 >
                   Total Purity:
                 </td>
-                <td colSpan="3" style={{ fontWeight: "bold" }}>
+                <td colSpan="2" style={{ fontWeight: "bold" }}>
                   {totalPurity}
                 </td>
               </tr>

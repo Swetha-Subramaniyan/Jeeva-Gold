@@ -1,7 +1,8 @@
-
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { FiLogOut, FiChevronDown, FiChevronUp } from "react-icons/fi";
+import Logo from "../../Assets/logo.png";
+
 
 function Navbar() {
   const navigate = useNavigate();
@@ -35,98 +36,111 @@ function Navbar() {
 
   return (
     <nav style={navbarStyle} ref={dropdownRef}>
-      <ul style={navListStyle}>
-        {userRole !== "user" && (
-          <>
-            <li style={navItemStyle}>
-              <a href="/master" style={linkStyle}>
-                Master
-              </a>
-            </li>
-            <li style={navItemStyle}>
-              <a href="/customer" style={linkStyle}>
-                Customer
-              </a>
-            </li>
-            {/* 
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <img
+          src={Logo}
+          alt="Logo"
+          style={{ height: "40px", marginRight: "20px" }}
+        />
+        <ul style={navListStyle}>
+          {userRole !== "user" && (
+            <>
+              <li style={navItemStyle}>
+                <a href="/master" style={linkStyle}>
+                  Master
+                </a>
+              </li>
+              <li style={navItemStyle}>
+                <a href="/customer" style={linkStyle}>
+                  Customer
+                </a>
+              </li>
+              {/* 
             <li style={navItemStyle}>
               <a href="/goldsmith" style={linkStyle}>
                 Gold Smith
               </a>
             </li>
             */}
-          </>
-        )}
+            </>
+          )}
 
-        <li style={navItemStyle}>
-          <a href="/stock" style={linkStyle}>
-            Coin Stock
-          </a>
-        </li>
-
-        <li style={navItemStyle}>
-          <a href="/coinbill" style={linkStyle}>
-            Coin Bill
-          </a>
-        </li>
-
-        {userRole !== "user" && (
           <li style={navItemStyle}>
-            <div style={dropdownHeaderStyle} onClick={toggleReportsDropdown}>
-              Reports{" "}
-              {showReportsDropdown ? <FiChevronUp /> : <FiChevronDown />}
-            </div>
-            {showReportsDropdown && (
-              <div style={dropdownMenuStyle}>
-                <a
-                  href="/report"
-                  style={dropdownItemStyle}
-                  className="dropdown-item"
-                >
-                  Daily Sales Report
-                </a>
-                <a
-                  href="/customerreport"
-                  style={dropdownItemStyle}
-                  className="dropdown-item"
-                >
-                  Customer Report
-                </a>
-                <a
-                  href="/advancereport"
-                  style={dropdownItemStyle}
-                  className="dropdown-item"
-                >
-                  Advance Payments Report
-                </a>
-                 <a
-                  href="/balancereport"
-                  style={dropdownItemStyle}
-                  className="dropdown-item"
-                >
-                  Balance Report
-                </a>
-                <a
-                  href="/overallreport"
-                  style={dropdownItemStyle}
-                  className="dropdown-item"
-                >
-                  Overall Report
-                </a>
-                {/* 
+            <a href="/stock" style={linkStyle}>
+              Coin Stock
+            </a>
+          </li>
+
+          <li style={navItemStyle}>
+            <a href="/coinbill" style={linkStyle}>
+              Coin Bill
+            </a>
+          </li>
+
+          {userRole !== "user" && (
+            <li style={navItemStyle}>
+              <div style={dropdownHeaderStyle} onClick={toggleReportsDropdown}>
+                Reports{" "}
+                {showReportsDropdown ? <FiChevronUp /> : <FiChevronDown />}
+              </div>
+              {showReportsDropdown && (
+                <div style={dropdownMenuStyle}>
+                  <a
+                    href="/report"
+                    style={dropdownItemStyle}
+                    className="dropdown-item"
+                  >
+                    Daily Sales Report
+                  </a>
+                  <a
+                    href="/customerreport"
+                    style={dropdownItemStyle}
+                    className="dropdown-item"
+                  >
+                    Customer Report
+                  </a>
+                  <a
+                    href="/advancereport"
+                    style={dropdownItemStyle}
+                    className="dropdown-item"
+                  >
+                    Advance Payments Report
+                  </a>
+                  <a
+                    href="/balancereport"
+                    style={dropdownItemStyle}
+                    className="dropdown-item"
+                  >
+                    Balance Report
+                  </a>
+                  <a
+                    href="/overallreport"
+                    style={dropdownItemStyle}
+                    className="dropdown-item"
+                  >
+                    Overall Report
+                  </a>
+                  {/* 
                 <a href="/jobcardreport" style={dropdownItemStyle} className="dropdown-item">
                   Jobcard Report
                 </a> 
                 */}
-              </div>
-            )}
-          </li>
-        )}
-      </ul>
+                </div>
+              )}
+            </li>
+          )}
+        </ul>
 
-      <button onClick={handleLogout} style={logoutButtonStyle} title="Logout">
-        <FiLogOut size={20} />
-      </button>
+        <button onClick={handleLogout} style={logoutButtonStyle} title="Logout">
+          <FiLogOut size={20} />
+        </button>
+      </div>
 
       <style>
         {`
@@ -145,7 +159,6 @@ const navbarStyle = {
   padding: "10px 0",
   width: "100%",
   boxSizing: "border-box",
-  position: "relative",
 };
 
 const navListStyle = {
@@ -205,9 +218,6 @@ const logoutButtonStyle = {
   border: "none",
   padding: "8px 12px",
   borderRadius: "4px",
-  position: "absolute",
-  right: "10px",
-  top: "10px",
   cursor: "pointer",
   display: "flex",
   alignItems: "center",

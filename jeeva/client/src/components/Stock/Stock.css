@@ -118,20 +118,20 @@ tr:nth-child(even) {
   background-color: #f2f2f2;
 }
 
- .form-group {
+ .form-groups {
     display: flex;
     align-items: center;
     justify-content: space-between;
     margin-bottom: 1rem;
   }
 
-  .form-group label {
+  .form-groups label {
     width: 30%;
     font-weight: 600;
     color: #111827;
   }
 
-  .form-group input {
+  .form-groups input {
     width: 65%;
     padding: 0.75rem 1rem;
     border-radius: 0.75rem;
@@ -140,7 +140,7 @@ tr:nth-child(even) {
     outline: none;
   }
 
-  .form-group input[readonly] {
+  .form-groups input[readonly] {
     background-color: #f9fafb;
     border-color: #e5e7eb;
     color: #6b7280;

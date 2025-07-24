@@ -381,17 +381,14 @@ const Billing = () => {
 
   useEffect(() => {
     const handleKeyDown = (event) => {
-      // Check for Ctrl+P (or Cmd+P on Mac)
       if ((event.ctrlKey || event.metaKey) && event.key === "p") {
-        event.preventDefault(); // Prevent the default print dialog
-        handlePrint(); // Trigger your custom print function
+        event.preventDefault();
+        handlePrint();
       }
     };
 
-    // Add event listener when component mounts
     window.addEventListener("keydown", handleKeyDown);
 
-    // Remove event listener when component unmounts
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
@@ -656,6 +653,26 @@ const Billing = () => {
           </div>
         </Tooltip>
 
+        <Tooltip
+          title={viewMode ? "Disabled in view mode" : "Reset Bill"}
+          arrow
+          placement="right"
+        >
+          <div
+            className="sidebar-button"
+            onClick={() => {
+              if (!viewMode) resetForm();
+            }}
+            style={{
+              pointerEvents: viewMode ? "none" : "auto",
+              opacity: viewMode ? 0.5 : 1,
+              cursor: viewMode ? "not-allowed" : "pointer",
+            }}
+          >
+            <span>Reset</span>
+          </div>
+        </Tooltip>
+
         {selectedBill && (
           <Tooltip title="Exit View Mode" arrow placement="right">
             <div
@@ -737,11 +754,38 @@ const Billing = () => {
             <p>
               <strong>Bill No:</strong> {billNo}
             </p>
-            <p className="date-time">
-              <strong>Date:</strong> {date} <br />
-              <br />
-              <strong>Time:</strong> {time}
-            </p>
+
+            {viewMode ? (
+              <p className="date-time">
+                {(() => {
+                  const createdDate = new Date(selectedBill.createdAt);
+
+                  const date = createdDate
+                    .toLocaleDateString("en-GB")
+                    .replace(/\//g, "-"); 
+
+                  const time = createdDate.toLocaleTimeString("en-US", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: true, 
+                  });
+
+                  return (
+                    <>
+                      <strong>Date:</strong> {date} <br />
+                      <br />
+                      <strong>Time:</strong> {time}
+                    </>
+                  );
+                })()}
+              </p>
+            ) : (
+              <p className="date-time">
+                <strong>Date:</strong> {date} <br />
+                <br />
+                <strong>Time:</strong> {time}
+              </p>
+            )}
           </Box>
 
           <Box className="searchSection">
@@ -796,6 +840,7 @@ const Billing = () => {
             setRows={setRows}
             initialPureBalance={pureBalance}
             initialTotalBalance={totalBalance}
+            displayHallmarkCharges={displayHallmarkCharges}
             initialHallmarkBalance={hallmarkBalance}
             setPureBalance={setPureBalance}
             setTotalBalance={setTotalBalance}

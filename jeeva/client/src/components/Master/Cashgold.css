@@ -94,14 +94,21 @@
     color: #333;
   }
   
-  .close-btn {
+  .close-btns {
     position: absolute;
-    top: 10px;
+    top: -5px;
     right: 10px;
-    background: none;
+     background-color: #dc3545;
+    color: #fff;
     border: none;
-    font-size: 20px;
+    border-radius: 50%;
+    font-size: 18px;
+    width: 32px;
+    height: 32px;
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   
   .form-group {
