@@ -5,6 +5,7 @@ import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import "./Billing.css";
 import { formatINRCurrency } from "../../utils/formatCurrency";
 import { NumericFormat } from "react-number-format";
+import { useState } from "react";
 
 const ReceivedDetails = ({
   rows,
@@ -18,6 +19,7 @@ const ReceivedDetails = ({
   setHallmarkBalance,
   isViewMode,
   setIsUpdating,
+  displayedTotalBalance,
 }) => {
   const [snackbar, setSnackbar] = React.useState({
     open: false,
@@ -119,8 +121,13 @@ const ReceivedDetails = ({
         parseFloatSafe(currentBalances.hallmarkBalance);
 
       console.log("ssssssssssssssssssssss", newTotalBalance);
-    } else  {
-      newTotalBalance = displayHallmarkCharges > 0 ? displayHallmarkCharges : 0;
+    } else {
+      newTotalBalance =
+        displayedTotalBalance > 0
+          ? displayedTotalBalance
+          : displayHallmarkCharges > 0
+          ? displayHallmarkCharges
+          : 0;
     }
 
     setTotalBalance(newTotalBalance);
@@ -176,6 +183,7 @@ const ReceivedDetails = ({
     }
   };
   const handleRowChange = (index, field, value) => {
+
     if (isViewMode && !rows[index].isNew) {
       return;
     }

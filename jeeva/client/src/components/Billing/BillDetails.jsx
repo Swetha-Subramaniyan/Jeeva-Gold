@@ -465,11 +465,9 @@ const BillDetails = ({
               value={newItem.pure}
               onChange={(e) => {
                 const input = e.target.value;
-                // Allow user to type freely, including partial decimals
                 setNewItem((prev) => ({ ...prev, pure: input }));
               }}
               onBlur={(e) => {
-                // When user finishes editing, fix to 3 decimals
                 const val = parseFloat(e.target.value);
                 if (!isNaN(val)) {
                   setNewItem((prev) => ({
