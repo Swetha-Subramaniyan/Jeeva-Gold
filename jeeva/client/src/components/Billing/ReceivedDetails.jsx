@@ -265,7 +265,7 @@ const ReceivedDetails = ({
             if (wanttodeducthall === true && deductedhall === false) {
               const cashtogeneratepurity =
                 remainingAmount - initialHallmarkBalance;
-              purityWeight = Math.abs(cashtogeneratepurity) / goldRate;
+              purityWeight = cashtogeneratepurity / goldRate;
               deductedhall = true;
             } else {
               purityWeight = remainingAmount / goldRate;

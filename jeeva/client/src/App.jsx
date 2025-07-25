@@ -1,4 +1,3 @@
-
 import React from "react";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import Home from "./components/Home/Home";
@@ -10,6 +9,8 @@ import Stock from "./components/Stock/Stock";
 import Navbar from "./components/Navbar/Navbar";
 import Master from "./components/Master/Master";
 import MasterCustomer from "./components/Master/Mastercustomer";
+import Masterjewelstock from "./components/Master/Masterjewelstock";
+import Cashgold from "./components/Master/Cashgold";
 import Customertrans from "./components/Customer/Customertrans";
 import Jobcard from "./components/Goldsmith/Jobcard";
 import AddCustomer from "./components/Billing/Addcustomer";
@@ -20,8 +21,6 @@ import Jobcardreport from "./components/Report/jobcardreport";
 import ProtectedRoutes from "../src/ProtectedRoutes/protected.routes";
 import Advancereport from "./components/Report/Advancereport";
 import BalanceReport from "./components/Report/BalanceReport";
-
-
 
 function App() {
   return (
@@ -95,18 +94,18 @@ function App() {
           element={
             <ProtectedRoutes>
               <PageWithNavbar>
-                <Advancereport/>
+                <Advancereport />
               </PageWithNavbar>
             </ProtectedRoutes>
           }
         />
 
-         <Route
+        <Route
           path="/balancereport"
           element={
             <ProtectedRoutes>
               <PageWithNavbar>
-                <BalanceReport/>
+                <BalanceReport />
               </PageWithNavbar>
             </ProtectedRoutes>
           }
@@ -153,8 +152,11 @@ function App() {
           }
         />
 
-        <Route path="/master" element={<Master />} />
-        <Route path="/mastercustomer" element={<MasterCustomer />} />
+        <Route path="/master" element={<Master />}>
+          <Route path="customer" element={<MasterCustomer />} />
+          <Route path="stock" element={<Masterjewelstock />} />
+          <Route path="cashgold" element={<Cashgold />} />
+        </Route>
         <Route path="/addcustomer" element={<AddCustomer />} />
       </Routes>
     </BrowserRouter>
@@ -179,13 +181,3 @@ function PageWithNavbar({ children }) {
 }
 
 export default App;
-
-
-
-
-
-
-
-
-
-

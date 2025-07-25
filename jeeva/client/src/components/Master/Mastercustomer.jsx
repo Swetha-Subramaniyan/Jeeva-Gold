@@ -12,6 +12,7 @@ import {
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+ import Tooltip from '@mui/material/Tooltip';
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { BACKEND_SERVER_URL } from "../../Config/Config";
@@ -261,12 +262,16 @@ function MasterCustomer() {
                     <td>{customer.address}</td>
                     <td>
                       {" "}
-                      <IconButton onClick={() => handleEdit(customer)}>
-                        <EditIcon color="secondary" />
-                      </IconButton>
-                      <IconButton onClick={() => handleDelete(customer.id)}>
-                        <DeleteIcon color="error" />
-                      </IconButton>
+                      <Tooltip title="Edit Customer">
+                        <IconButton onClick={() => handleEdit(customer)}>
+                          <EditIcon color="secondary" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Delete Customer">
+                        <IconButton onClick={() => handleDelete(customer.id)}>
+                          <DeleteIcon color="error" />
+                        </IconButton>
+                      </Tooltip>
                     </td>
                   </tr>
                 ))}
