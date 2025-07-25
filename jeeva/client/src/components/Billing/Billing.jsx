@@ -762,12 +762,12 @@ const Billing = () => {
 
                   const date = createdDate
                     .toLocaleDateString("en-GB")
-                    .replace(/\//g, "-"); 
+                    .replace(/\//g, "-");
 
                   const time = createdDate.toLocaleTimeString("en-US", {
                     hour: "2-digit",
                     minute: "2-digit",
-                    hour12: true, 
+                    hour12: true,
                   });
 
                   return (
@@ -847,6 +847,7 @@ const Billing = () => {
             setHallmarkBalance={setHallmarkBalance}
             isViewMode={viewMode && selectedBill}
             setIsUpdating={setIsUpdating}
+            displayedTotalBalance={calculateTotals().totalAmount}
           />
         </Box>
       )}

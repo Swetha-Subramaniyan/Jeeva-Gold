@@ -57,6 +57,8 @@ const Stock = () => {
   };
 
   const handleSubmit = async () => {
+    const decimalRegex = /^(\d+\.?\d*|\.\d+)?$/;
+
     if (
       !formData.coinType ||
       !formData.gram ||
@@ -64,6 +66,16 @@ const Stock = () => {
       !formData.touch
     ) {
       toast.error("Please fill in all required fields!");
+      return;
+    }
+
+    if (
+      !decimalRegex.test(formData.coinType) ||
+      !decimalRegex.test(formData.gram) ||
+      !decimalRegex.test(formData.quantity) ||
+      !decimalRegex.test(formData.touch)
+    ) {
+      toast.error("Only numbers and a single decimal point are allowed.");
       return;
     }
 
@@ -432,7 +444,6 @@ const Stock = () => {
               <label htmlFor="gram">Gram</label>
               <input
                 id="gram"
-                type="number"
                 name="gram"
                 placeholder="Gram"
                 value={formData.gram}
@@ -456,7 +467,6 @@ const Stock = () => {
               <label htmlFor="quantity">Quantity</label>
               <input
                 id="quantity"
-                type="number"
                 name="quantity"
                 placeholder="Quantity"
                 value={formData.quantity}
@@ -479,7 +489,6 @@ const Stock = () => {
               <label htmlFor="touch">Touch</label>
               <input
                 id="touch"
-                type="number"
                 name="touch"
                 placeholder="Touch"
                 value={formData.touch}
@@ -504,7 +513,6 @@ const Stock = () => {
               <label htmlFor="totalWeight">Total Weight</label>
               <input
                 id="totalWeight"
-                type="number"
                 name="totalWeight"
                 placeholder="Total Weight"
                 value={formData.totalWeight}
@@ -524,7 +532,6 @@ const Stock = () => {
               <label htmlFor="purity">Purity</label>
               <input
                 id="purity"
-                type="number"
                 name="purity"
                 placeholder="Purity"
                 value={formData.purity}
