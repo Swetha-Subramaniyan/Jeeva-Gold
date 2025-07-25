@@ -52,7 +52,7 @@ function Navbar() {
           {userRole !== "user" && (
             <>
               <li style={navItemStyle}>
-                <a href="/master" style={linkStyle}>
+                <a href="/master/customer" style={linkStyle}>
                   Master
                 </a>
               </li>

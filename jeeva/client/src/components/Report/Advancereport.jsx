@@ -83,11 +83,11 @@ const Advancereport = () => {
             ))}
           </tbody>
           <tfoot>
-            <tr className="total-row">
+            <tr >
               <td colSpan="4" className="total-label">
                 Total Purity:
               </td>
-              <td className="total-value">{totalPurity.toFixed(3)}g</td>
+              <td  colSpan="3" className="total-value">{totalPurity.toFixed(3)}g</td>
             </tr>
           </tfoot>
         </table>

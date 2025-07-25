@@ -81,6 +81,8 @@ tr:nth-child(even) {
   width: 300px;
   text-align: center;
   z-index: 999;
+  max-height: 95%;
+  overflow-y: auto; 
 }
 
 .popup-content {

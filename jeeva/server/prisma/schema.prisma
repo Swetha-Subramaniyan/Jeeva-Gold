@@ -106,7 +106,7 @@ model AdditionalWeight {
 model Bill {
   id              Int              @id @default(autoincrement())
   billNo          String           @unique
-  customer        Customer         @relation(fields: [customerId], references: [id])
+  customer        Customer         @relation(fields: [customerId], references: [id], onDelete: Cascade)
   customerId      Int
   goldRate        Float
   hallmarkCharges Float            @default(0)

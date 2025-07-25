@@ -1,61 +1,16 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import {Outlet , useNavigate } from "react-router-dom";
 import MasterCustomer from "./Mastercustomer";
 import "./Master.css";
-// import Mastergoldsmith from "./Mastergoldsmith";
-// import Masteradditems from "./Masteradditems";
 import Masterjewelstock from "./Masterjewelstock";
 import Cashgold from "./Cashgold";
 import { FiLogOut } from "react-icons/fi";
 import Logo from "../../Assets/logo.png";
 
 const Master = () => {
-  const [showCustomerDetails, setShowCustomerDetails] = useState(false);
-  const [showGoldsmithDetails, setShowGoldsmithDetails] = useState(false);
-  const [showAddItemsDetails, setShowAddItemsDetails] = useState(false);
-  const [showJewelStock, setShowJewelStock] = useState(false);
-  const [showCashGold, setShowCashGold] = useState(false);
 
   const navigate = useNavigate();
 
-  const handleAddCustomerClick = () => {
-    setShowCustomerDetails(true);
-    setShowGoldsmithDetails(false);
-    setShowAddItemsDetails(false);
-    setShowJewelStock(false);
-    setShowCashGold(false);
-  };
-
-  const handleAddGoldsmithClick = () => {
-    setShowGoldsmithDetails(true);
-    setShowCustomerDetails(false);
-    setShowAddItemsDetails(false);
-    setShowJewelStock(false);
-    setShowCashGold(false);
-  };
-
-  const handleAddItemsClick = () => {
-    setShowAddItemsDetails(true);
-    setShowCustomerDetails(false);
-    setShowGoldsmithDetails(false);
-    setShowJewelStock(false);
-    setShowCashGold(false);
-  };
-
-  const handleStockClick = () => {
-    setShowJewelStock(true);
-    setShowCustomerDetails(false);
-    setShowGoldsmithDetails(false);
-    setShowAddItemsDetails(false);
-    setShowCashGold(false);
-  };
-  const handleCashGold = () => {
-    setShowCashGold(true);
-    setShowCustomerDetails(false);
-    setShowGoldsmithDetails(false);
-    setShowAddItemsDetails(false);
-    setShowJewelStock(false);
-  };
   const handleLogout = () => {
     navigate("/");
   };
@@ -99,7 +54,7 @@ const Master = () => {
 
             <li>
               <button
-                onClick={handleAddCustomerClick}
+                 onClick={() => navigate("/master/customer")}
                 className="nav-button"
                 onMouseOver={(e) => (e.target.style.backgroundColor = "#333")}
                 onMouseOut={(e) =>
@@ -135,7 +90,7 @@ const Master = () => {
           </li> */}
             <li>
               <button
-                onClick={handleStockClick}
+               onClick={() => navigate("/master/stock")} 
                 className="nav-button"
                 onMouseOver={(e) => (e.target.style.backgroundColor = "#333")}
                 onMouseOut={(e) =>
@@ -147,7 +102,7 @@ const Master = () => {
             </li>
             <li>
               <button
-                onClick={handleCashGold}
+                onClick={() => navigate("/master/cashgold")} 
                 className="nav-button"
                 onMouseOver={(e) => (e.target.style.backgroundColor = "#333")}
                 onMouseOut={(e) =>
@@ -167,11 +122,8 @@ const Master = () => {
           </button>
         </div>
       </nav>
-      {showCustomerDetails && <MasterCustomer />}
-      {showGoldsmithDetails && <Mastergoldsmith />}
-      {showAddItemsDetails && <Masteradditems />}
-      {showJewelStock && <Masterjewelstock />}
-      {showCashGold && <Cashgold />}
+       <Outlet />
+    
     </div>
   );
 };

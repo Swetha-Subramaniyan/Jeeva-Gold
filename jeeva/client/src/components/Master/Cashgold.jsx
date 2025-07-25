@@ -281,7 +281,7 @@ function Cashgold() {
       </button>  
 
       {showFormPopup && (
-        <div className="popup-overlay">
+        <div className="popup-overlay">  
           <div className="popup-contentss">
             <h3>{isEditMode ? "Edit Entry" : "Enter Cash or Gold Details"}</h3>
             <button
