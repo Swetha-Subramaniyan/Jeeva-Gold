@@ -48,8 +48,10 @@ const Masterjewelstock = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
 
-    const isValid = /^(\d+\.?\d*|\.\d*)?$/.test(value);
-    if (!isValid && value !== "") return; 
+    if (name !== "jewelName") {
+      const isValid = /^(\d+\.?\d*|\.\d*)?$/.test(value);
+      if (!isValid && value !== "") return;
+    }
 
     const updatedData = {
       ...formData,

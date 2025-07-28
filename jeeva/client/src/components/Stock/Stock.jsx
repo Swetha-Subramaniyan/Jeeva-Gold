@@ -219,7 +219,11 @@ const Stock = () => {
     setShowPopup(false);
   };
 
-  const handleEdit = (index) => {
+  const handleEdit = (id) => {
+    const index = stockItems.findIndex((item) => item.id === id);
+    if (index === -1) return;
+
+    console.log("indddddd", index);
     setFormData({
       ...stockItems[index],
       gram: stockItems[index].gram.toString(),
@@ -231,7 +235,10 @@ const Stock = () => {
     setShowPopup(true);
   };
 
-  const handleDelete = async (index) => {
+  const handleDelete = async (id) => {
+    const index = stockItems.findIndex((item) => item.id === id);
+    if (index === -1) return;
+
     const itemToDelete = stockItems[index];
 
     try {
@@ -760,10 +767,14 @@ const Stock = () => {
                     {item.touch}
                   </td>
                   <td style={{ padding: "0.75rem 1rem", color: "#374151" }}>
-                    {parseFloat(item.totalWeight).toFixed(2)}
+                    {parseFloat(item.totalWeight) % 1 === 0
+                      ? parseInt(item.totalWeight)
+                      : parseFloat(item.totalWeight).toFixed(2)}
                   </td>
                   <td style={{ padding: "0.75rem 1rem", color: "#374151" }}>
-                    {parseFloat(item.purity).toFixed(3)}
+                    {parseFloat(item.purity) % 1 === 0
+                      ? parseInt(item.purity)
+                      : parseFloat(item.purity).toFixed(2)}
                   </td>
                   <td
                     style={{
@@ -774,7 +785,7 @@ const Stock = () => {
                   >
                     <button
                       className="edit-btn"
-                      onClick={() => handleEdit(index)}
+                      onClick={() => handleEdit(item.id)}
                       style={{
                         backgroundColor: "#2563eb",
                         color: "#fff",
@@ -796,7 +807,7 @@ const Stock = () => {
                     </button>
                     <button
                       className="delete-btn"
-                      onClick={() => handleDelete(index)}
+                      onClick={() => handleDelete(item.id)}
                       style={{
                         backgroundColor: "#ef4444",
                         color: "#fff",
@@ -828,11 +839,18 @@ const Stock = () => {
                 color: "#111827",
               }}
             >
-              <td colSpan="4" style={{ textAlign: "right", padding: "1rem" }}>
+              <td colSpan="5" style={{ textAlign: "right", padding: "1rem" }}>
                 Totals:
               </td>
-              <td style={{ padding: "1rem" }}>{totals.totalWeight}</td>
-              <td style={{ padding: "1rem" }}>{totals.purity}</td>
+              <td style={{ padding: "1rem" }}>
+                {parseFloat(totals.totalWeight) % 1 === 0
+                  ? parseInt(totals.totalWeight)
+                  : parseFloat(totals.totalWeight).toFixed(2)}
+              </td>
+              <td style={{ padding: "1rem" }}>
+                 {parseFloat(totals.purity) % 1 === 0
+                  ? parseInt(totals.purity)
+                  : parseFloat(totals.purity).toFixed(2)}</td>
               <td></td>
             </tr>
           </tfoot>

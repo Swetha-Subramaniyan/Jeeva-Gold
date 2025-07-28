@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import {
   Box,
@@ -13,7 +12,7 @@ import {
   TextField,
   Button,
   TablePagination,
-  TableFooter
+  TableFooter,
 } from "@mui/material";
 import { BACKEND_SERVER_URL } from "../../Config/Config";
 
@@ -93,7 +92,7 @@ const DailySalesReport = () => {
           pureReceived: acc.pureReceived + received.pure,
           cashReceived: acc.cashReceived + received.cash,
           hallmarkReceived: acc.hallmarkReceived + received.hallmark,
-          cashPaid: acc.cashPaid, 
+          cashPaid: acc.cashPaid,
           outstandingCash: acc.outstandingCash + cashBalanceForMetric,
           outstandingHallmark:
             acc.outstandingHallmark + hallmarkBalanceForMetric,
@@ -163,17 +162,34 @@ const DailySalesReport = () => {
           borderRadius: 2,
         }}
       >
-       
         <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-          Total Weight: {metrics.totalWeight.toFixed(3)} g
+          Total Weight:{" "}
+          {parseFloat(metrics.totalWeight) % 1 === 0
+            ? parseInt(metrics.totalWeight)
+            : parseFloat(metrics.totalWeight)
+                .toFixed(2)
+                .replace(/\.?0+$/, "")}{" "}
+          g
         </Typography>
         <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-          Total Purity: {metrics.totalPurity.toFixed(3)} g
+          Total Purity:{" "}
+          {parseFloat(metrics.totalPurity) % 1 === 0
+            ? parseInt(metrics.totalPurity)
+            : parseFloat(metrics.totalPurity)
+                .toFixed(3)
+                .replace(/\.?0+$/, "")}{" "}
+          g
         </Typography>
         <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-          Pure Received: {metrics.pureReceived.toFixed(3)} g
+          Pure Received:{" "}
+          {parseFloat(metrics.pureReceived) % 1 === 0
+            ? parseInt(metrics.pureReceived)
+            : parseFloat(metrics.pureReceived)
+                .toFixed(3)
+                .replace(/\.?0+$/, "")}{" "}
+          g
         </Typography>
-        
+
         <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
           Number of Bills: {filteredBills.length}
         </Typography>
@@ -184,14 +200,15 @@ const DailySalesReport = () => {
           <TableHead>
             <TableRow>
               <TableCell>Bill No</TableCell>
-              <TableCell>Customer</TableCell>
+              <TableCell>Name</TableCell>
               <TableCell>Total Weight</TableCell>
               <TableCell>Total Purity</TableCell>
               <TableCell>Total Amount</TableCell>
               <TableCell>Amount Received</TableCell>
               <TableCell>Pure Received</TableCell>
-              <TableCell>Cash Balance</TableCell> 
+              <TableCell>Cash Balance</TableCell>
               <TableCell>Pure Balance</TableCell>
+              <TableCell>View</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -231,54 +248,149 @@ const DailySalesReport = () => {
                   <TableRow key={bill.id}>
                     <TableCell>BILL-{bill.id}</TableCell>
                     <TableCell>{bill.customer?.name || "Unknown"}</TableCell>
-                    <TableCell>{totalWeight.toFixed(3)}</TableCell>
-                    <TableCell>{totalPurity.toFixed(3)}</TableCell>
-                    <TableCell>₹{totalAmount.toFixed(2)}</TableCell>
-                    <TableCell>₹{(received.cash+received.hallmark).toFixed(2)}</TableCell>
-                    <TableCell>{received.pure.toFixed(3)} g</TableCell>
+                    <TableCell>
+                      {parseFloat(totalWeight) % 1 === 0
+                        ? parseInt(totalWeight)
+                        : parseFloat(totalWeight)
+                            .toFixed(2)
+                            .replace(/\.?0+$/, "")}
+                    </TableCell>
+                    <TableCell>
+                      {parseFloat(totalPurity) % 1 === 0
+                        ? parseInt(totalPurity)
+                        : parseFloat(totalPurity)
+                            .toFixed(3)
+                            .replace(/\.?0+$/, "")}
+                    </TableCell>
+                    <TableCell>
+                      ₹
+                      {parseFloat(totalAmount) % 1 === 0
+                        ? parseInt(totalAmount)
+                        : parseFloat(totalAmount)
+                            .toFixed(2)
+                            .replace(/\.?0+$/, "")}
+                    </TableCell>
+                    <TableCell>
+                      ₹
+                      {(received.cash + received.hallmark) % 1 === 0
+                        ? parseInt(received.cash + received.hallmark)
+                        : (received.cash + received.hallmark)
+                            .toFixed(2)
+                            .replace(/\.?0+$/, "")}
+                    </TableCell>
+                    <TableCell>
+                      {parseFloat(received.pure) % 1 === 0
+                        ? parseInt(received.pure)
+                        : parseFloat(received.pure)
+                            .toFixed(3)
+                            .replace(/\.?0+$/, "")}{" "}
+                      g
+                    </TableCell>
                     <TableCell
                       sx={{
-                    
-                        color: "success.main", 
+                        color: "success.main",
                       }}
                     >
-                      ₹{(cashBalance+hallmarkBalance).toFixed(2)}
+                      ₹
+                      {(cashBalance + hallmarkBalance) % 1 === 0
+                        ? parseInt(cashBalance + hallmarkBalance)
+                        : (cashBalance + hallmarkBalance)
+                            .toFixed(2)
+                            .replace(/\.?0+$/, "")}
                     </TableCell>
-                   
+
                     <TableCell
                       sx={{
                         color: pureBalance > 0 ? "error.main" : "success.main",
                       }}
                     >
-                      {pureBalance.toFixed(3)} g
+                      {parseFloat(pureBalance) % 1 === 0
+                        ? parseInt(pureBalance)
+                        : parseFloat(pureBalance)
+                            .toFixed(3)
+                            .replace(/\.?0+$/, "")}
+                      g
                     </TableCell>
+                    <TableCell></TableCell>
                   </TableRow>
                 );
               })}
           </TableBody>
           <TableFooter>
-  <TableRow sx={{ backgroundColor: "#f0f0f0" }}>
-    <TableCell colSpan={2}><strong>Total</strong></TableCell>
-    <TableCell><strong>{metrics.totalWeight.toFixed(3)}</strong></TableCell>
-    <TableCell><strong>{metrics.totalPurity.toFixed(3)}</strong></TableCell>
-    <TableCell><strong>₹{metrics.totalSales.toFixed(2)}</strong></TableCell>
-    <TableCell>
-      <strong>
-        ₹{(metrics.cashReceived + metrics.hallmarkReceived).toFixed(2)}
-      </strong>
-    </TableCell>
-    <TableCell>
-      <strong>{metrics.pureReceived.toFixed(3)} g</strong>
-    </TableCell>
-    <TableCell>
-      <strong>₹{metrics.outstandingCash.toFixed(2)}</strong>
-    </TableCell>
-    <TableCell>
-      <strong>{metrics.outstandingPure.toFixed(3)} g</strong>
-    </TableCell>
-  </TableRow>
-</TableFooter>
-
+            <TableRow sx={{ backgroundColor: "#f0f0f0" }}>
+              <TableCell colSpan={2}>
+                <strong>Total</strong>
+              </TableCell>
+              <TableCell>
+                <strong>
+                  {parseFloat(metrics.totalWeight) % 1 === 0
+                    ? parseInt(metrics.totalWeight)
+                    : parseFloat(metrics.totalWeight)
+                        .toFixed(2)
+                        .replace(/\.?0+$/, "")}
+                </strong>
+              </TableCell>
+              <TableCell>
+                <strong>
+                  {parseFloat(metrics.totalPurity) % 1 === 0
+                    ? parseInt(metrics.totalPurity)
+                    : parseFloat(metrics.totalPurity)
+                        .toFixed(3)
+                        .replace(/\.?0+$/, "")}
+                </strong>
+              </TableCell>
+              <TableCell>
+                <strong>
+                  ₹
+                  {parseFloat(metrics.totalSales) % 1 === 0
+                    ? parseInt(metrics.totalSales)
+                    : parseFloat(metrics.totalSales)
+                        .toFixed(2)
+                        .replace(/\.?0+$/, "")}
+                </strong>
+              </TableCell>
+              <TableCell>
+                <strong>
+                  ₹
+                  {(metrics.cashReceived + metrics.hallmarkReceived) % 1 === 0
+                    ? parseInt(metrics.cashReceived + metrics.hallmarkReceived)
+                    : (metrics.cashReceived + metrics.hallmarkReceived)
+                        .toFixed(2)
+                        .replace(/\.?0+$/, "")}
+                </strong>
+              </TableCell>
+              <TableCell>
+                <strong>
+                  {parseFloat(metrics.pureReceived) % 1 === 0
+                    ? parseInt(metrics.pureReceived)
+                    : parseFloat(metrics.pureReceived)
+                        .toFixed(3)
+                        .replace(/\.?0+$/, "")}{" "}
+                  g
+                </strong>
+              </TableCell>
+              <TableCell>
+                <strong>
+                  ₹
+                  {parseFloat(metrics.outstandingCash) % 1 === 0
+                    ? parseInt(metrics.outstandingCash)
+                    : parseFloat(metrics.outstandingCash)
+                        .toFixed(2)
+                        .replace(/\.?0+$/, "")}
+                </strong>
+              </TableCell>
+              <TableCell colSpan={2}>
+                <strong>
+                  {parseFloat(metrics.outstandingPure) % 1 === 0
+                    ? parseInt(metrics.outstandingPure)
+                    : parseFloat(metrics.outstandingPure)
+                        .toFixed(3)
+                        .replace(/\.?0+$/, "")}{" "}
+                  g
+                </strong>
+              </TableCell>
+            </TableRow>
+          </TableFooter>
         </Table>
       </TableContainer>
 
