@@ -132,10 +132,10 @@ const OverallReport = () => {
       const { totalCustomerBalance } = calculateTotalBalances(bills);
 
       const overallValue =
-        (totalCustomerBalance +
+        totalCustomerBalance +
         totalCashGoldEntriesPurity +
         totalCoinPurity +
-        totalJewelPurity )-
+        totalJewelPurity -
         advancesGold;
 
       setReportData([
@@ -148,8 +148,9 @@ const OverallReport = () => {
         {
           label: "Cash/Gold (Entries Purity)",
           value: `${totalCashGoldEntriesPurity.toFixed(3)}g`,
-          tooltip:
-            `Total gold purity from all manual Cash/Gold entries in the system (Sum of manual entries ${manualEntriesPurity.toFixed(3)}g and received bill entries ${receivedEntriesPurity.toFixed(3)}g)`,
+          tooltip: `Total gold purity from all manual Cash/Gold entries in the system (Sum of manual entries ${manualEntriesPurity.toFixed(
+            3
+          )}g and received bill entries ${receivedEntriesPurity.toFixed(3)}g)`,
         },
         {
           label: "Coin Stock",
@@ -204,12 +205,22 @@ const OverallReport = () => {
 
       {reportData.length > 0 && (
         <div className="report-cards-container">
-          {reportData.map((item, index) => (
-            <div key={index} className="report-card" title={item.tooltip}>
-              <div className="card-label">{item.label}</div>
-              <div className="card-value">{item.value}</div>
-            </div>
-          ))}
+          <div className="report-column report-left">
+            {reportData.slice(0, 5).map((item, index) => (
+              <div key={index} className="report-card" title={item.tooltip}>
+                <div className="card-label">{item.label}</div>
+                <div className="card-value">{item.value}</div>
+              </div>
+            ))}
+          </div>
+          <div className="report-column report-right">
+            {reportData.slice(5).map((item, index) => (
+              <div key={index + 5} className="report-card" title={item.tooltip}>
+                <div className="card-label">{item.label}</div>
+                <div className="card-value">{item.value}</div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>

@@ -20,6 +20,7 @@ import {
 } from "@mui/material";
 import { BACKEND_SERVER_URL } from "../../Config/Config";
 import VisibilityIcon from "@mui/icons-material/Visibility";
+import { formatNumber } from "../../utils/formatNumber";
 
 const CustomerReport = () => {
   const [customers, setCustomers] = useState([]);
@@ -155,7 +156,7 @@ const CustomerReport = () => {
     return (
       <>
         <div>{`${item.coinValue}g ${item.percentage} (touch ${item.touch}) x ${item.quantity}`}</div>
-        <div>Total Purity: {bill.totalPurity.toFixed(3)}g</div>
+        <div>Total Purity: {formatNumber(bill.totalPurity, 3)}g</div>
       </>
     );
   };
@@ -172,13 +173,15 @@ const CustomerReport = () => {
 
     return (
       <>
-        <div>Received: {totalReceived.toFixed(3)}g</div>
-        {balanceInfo.advanceUsed.toFixed(3) > 0 && (
-          <div>Advance applied: {balanceInfo.advanceUsed.toFixed(3)}g</div>
+        <div>Received: {formatNumber(totalReceived, 3)}g</div>
+        {balanceInfo.advanceUsed > 0 && (
+          <div>
+            Advance applied: {formatNumber(balanceInfo.advanceUsed, 3)}g
+          </div>
         )}
         {balanceInfo.remainingAdvance > 0 && (
           <div>
-            Advance available: {balanceInfo.remainingAdvance.toFixed(3)}g
+            Advance available: {formatNumber(balanceInfo.remainingAdvance, 3)}g
           </div>
         )}
       </>
@@ -364,13 +367,13 @@ const CustomerReport = () => {
                     </TableCell>
                     <TableCell>{getBillDescription(bill)}</TableCell>
                     <TableCell>{getReceivedDetailsSummary(bill)}</TableCell>
-                    <TableCell>{customerBalance.toFixed(3)}</TableCell>
+                    <TableCell>{formatNumber(customerBalance, 3)} </TableCell>
                     <TableCell>
-                      ₹{cashBalances.customerCashBalance.toFixed(2)}
+                      ₹{formatNumber(cashBalances.customerCashBalance, 2)}
                     </TableCell>
-                    <TableCell>{ownerBalance.toFixed(3)}</TableCell>
+                    <TableCell>{formatNumber(ownerBalance, 3)}</TableCell>
                     <TableCell>
-                      ₹{cashBalances.ownerCashBalance.toFixed(2)}
+                      ₹{formatNumber(cashBalances.ownerCashBalance, 2)}
                     </TableCell>
                     <TableCell>
                       <IconButton onClick={() => handleViewBill(bill)}>
@@ -387,18 +390,18 @@ const CustomerReport = () => {
                 <strong>Totals:</strong>
               </TableCell>
               <TableCell>
-                <strong>{calculateTotalPurity().toFixed(3)}g</strong>
+                <strong>{formatNumber(calculateTotalPurity(), 3)}g</strong>
               </TableCell>
               <TableCell>
                 <div>
                   <strong>
-                    Received: {calculateTotalReceived().toFixed(3)}g
+                    Received: {formatNumber(calculateTotalReceived(), 3)}g
                   </strong>
                 </div>
                 <div>
                   <strong>
                     Advance Available:{" "}
-                    {calculateTotalAdvanceAvailable().toFixed(3)}g
+                    {formatNumber(calculateTotalAdvanceAvailable(), 3)}g
                   </strong>
                 </div>
                 <div
@@ -410,10 +413,11 @@ const CustomerReport = () => {
                 >
                   <strong>
                     Total:{" "}
-                    {(
+                    {formatNumber(
                       calculateTotalReceived() +
-                      calculateTotalAdvanceAvailable()
-                    ).toFixed(3)}
+                        calculateTotalAdvanceAvailable(),
+                      3
+                    )}
                     g
                   </strong>
                 </div>
@@ -421,38 +425,40 @@ const CustomerReport = () => {
 
               <TableCell>
                 <strong>
-                  {filteredBills
-                    .reduce((sum, bill) => {
+                  {formatNumber(
+                    filteredBills.reduce((sum, bill) => {
                       const { balance } = calculateBillBalance(
                         bill,
                         bill.customerId
                       );
                       return sum + (balance > 0 ? balance : 0);
-                    }, 0)
-                    .toFixed(3)}
+                    }, 0),
+                    3
+                  )}
                   g
                 </strong>
               </TableCell>
               <TableCell>
-                {calculateTotalCustomerCashBalance().toFixed(3)}
+               ₹  {formatNumber(calculateTotalCustomerCashBalance(), 3)}
               </TableCell>
               <TableCell>
                 <strong>
-                  {filteredBills
-                    .reduce((sum, bill) => {
+                  {formatNumber(
+                    filteredBills.reduce((sum, bill) => {
                       const { balance } = calculateBillBalance(
                         bill,
                         bill.customerId
                       );
                       return sum + (balance < 0 ? balance : 0);
-                    }, 0)
-                    .toFixed(3)}
+                    }, 0),
+                    3
+                  )}
                   g
                 </strong>
               </TableCell>
 
               <TableCell>
-                {calculateTotalOwnerCashBalance().toFixed(3)}
+               ₹ {formatNumber(calculateTotalOwnerCashBalance(), 3)}
               </TableCell>
               <TableCell></TableCell>
             </TableRow>
@@ -503,7 +509,7 @@ const CustomerReport = () => {
                 </Typography>
                 <Typography variant="body1">
                   <strong>Total Purity:</strong>{" "}
-                  {selectedBill.totalPurity.toFixed(3)}g
+                  {formatNumber(selectedBill.totalPurity, 3)}g
                 </Typography>
                 <Typography variant="body1">
                   <strong>Balance:</strong>{" "}
@@ -513,8 +519,8 @@ const CustomerReport = () => {
                       selectedBill.customerId
                     );
                     return balance > 0
-                      ? `Customer owes: ${balance.toFixed(3)}g`
-                      : `Owner owes: ${Math.abs(balance).toFixed(3)}g`;
+                      ? `Customer owes: ${formatNumber(balance, 3)}g`
+                      : `Owner owes: ${formatNumber(Math.abs(balance), 3)}g`;
                   })()}
                 </Typography>
               </Box>
@@ -537,8 +543,8 @@ const CustomerReport = () => {
                       <TableRow key={index}>
                         <TableCell>{item.coinValue}g</TableCell>
                         <TableCell>{item.quantity}</TableCell>
-                        <TableCell>{item.weight.toFixed(3)}</TableCell>
-                        <TableCell>{item.purity.toFixed(3)}</TableCell>
+                        <TableCell>{formatNumber(item.weight, 3)}</TableCell>
+                        <TableCell>{formatNumber(item.purity, 3)}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -570,13 +576,13 @@ const CustomerReport = () => {
                             {detail.givenGold ? "Gold" : "Cash"}
                           </TableCell>
                           <TableCell>
-                            {detail.purityWeight?.toFixed(3) || "-"}
+                           {formatNumber(detail.purityWeight, 3) || "-"} 
                           </TableCell>
                           <TableCell>
-                            {detail.amount?.toFixed(2) || "-"}
+                            {formatNumber(detail.amount) || "-"}
                           </TableCell>
                           <TableCell>
-                            {detail.paidAmount?.toFixed(2) || "-"}
+                            {formatNumber(detail.paidAmount) || "-"}
                           </TableCell>
                         </TableRow>
                       ))}
@@ -600,7 +606,7 @@ const CustomerReport = () => {
                   <Box key={index} sx={{ mb: 1 }}>
                     <Typography variant="body2">
                       {new Date(txn.date).toLocaleDateString()} - Advance:{" "}
-                      {txn.purity?.toFixed(3) || 0}g
+                    {formatNumber(txn.purity, 3) || 0}g
                     </Typography>
                   </Box>
                 ))}

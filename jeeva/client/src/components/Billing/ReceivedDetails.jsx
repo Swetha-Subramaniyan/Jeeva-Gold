@@ -183,7 +183,6 @@ const ReceivedDetails = ({
     }
   };
   const handleRowChange = (index, field, value) => {
-
     if (isViewMode && !rows[index].isNew) {
       return;
     }
@@ -365,7 +364,6 @@ const ReceivedDetails = ({
                   }}
                   thousandSeparator=","
                   decimalScale={3}
-                  fixedDecimalScale
                   disabled={
                     (isViewMode && !row.isNew) ||
                     (row.mode === "weight" && !(isViewMode && row.isNew))
@@ -382,7 +380,6 @@ const ReceivedDetails = ({
                     handleRowChange(index, "touch", e.floatValue)
                   }
                   thousandSeparator=","
-                  fixedDecimalScale
                   disabled={
                     (isViewMode && !row.isNew) ||
                     (row.mode === "amount" && !(isViewMode && row.isNew))
@@ -394,7 +391,13 @@ const ReceivedDetails = ({
                 <TextField
                   size="small"
                   value={
-                    row.purityWeight ? Number(row.purityWeight).toFixed(3) : ""
+                    row.purityWeight
+                      ? parseFloat(row.purityWeight) % 1 === 0
+                        ? parseInt(row.purityWeight)
+                        : parseFloat(row.purityWeight)
+                            .toFixed(2)
+                            .replace(/\.?0+$/, "")
+                      : ""
                   }
                   InputProps={{ readOnly: true }}
                 />
@@ -409,7 +412,6 @@ const ReceivedDetails = ({
                   }
                   thousandSeparator=","
                   decimalScale={3}
-                  fixedDecimalScale
                   disabled={
                     (isViewMode && !row.isNew) ||
                     (row.mode === "weight" && !(isViewMode && row.isNew))
@@ -427,7 +429,6 @@ const ReceivedDetails = ({
                   }
                   thousandSeparator=","
                   decimalScale={3}
-                  fixedDecimalScale
                   disabled={
                     (isViewMode && !row.isNew) ||
                     (row.mode === "weight" && !(isViewMode && row.isNew))
@@ -450,14 +451,33 @@ const ReceivedDetails = ({
 
       <div className="flex">
         <div>
-          <b>Pure Balance: {currentBalances.pureBalance?.toFixed(2)}</b>
-        </div>
-        <div>
-          <b>Hallmark Balance: {currentBalances.hallmarkBalance?.toFixed(2)}</b>
+          <b>
+            Pure Balance:{" "}
+            {parseFloat(currentBalances.pureBalance) % 1 === 0
+              ? parseInt(currentBalances.pureBalance)
+              : parseFloat(currentBalances.pureBalance)
+                  .toFixed(2)
+                  .replace(/\.?0+$/, "")}
+          </b>
         </div>
         <div>
           <b>
-            Total Balance: {formatINRCurrency(currentBalances.totalBalance)}
+            Hallmark Balance:{" "}
+            {parseFloat(currentBalances.hallmarkBalance) % 1 === 0
+              ? parseInt(currentBalances.hallmarkBalance)
+              : parseFloat(currentBalances.hallmarkBalance)
+                  .toFixed(2)
+                  .replace(/\.?0+$/, "")}
+          </b>
+        </div>
+        <div>
+          <b>
+            Total Balance:{" "}
+            {parseFloat(currentBalances.totalBalance) % 1 === 0
+              ? parseInt(currentBalances.totalBalance)
+              : parseFloat(currentBalances.totalBalance)
+                  .toFixed(2)
+                  .replace(/\.?0+$/, "")}
           </b>
         </div>
       </div>

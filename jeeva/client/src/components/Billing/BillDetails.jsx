@@ -6,7 +6,7 @@ import {
   Typography,
   Button,
   Alert,
-  IconButton
+  IconButton,
 } from "@mui/material";
 import { MdDeleteForever } from "react-icons/md";
 
@@ -213,8 +213,21 @@ const BillDetails = ({
               </td>
               <td className="td">{item.quantity}</td>
               <td className="td">{item.touch}</td>
-              <td className="td">{item.weight}</td>
-              <td className="td">{item.purity}</td>
+              <td className="td">
+                {parseFloat(item.weight) % 1 === 0
+                  ? parseInt(item.weight)
+                  : parseFloat(item.weight)
+                      .toFixed(2)
+                      .replace(/\.?0+$/, "")}
+              </td>
+              <td className="td">
+                {" "}
+                {parseFloat(item.purity) % 1 === 0
+                  ? parseInt(item.purity)
+                  : parseFloat(item.purity)
+                      .toFixed(2)
+                      .replace(/\.?0+$/, "")}
+              </td>
               <td className="td">
                 {item.goldRate ? formatINRCurrency(item.amount) : ""}
               </td>
@@ -229,22 +242,18 @@ const BillDetails = ({
                   }}
                   thousandSeparator=","
                   decimalScale={3}
-                  fixedDecimalScale
                   disabled={viewMode && selectedBill}
                   inputProps={{ min: 0 }}
                 />
               </td>
               <td className="td">
-
-                
                 {!viewMode && (
-                   <IconButton
-                   onClick={() => handleDeleteItem(index)}
-                  disabled={viewMode && selectedBill}
-                >
-                  <MdDeleteForever />
-                </IconButton>
-
+                  <IconButton
+                    onClick={() => handleDeleteItem(index)}
+                    disabled={viewMode && selectedBill}
+                  >
+                    <MdDeleteForever />
+                  </IconButton>
                 )}
               </td>
             </tr>
@@ -264,10 +273,22 @@ const BillDetails = ({
             </td>
             <td className="td"></td>
             <td className="td">
-              <strong>{totalWeight.toFixed(3)}</strong>
+              <strong>
+                {parseFloat(totalWeight) % 1 === 0
+                  ? parseInt(totalWeight)
+                  : parseFloat(totalWeight)
+                      .toFixed(2)
+                      .replace(/\.?0+$/, "")}
+              </strong>
             </td>
             <td className="td">
-              <strong>{totalPurity.toFixed(3)}</strong>
+              <strong>
+                {parseFloat(totalPurity) % 1 === 0
+                  ? parseInt(totalPurity)
+                  : parseFloat(totalPurity)
+                      .toFixed(2)
+                      .replace(/\.?0+$/, "")}
+              </strong>
             </td>
             <td className="td">
               <strong>{formatINRCurrency(totalAmount.toFixed(2))}</strong>
@@ -288,7 +309,6 @@ const BillDetails = ({
                 onChange={handleHallmarkChange}
                 thousandSeparator=","
                 decimalScale={3}
-                fixedDecimalScale
                 disabled={viewMode && selectedBill}
                 inputProps={{ min: 0 }}
               />
