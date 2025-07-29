@@ -57,7 +57,7 @@ const CustomerReport = () => {
         setCustomers(customersData);
         setBills(billsData);
         setFilteredBills(billsData);
-        setTransactions(transactionsData || []); // Ensure transactions is always an array
+        setTransactions(transactionsData || []);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -136,11 +136,12 @@ const CustomerReport = () => {
         remainingAdvance,
         bill.totalPurity - receivedPurity
       );
-      receivedPurity += advanceUsed;
     }
 
     const balance = (bill.totalPurity || 0) - receivedPurity;
     remainingAdvance -= advanceUsed;
+
+    console.log("Ssbillllllllllll", bill, balance, receivedPurity);
 
     return {
       balance,
@@ -340,10 +341,9 @@ const CustomerReport = () => {
               <TableCell>Date</TableCell>
               <TableCell>Description</TableCell>
               <TableCell>Received Details</TableCell>
+              <TableCell>Advance Balance</TableCell>
               <TableCell>Customer Balance</TableCell>
               <TableCell>Customer Cash Balance</TableCell>
-              <TableCell>Owner Balance</TableCell>
-              <TableCell>Owner Cash Balance</TableCell>
               <TableCell>Action</TableCell>
             </TableRow>
           </TableHead>
@@ -367,13 +367,10 @@ const CustomerReport = () => {
                     </TableCell>
                     <TableCell>{getBillDescription(bill)}</TableCell>
                     <TableCell>{getReceivedDetailsSummary(bill)}</TableCell>
+                    <TableCell>{formatNumber(ownerBalance, 3)}g</TableCell>
                     <TableCell>{formatNumber(customerBalance, 3)} </TableCell>
                     <TableCell>
                       ₹{formatNumber(cashBalances.customerCashBalance, 2)}
-                    </TableCell>
-                    <TableCell>{formatNumber(ownerBalance, 3)}</TableCell>
-                    <TableCell>
-                      ₹{formatNumber(cashBalances.ownerCashBalance, 2)}
                     </TableCell>
                     <TableCell>
                       <IconButton onClick={() => handleViewBill(bill)}>
@@ -385,7 +382,17 @@ const CustomerReport = () => {
               })}
           </TableBody>
           <TableFooter>
-            <TableRow>
+            <TableRow  sx={{
+                backgroundColor: "#424242", 
+                color: "#fff",
+                "& .MuiTableCell-root": {
+                  color: "#fff",
+                  fontWeight: "bold",
+                },
+                "&:hover": {
+                  backgroundColor: "#424242",
+                },
+              }}>
               <TableCell colSpan={2} align="right">
                 <strong>Totals:</strong>
               </TableCell>
@@ -423,6 +430,8 @@ const CustomerReport = () => {
                 </div>
               </TableCell>
 
+              <TableCell></TableCell>
+
               <TableCell>
                 <strong>
                   {formatNumber(
@@ -439,27 +448,9 @@ const CustomerReport = () => {
                 </strong>
               </TableCell>
               <TableCell>
-               ₹  {formatNumber(calculateTotalCustomerCashBalance(), 3)}
-              </TableCell>
-              <TableCell>
-                <strong>
-                  {formatNumber(
-                    filteredBills.reduce((sum, bill) => {
-                      const { balance } = calculateBillBalance(
-                        bill,
-                        bill.customerId
-                      );
-                      return sum + (balance < 0 ? balance : 0);
-                    }, 0),
-                    3
-                  )}
-                  g
-                </strong>
+                ₹ {formatNumber(calculateTotalCustomerCashBalance(), 3)}
               </TableCell>
 
-              <TableCell>
-               ₹ {formatNumber(calculateTotalOwnerCashBalance(), 3)}
-              </TableCell>
               <TableCell></TableCell>
             </TableRow>
           </TableFooter>
@@ -576,7 +567,7 @@ const CustomerReport = () => {
                             {detail.givenGold ? "Gold" : "Cash"}
                           </TableCell>
                           <TableCell>
-                           {formatNumber(detail.purityWeight, 3) || "-"} 
+                            {formatNumber(detail.purityWeight, 3) || "-"}
                           </TableCell>
                           <TableCell>
                             {formatNumber(detail.amount) || "-"}
@@ -606,7 +597,7 @@ const CustomerReport = () => {
                   <Box key={index} sx={{ mb: 1 }}>
                     <Typography variant="body2">
                       {new Date(txn.date).toLocaleDateString()} - Advance:{" "}
-                    {formatNumber(txn.purity, 3) || 0}g
+                      {formatNumber(txn.purity, 3) || 0}g
                     </Typography>
                   </Box>
                 ))}

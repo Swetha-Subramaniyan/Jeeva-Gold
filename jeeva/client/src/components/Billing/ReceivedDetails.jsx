@@ -37,12 +37,26 @@ const ReceivedDetails = ({
     let total = parseFloatSafe(initialTotalBalance);
     let hallmark = parseFloatSafe(initialHallmarkBalance);
 
+
     rows.forEach((row) => {
+      if (row.purityWeight) {
+        if (row.paidAmount > 0) {
+          pure += parseFloatSafe(row.purityWeight);
+        } else {
+          pure -= parseFloatSafe(row.purityWeight);
+          console.log("srowssssss", pure)
+        }
+      }
+    });
+    
+  
+    /* rows.forEach((row) => {
       if (row.mode === "weight" && row.purityWeight) {
         if (row.paidAmount > 0) {
           pure += parseFloatSafe(row.purityWeight);
         } else {
           pure -= parseFloatSafe(row.purityWeight);
+          console.log("srowssssss", pure)
         }
       } else if (row.mode === "amount" && parseFloatSafe(row.amount) > 0) {
         const amount = parseFloatSafe(row.amount);
@@ -56,7 +70,6 @@ const ReceivedDetails = ({
           pure -= purity;
         }
       } else if (row.mode === "amount" && parseFloatSafe(row.paidAmount) > 0) {
-        console.log("in 2");
         const amount = parseFloatSafe(row.paidAmount);
         const hallmarkDeduction = Math.min(amount, hallmark);
 
@@ -68,7 +81,9 @@ const ReceivedDetails = ({
           pure += purity;
         }
       }
-    });
+    }); */
+
+    setHallmarkBalance(Math.max(0, hallmark))
 
     return {
       pureBalance: pure,
@@ -92,12 +107,6 @@ const ReceivedDetails = ({
 
     let latestGoldRate = 0;
 
-    console.log(
-      "rrrrrrrrrrrrr",
-      goldRateRows.length,
-      receivedAmountRows.length,
-      initialTotalBalance
-    );
 
     if (goldRateRows.length > 0) {
       latestGoldRate = parseFloatSafe(
@@ -115,12 +124,6 @@ const ReceivedDetails = ({
         newTotalBalance =
           parseFloatSafe(currentBalances.pureBalance) * latestGoldRate;
       }
-    } else if (receivedAmountRows.length > 0) {
-      newTotalBalance =
-        parseFloatSafe(currentBalances.pureBalance) * latestGoldRate +
-        parseFloatSafe(currentBalances.hallmarkBalance);
-
-      console.log("ssssssssssssssssssssss", newTotalBalance);
     } else {
       newTotalBalance =
         displayedTotalBalance > 0
@@ -254,26 +257,27 @@ const ReceivedDetails = ({
         const hallmarkDeduction =
           index === firstAmountIndex ? Math.min(amount, availableHallmark) : 0;
 
-        console.log("ssssss", firstAmountIndex, amount, hallmarkDeduction);
-
         let remainingAmount = amount - hallmarkDeduction;
 
-        console.log("reeemmmmmmmmmm", remainingAmount);
-
         let wanttodeducthall = false;
-        let deductedhall = false;
+        let deductedhall = true;
+
+        if(firstAmountIndex === index){
+          wanttodeducthall = true
+          deductedhall = false
+        }
 
         let purityWeight = 0;
         if (availableHallmark == 0) {
           if (usePaidAmount || paidAmount > 0) {
             purityWeight = paidAmount / goldRate;
           } else {
-            wanttodeducthall = true;
             if (wanttodeducthall === true && deductedhall === false) {
               const cashtogeneratepurity =
                 remainingAmount - initialHallmarkBalance;
               purityWeight = cashtogeneratepurity / goldRate;
               deductedhall = true;
+              wanttodeducthall=false;
             } else {
               purityWeight = remainingAmount / goldRate;
             }
@@ -456,7 +460,7 @@ const ReceivedDetails = ({
             {parseFloat(currentBalances.pureBalance) % 1 === 0
               ? parseInt(currentBalances.pureBalance)
               : parseFloat(currentBalances.pureBalance)
-                  .toFixed(2)
+                  .toFixed(3)
                   .replace(/\.?0+$/, "")}
           </b>
         </div>

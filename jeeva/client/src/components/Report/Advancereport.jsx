@@ -83,11 +83,22 @@ const Advancereport = () => {
             ))}
           </tbody>
           <tfoot>
-            <tr >
-              <td colSpan="4" className="total-label">
+            <tr  style={{
+                backgroundColor: "#424242", 
+                color: "#fff",
+                "& .MuiTableCell-root": {
+                  color: "#fff",
+                  fontWeight: "bold",
+                },
+                "&:hover": {
+                  backgroundColor: "#424242",
+                },
+              }} >
+              <td colSpan="4" >
                 Total Purity:
               </td>
-              <td  colSpan="3" className="total-value">{totalPurity.toFixed(3)}g</td>
+              <td   >{totalPurity.toFixed(3)}g</td>
+              <td colSpan="2  "></td>
             </tr>
           </tfoot>
         </table>

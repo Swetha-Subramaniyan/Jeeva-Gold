@@ -111,6 +111,8 @@ const Billing = () => {
         return sum;
       }, 0);
 
+      console.log("Ssss", totalAmount)
+
       setPureBalance(totalPurity.toFixed(3));
       setTotalBalance(
         (parseFloat(totalAmount) + parseFloat(hallmarkCharges || 0)).toFixed(2)
@@ -465,7 +467,7 @@ const Billing = () => {
         customerId: selectedCustomer.id,
         goldRate: parseFloat(goldRate),
         hallmarkCharges: parseFloat(displayHallmarkCharges || 0),
-        hallmarkBalance: parseFloat(hallmarkCharges || 0),
+        hallmarkBalance: parseFloat(hallmarkBalance || 0),
         totalWeight,
         totalPurity,
         totalAmount,
@@ -841,7 +843,7 @@ const Billing = () => {
             initialPureBalance={pureBalance}
             initialTotalBalance={totalBalance}
             displayHallmarkCharges={displayHallmarkCharges}
-            initialHallmarkBalance={hallmarkBalance}
+            initialHallmarkBalance={hallmarkCharges}
             setPureBalance={setPureBalance}
             setTotalBalance={setTotalBalance}
             setHallmarkBalance={setHallmarkBalance}

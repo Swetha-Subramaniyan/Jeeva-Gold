@@ -13,8 +13,6 @@ import {
   IconButton,
   Modal,
   Button,
-  Tabs,
-  Tab,
 } from "@mui/material";
 import { BACKEND_SERVER_URL } from "../../Config/Config";
 import VisibilityIcon from "@mui/icons-material/Visibility";
@@ -23,13 +21,11 @@ const BalanceReport = () => {
   const [customers, setCustomers] = useState([]);
   const [bills, setBills] = useState([]);
   const [filteredBills, setFilteredBills] = useState([]);
-  const [customerBalances, setCustomerBalances] = useState([]);
-  const [ownerBalances, setOwnerBalances] = useState([]);
+  const [combinedBalances, setCombinedBalances] = useState([]);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [selectedBill, setSelectedBill] = useState(null);
   const [viewModalOpen, setViewModalOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState(0); // 0 for customer, 1 for owner
 
   useEffect(() => {
     const fetchData = async () => {
@@ -43,9 +39,7 @@ const BalanceReport = () => {
 
         setCustomers(customersData);
         setBills(billsData);
-
-        // Calculate balances
-        calculateBalances(customersData, billsData);
+        calculateCombinedBalances(customersData, billsData);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -56,17 +50,15 @@ const BalanceReport = () => {
 
   const calculateBillBalance = (bill) => {
     if (!bill.receivedDetails || bill.receivedDetails.length === 0) {
-      return bill.totalPurity; // No payments made yet
+      return bill.totalPurity;
     }
 
     let receivedPurity = 0;
 
     bill.receivedDetails.forEach((detail) => {
       if (detail.paidAmount) {
-        // Subtract purityWeight if paidAmount exists
         receivedPurity -= detail.purityWeight || 0;
       } else {
-        // Add purityWeight if no paidAmount
         receivedPurity += detail.purityWeight || 0;
       }
     });
@@ -74,9 +66,8 @@ const BalanceReport = () => {
     return bill.totalPurity - receivedPurity;
   };
 
-  const calculateBalances = (customersData, billsData) => {
-    const customerBalances = [];
-    const ownerBalances = [];
+  const calculateCombinedBalances = (customersData, billsData) => {
+    const balances = [];
 
     customersData.forEach((customer) => {
       const customerBills = billsData.filter(
@@ -90,10 +81,7 @@ const BalanceReport = () => {
 
       customerBills.forEach((bill) => {
         const balance = calculateBillBalance(bill);
-
         const balancefix = balance.toFixed(3);
-
-        console.log("asgkfsasaaaaaaaaaaaaa", bill, balance);
 
         if (balancefix > 0) {
           customerOwed += balance;
@@ -110,40 +98,29 @@ const BalanceReport = () => {
         }
       });
 
-      if (customerOwed > 0) {
-        customerBalances.push({
+      if (customerOwed > 0 || ownerOwed > 0) {
+        balances.push({
           customerId: customer.id,
           customerName: customer.name,
-          balance: customerOwed,
-          billsWithBalance: customerBillsWithBalance,
-        });
-      }
-
-      if (ownerOwed > 0) {
-        ownerBalances.push({
-          customerId: customer.id,
-          customerName: customer.name,
-          balance: ownerOwed,
-          billsWithBalance: ownerBillsWithBalance,
+          customerOwed,
+          ownerOwed,
+          customerBillsWithBalance,
+          ownerBillsWithBalance,
         });
       }
     });
 
-    console.log(
-      "sagkjlasaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-      customerBalances,
-      ownerBalances
-    );
-
-    setCustomerBalances(customerBalances);
-    setOwnerBalances(ownerBalances);
+    setCombinedBalances(balances);
   };
 
   const handleViewBills = (customerId, isCustomerOwed) => {
-    const balances = isCustomerOwed ? customerBalances : ownerBalances;
-    const customer = balances.find((c) => c.customerId === customerId);
+    const customer = combinedBalances.find((c) => c.customerId === customerId);
     if (customer) {
-      setFilteredBills(customer.billsWithBalance);
+      setFilteredBills(
+        isCustomerOwed
+          ? customer.customerBillsWithBalance
+          : customer.ownerBillsWithBalance
+      );
     }
   };
 
@@ -166,17 +143,12 @@ const BalanceReport = () => {
     setSelectedBill(null);
   };
 
-  const handleTabChange = (event, newValue) => {
-    setActiveTab(newValue);
-    setPage(0);
-  };
-
-  const totalCustomerOutstandingBalance = customerBalances.reduce(
-    (sum, customer) => sum + customer.balance,
+  const totalCustomerOutstandingBalance = combinedBalances.reduce(
+    (sum, customer) => sum + customer.customerOwed,
     0
   );
-  const totalOwnerOutstandingBalance = ownerBalances.reduce(
-    (sum, owner) => sum + owner.balance,
+  const totalOwnerOutstandingBalance = combinedBalances.reduce(
+    (sum, customer) => sum + customer.ownerOwed,
     0
   );
 
@@ -186,171 +158,116 @@ const BalanceReport = () => {
         Balance Report
       </Typography>
 
-      <Tabs value={activeTab} onChange={handleTabChange} sx={{ mb: 2 }}>
-        <Tab label="Customer Owes" />
-        <Tab label="Owner Owes" />
-      </Tabs>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mt: 2,
+          mb: 2,
+        }}
+      >
+        <Typography variant="h6" gutterBottom>
+          Customer Balances
+        </Typography>
 
-      {activeTab === 0 ? (
+        <Box sx={{ display: "flex", gap: 3 }}>
+          <Typography variant="subtitle1">
+            Total Customer Owes:{" "}
+            <strong>{totalCustomerOutstandingBalance.toFixed(3)}g</strong>
+          </Typography>
+          <Typography variant="subtitle1">
+            Total Owner Owes:{" "}
+            <strong>{totalOwnerOutstandingBalance.toFixed(3)}g</strong>
+          </Typography>
+        </Box>
+      </Box>
+
+      {combinedBalances.length > 0 ? (
         <>
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              mt: 2,
-            }}
-          >
-            <Typography variant="h6" gutterBottom>
-              Customers with Outstanding Balances
-            </Typography>
-
-            <Typography variant="subtitle1" gutterBottom>
-              Total Outstanding Balance:{" "}
-              <strong>
-                {totalCustomerOutstandingBalance.toFixed(3)} grams
-              </strong>
-            </Typography>
-          </Box>
-
-          {customerBalances.length > 0 ? (
-            <>
-              <TableContainer component={Paper}>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Customer Name</TableCell>
-                      <TableCell>Outstanding Purity (grams)</TableCell>
-                      <TableCell>Actions</TableCell>
+          <TableContainer component={Paper}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Customer Name</TableCell>
+                  <TableCell>Customer Owes (grams)</TableCell>
+                  <TableCell>Owner Owes (grams)</TableCell>
+                  <TableCell>Actions</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {combinedBalances
+                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                  .map((customer) => (
+                    <TableRow key={customer.customerId}>
+                      <TableCell>{customer.customerName}</TableCell>
+                      <TableCell>
+                        {customer.customerOwed > 0
+                          ? customer.customerOwed.toFixed(3)
+                          : "0"}
+                      </TableCell>
+                      <TableCell>
+                        {customer.ownerOwed > 0
+                          ? customer.ownerOwed.toFixed(3)
+                          : "0"}
+                      </TableCell>
+                      <TableCell>
+                        {customer.customerOwed > 0 && (
+                          <Button
+                            variant="outlined"
+                            size="small"
+                            sx={{ mr: 1 }}
+                            onClick={() =>
+                              handleViewBills(customer.customerId, true)
+                            }
+                          >
+                            View Customer Bills ({customer.customerBillsWithBalance.length})
+                          </Button>
+                        )}
+                        {customer.ownerOwed > 0 && (
+                          <Button
+                            variant="outlined"
+                            size="small"
+                            onClick={() =>
+                              handleViewBills(customer.customerId, false)
+                            }
+                          >
+                            View Owner Bills ({customer.ownerBillsWithBalance.length})
+                          </Button>
+                        )}
+                      </TableCell>
                     </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {customerBalances
-                      .slice(
-                        page * rowsPerPage,
-                        page * rowsPerPage + rowsPerPage
-                      )
-                      .map((customer) => (
-                        <TableRow key={customer.customerId}>
-                          <TableCell>{customer.customerName}</TableCell>
-                          <TableCell>{customer.balance.toFixed(3)}</TableCell>
-                          <TableCell>
-                            <Button
-                              variant="outlined"
-                              onClick={() =>
-                                handleViewBills(customer.customerId, true)
-                              }
-                            >
-                              View Bills ({customer.billsWithBalance.length})
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-              <TablePagination
-                rowsPerPageOptions={[5, 10, 25]}
-                component="div"
-                count={customerBalances.length}
-                rowsPerPage={rowsPerPage}
-                page={page}
-                onPageChange={handleChangePage}
-                onRowsPerPageChange={handleChangeRowsPerPage}
-              />
-            </>
-          ) : (
-            <Typography variant="body1" sx={{ mt: 2 }}>
-              No customers with outstanding balances
-            </Typography>
-          )}
+                  ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+          <TablePagination
+            rowsPerPageOptions={[5, 10, 25]}
+            component="div"
+            count={combinedBalances.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+          />
         </>
       ) : (
-        <>
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              mt: 2,
-            }}
-          >
-            <Typography variant="h6" gutterBottom>
-              Owner with Outstanding Balances
-            </Typography>
-
-            <Typography variant="subtitle1" gutterBottom>
-              Total Outstanding Balance:{" "}
-              <strong>{totalOwnerOutstandingBalance.toFixed(3)} grams</strong>
-            </Typography>
-          </Box>
-
-          {ownerBalances.length > 0 ? (
-            <>
-              <TableContainer component={Paper}>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Customer Name</TableCell>
-                      <TableCell>Owner Owes Purity (grams)</TableCell>
-                      <TableCell>Actions</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {ownerBalances
-                      .slice(
-                        page * rowsPerPage,
-                        page * rowsPerPage + rowsPerPage
-                      )
-                      .map((customer) => (
-                        <TableRow key={customer.customerId}>
-                          <TableCell>{customer.customerName}</TableCell>
-                          <TableCell>{customer.balance.toFixed(3)}</TableCell>
-                          <TableCell>
-                            <Button
-                              variant="outlined"
-                              onClick={() =>
-                                handleViewBills(customer.customerId, false)
-                              }
-                            >
-                              View Bills ({customer.billsWithBalance.length})
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-              <TablePagination
-                rowsPerPageOptions={[5, 10, 25]}
-                component="div"
-                count={ownerBalances.length}
-                rowsPerPage={rowsPerPage}
-                page={page}
-                onPageChange={handleChangePage}
-                onRowsPerPageChange={handleChangeRowsPerPage}
-              />
-            </>
-          ) : (
-            <Typography variant="body1" sx={{ mt: 2 }}>
-              No owner owes to customers
-            </Typography>
-          )}
-        </>
+        <Typography variant="body1" sx={{ mt: 2 }}>
+          No outstanding balances found
+        </Typography>
       )}
 
       {filteredBills.length > 0 && (
         <>
           <Typography variant="h6" gutterBottom sx={{ mt: 4 }}>
-            {activeTab === 0
-              ? "Bills with Customer Owes"
-              : "Bills with Owner Owes"}
+            Outstanding Bills
           </Typography>
           <TableContainer component={Paper}>
             <Table>
               <TableHead>
                 <TableRow>
                   <TableCell>Bill No</TableCell>
+                  <TableCell>Customer Name</TableCell>
                   <TableCell>Date</TableCell>
                   <TableCell>Total Purity</TableCell>
                   <TableCell>Balance</TableCell>
@@ -361,14 +278,13 @@ const BalanceReport = () => {
                 {filteredBills.map((bill) => (
                   <TableRow key={bill.id}>
                     <TableCell>{bill.billNo}</TableCell>
+                    <TableCell>{bill.customer.name}</TableCell>
                     <TableCell>
                       {new Date(bill.date).toLocaleDateString()}
                     </TableCell>
                     <TableCell>{bill.totalPurity.toFixed(3)}</TableCell>
                     <TableCell>
-                      {activeTab === 0
-                        ? `Customer owes: ${bill.balance?.toFixed(3)}`
-                        : `Owner owes: ${bill.balance?.toFixed(3)}`}
+                      {bill.balance?.toFixed(3) || "0"} grams
                     </TableCell>
                     <TableCell>
                       <IconButton onClick={() => handleViewBill(bill)}>

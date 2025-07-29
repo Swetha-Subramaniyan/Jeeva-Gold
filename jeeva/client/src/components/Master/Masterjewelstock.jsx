@@ -316,12 +316,12 @@ const Masterjewelstock = () => {
             <tfoot>
               <tr>
                 <td
-                  colSpan="7"
+                  colSpan="6"
                   style={{ textAlign: "right", fontWeight: "bold" }}
                 >
                   Total Purity:
                 </td>
-                <td colSpan="2" style={{ fontWeight: "bold" }}>
+                <td colSpan="3" style={{ fontWeight: "bold" }}>
                   {totalPurity}
                 </td>
               </tr>
