@@ -13,8 +13,12 @@ import {
   Button,
   TablePagination,
   TableFooter,
+  Modal,
+  IconButton,
 } from "@mui/material";
 import { BACKEND_SERVER_URL } from "../../Config/Config";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import { formatNumber } from "../../utils/formatNumber";
 
 const DailySalesReport = () => {
   const [bills, setBills] = useState([]);
@@ -22,6 +26,8 @@ const DailySalesReport = () => {
   const [date, setDate] = useState("");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [selectedBill, setSelectedBill] = useState(null);
 
   useEffect(() => {
     const fetchBills = async () => {
@@ -130,6 +136,18 @@ const DailySalesReport = () => {
     setFilteredBills(bills);
   };
 
+  const handleViewBill = (bill) => {
+    setSelectedBill(bill);
+    setViewModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setViewModalOpen(false);
+    setSelectedBill(null);
+  };
+
+  console.log("gggggggggggggg", selectedBill);
+
   return (
     <Box sx={{ p: 3 }}>
       <Typography style={{ textAlign: "center" }} variant="h5" gutterBottom>
@@ -230,6 +248,7 @@ const DailySalesReport = () => {
                 const hallmarkCharge = bill.hallmarkCharges || 0;
                 const totalAmount = itemsAmount + hallmarkCharge;
 
+                console.log("sssssssssssssss", filteredBills);
                 const received = bill.receivedDetails?.reduce(
                   (sum, detail) => ({
                     cash: sum.cash + (detail.amount || 0),
@@ -239,10 +258,30 @@ const DailySalesReport = () => {
                   { cash: 0, pure: 0, hallmark: 0 }
                 ) || { cash: 0, pure: 0, hallmark: 0 };
 
-                const cashBalance = received.cash;
+                const goldRateRows = bill.receivedDetails?.filter(
+                  (row) => row.goldRate && parseFloat(row.goldRate) > 0
+                );
 
-                const hallmarkBalance = hallmarkCharge - received.hallmark;
-                const pureBalance = totalPurity - received.pure;
+                const latestGoldRate = parseFloat(
+                  goldRateRows[goldRateRows.length - 1]?.goldRate
+                );
+
+                const hallmarkBalance = hallmarkCharge - bill.hallmarkBalance;
+
+                const pureBalance = bill.totalPurity - received.pure;
+
+                let cashBalance = 0;
+
+                if (hallmarkBalance > 0) {
+                  latestGoldRate > 0
+                    ? (cashBalance =
+                        pureBalance * latestGoldRate - hallmarkBalance)
+                    : hallmarkCharge;
+                } else {
+                  latestGoldRate > 0
+                    ? (cashBalance = pureBalance * latestGoldRate)
+                    : hallmarkCharge;
+                }
 
                 return (
                   <TableRow key={bill.id}>
@@ -311,13 +350,29 @@ const DailySalesReport = () => {
                             .replace(/\.?0+$/, "")}
                       g
                     </TableCell>
-                    <TableCell></TableCell>
+                    <TableCell>
+                      <IconButton onClick={() => handleViewBill(bill)}>
+                        <VisibilityIcon color="primary" />
+                      </IconButton>
+                    </TableCell>
                   </TableRow>
                 );
               })}
           </TableBody>
           <TableFooter>
-            <TableRow sx={{ backgroundColor: "#f0f0f0" }}>
+            <TableRow
+              sx={{
+                backgroundColor: "#424242", 
+                color: "#fff",
+                "& .MuiTableCell-root": {
+                  color: "#fff",
+                  fontWeight: "bold",
+                },
+                "&:hover": {
+                  backgroundColor: "#424242",
+                },
+              }}
+            >
               <TableCell colSpan={2}>
                 <strong>Total</strong>
               </TableCell>
@@ -393,6 +448,119 @@ const DailySalesReport = () => {
           </TableFooter>
         </Table>
       </TableContainer>
+
+      <Modal open={viewModalOpen} onClose={handleCloseModal}>
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: "80%",
+            bgcolor: "background.paper",
+            boxShadow: 24,
+            p: 4,
+            maxHeight: "90vh",
+            overflowY: "auto",
+          }}
+        >
+          {selectedBill && (
+            <>
+              <Typography variant="h6" gutterBottom>
+                Bill Details - {selectedBill.billNo}
+              </Typography>
+
+              <Box sx={{ mb: 2 }}>
+                <Typography variant="body1">
+                  <strong>Date:</strong>{" "}
+                  {new Date(selectedBill.date).toLocaleDateString()}
+                </Typography>
+                <Typography variant="body1">
+                  <strong>Customer:</strong> {selectedBill.customer.name}
+                </Typography>
+                <Typography variant="body1">
+                  <strong>Total Purity:</strong>{" "}
+                  {formatNumber(selectedBill.totalPurity, 3)}g
+                </Typography>
+              </Box>
+
+              <Typography variant="subtitle1" gutterBottom>
+                Items
+              </Typography>
+              <TableContainer component={Paper} sx={{ mb: 2 }}>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Coin</TableCell>
+                      <TableCell>Quantity</TableCell>
+                      <TableCell>Weight</TableCell>
+                      <TableCell>Purity</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {selectedBill.items.map((item, index) => (
+                      <TableRow key={index}>
+                        <TableCell>{item.coinValue}g</TableCell>
+                        <TableCell>{item.quantity}</TableCell>
+                        <TableCell>{formatNumber(item.weight, 3)}</TableCell>
+                        <TableCell>{formatNumber(item.purity, 3)}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+
+              <Typography variant="subtitle1" gutterBottom>
+                Received Details
+              </Typography>
+              {selectedBill.receivedDetails?.length > 0 ? (
+                <TableContainer component={Paper}>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Date</TableCell>
+                        <TableCell>Type</TableCell>
+                        <TableCell>Purity Weight</TableCell>
+                        <TableCell>Amount</TableCell>
+                        <TableCell>Paid Amount</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {selectedBill.receivedDetails.map((detail, index) => (
+                        <TableRow key={index}>
+                          <TableCell>
+                            {new Date(detail.date).toLocaleDateString()}
+                          </TableCell>
+                          <TableCell>
+                            {detail.givenGold ? "Gold" : "Cash"}
+                          </TableCell>
+                          <TableCell>
+                            {formatNumber(detail.purityWeight, 3) || "-"}
+                          </TableCell>
+                          <TableCell>
+                            {formatNumber(detail.amount) || "-"}
+                          </TableCell>
+                          <TableCell>
+                            {formatNumber(detail.paidAmount) || "-"}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              ) : (
+                <Typography variant="body2">No received details</Typography>
+              )}
+
+              <Box sx={{ mt: 2, display: "flex", justifyContent: "flex-end" }}>
+                <Button variant="contained" onClick={handleCloseModal}>
+                  Close
+                </Button>
+              </Box>
+            </>
+          )}
+        </Box>
+      </Modal>
 
       <TablePagination
         rowsPerPageOptions={[5, 10, 25]}
