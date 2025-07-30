@@ -60,15 +60,17 @@ const DailySalesReport = () => {
     setPage(0);
   }, [date, bills]);
 
+  console.log("ssssssssssssssssssssaaaaaaaaaaaa", filteredBills);
+
   const calculateMetrics = () => {
     return filteredBills.reduce(
       (acc, bill) => {
-        const itemsAmount = bill.items.reduce(
-          (sum, item) => sum + item.purity * bill.goldRate,
+        const hallmarkCharge = bill.hallmarkCharges || 0;
+
+        const itemPurityTotal = bill.items.reduce(
+          (sum, item) => sum + item.purity,
           0
         );
-        const hallmarkCharge = bill.hallmarkCharges || 0;
-        const billTotal = itemsAmount + hallmarkCharge;
 
         const received = bill.receivedDetails?.reduce(
           (sum, detail) => ({
@@ -79,16 +81,19 @@ const DailySalesReport = () => {
           { pure: 0, cash: 0, hallmark: 0 }
         ) || { pure: 0, cash: 0, hallmark: 0 };
 
-        const totalReceived = received.cash + received.hallmark;
-
-        const cashBalanceForMetric = itemsAmount - totalReceived;
-        const pureBalanceForMetric =
-          bill.items.reduce((sum, item) => sum + item.purity, 0) -
-          received.pure;
+        const pureBalanceForMetric = itemPurityTotal - received.pure;
         const hallmarkBalanceForMetric = hallmarkCharge - received.hallmark;
 
+        const grandTotalAmount = bills.reduce((total, bill) => {
+          const itemTotal = bill.items.reduce((sum, item) => {
+            return sum + item.goldRate * item.purity;
+          }, 0);
+
+          return total + itemTotal + bill.hallmarkCharges;
+        }, 0);
+
         return {
-          totalSales: acc.totalSales + billTotal,
+          totalSales: grandTotalAmount,
           totalWeight:
             acc.totalWeight +
             bill.items.reduce((sum, item) => sum + item.weight, 0),
@@ -97,9 +102,8 @@ const DailySalesReport = () => {
             bill.items.reduce((sum, item) => sum + item.purity, 0),
           pureReceived: acc.pureReceived + received.pure,
           cashReceived: acc.cashReceived + received.cash,
-          hallmarkReceived: acc.hallmarkReceived + received.hallmark,
+          hallmarkReceived: acc.hallmarkReceived,
           cashPaid: acc.cashPaid,
-          outstandingCash: acc.outstandingCash + cashBalanceForMetric,
           outstandingHallmark:
             acc.outstandingHallmark + hallmarkBalanceForMetric,
           outstandingPure: acc.outstandingPure + pureBalanceForMetric,
@@ -113,7 +117,6 @@ const DailySalesReport = () => {
         cashReceived: 0,
         hallmarkReceived: 0,
         cashPaid: 0,
-        outstandingCash: 0,
         outstandingHallmark: 0,
         outstandingPure: 0,
       }
@@ -144,6 +147,48 @@ const DailySalesReport = () => {
   const handleCloseModal = () => {
     setViewModalOpen(false);
     setSelectedBill(null);
+  };
+
+  const calculateTotalCashBalance = () => {
+    let totalCashBalance = 0;
+
+    filteredBills.forEach((bill) => {
+      const hallmarkBalance = bill.hallmarkBalance || 0;
+      const hallmarkCharge = bill.hallmarkCharges || 0;
+
+      const goldRateRows =
+        bill.receivedDetails?.filter(
+          (row) => row.goldRate && parseFloat(row.goldRate) > 0
+        ) || [];
+
+      const latestGoldRate = parseFloat(
+        goldRateRows[goldRateRows.length - 1]?.goldRate || 0
+      );
+
+      const received = bill.receivedDetails?.reduce(
+        (sum, detail) => ({
+          pure: sum.pure + (detail.purityWeight || 0),
+        }),
+        { pure: 0 }
+      ) || { pure: 0 };
+
+      const pureBalance = bill.totalPurity - received.pure;
+
+      let cashBalance = 0;
+      if (hallmarkBalance > 0) {
+        cashBalance =
+          latestGoldRate > 0
+            ? pureBalance * latestGoldRate - hallmarkBalance
+            : hallmarkCharge;
+      } else {
+        cashBalance =
+          latestGoldRate > 0 ? pureBalance * latestGoldRate : hallmarkCharge;
+      }
+
+      totalCashBalance += cashBalance;
+    });
+
+    return totalCashBalance;
   };
 
   console.log("gggggggggggggg", selectedBill);
@@ -241,12 +286,8 @@ const DailySalesReport = () => {
                   (sum, item) => sum + item.purity,
                   0
                 );
-                const itemsAmount = bill.items.reduce(
-                  (sum, item) => sum + item.purity * bill.goldRate,
-                  0
-                );
+
                 const hallmarkCharge = bill.hallmarkCharges || 0;
-                const totalAmount = itemsAmount + hallmarkCharge;
 
                 console.log("sssssssssssssss", filteredBills);
                 const received = bill.receivedDetails?.reduce(
@@ -266,22 +307,27 @@ const DailySalesReport = () => {
                   goldRateRows[goldRateRows.length - 1]?.goldRate
                 );
 
-                const hallmarkBalance = hallmarkCharge - bill.hallmarkBalance;
+                const hallmarkBalance = bill.hallmarkBalance;
 
                 const pureBalance = bill.totalPurity - received.pure;
 
                 let cashBalance = 0;
 
                 if (hallmarkBalance > 0) {
-                  latestGoldRate > 0
+                  latestGoldRate 
                     ? (cashBalance =
                         pureBalance * latestGoldRate - hallmarkBalance)
                     : hallmarkCharge;
                 } else {
-                  latestGoldRate > 0
+                  latestGoldRate 
                     ? (cashBalance = pureBalance * latestGoldRate)
                     : hallmarkCharge;
                 }
+
+                const totalAmount =
+                  bill.items.reduce((sum, item) => {
+                    return sum + item.goldRate * item.purity;
+                  }, 0) + bill.hallmarkCharges;
 
                 return (
                   <TableRow key={bill.id}>
@@ -362,7 +408,7 @@ const DailySalesReport = () => {
           <TableFooter>
             <TableRow
               sx={{
-                backgroundColor: "#424242", 
+                backgroundColor: "#424242",
                 color: "#fff",
                 "& .MuiTableCell-root": {
                   color: "#fff",
@@ -425,14 +471,7 @@ const DailySalesReport = () => {
                 </strong>
               </TableCell>
               <TableCell>
-                <strong>
-                  ₹
-                  {parseFloat(metrics.outstandingCash) % 1 === 0
-                    ? parseInt(metrics.outstandingCash)
-                    : parseFloat(metrics.outstandingCash)
-                        .toFixed(2)
-                        .replace(/\.?0+$/, "")}
-                </strong>
+                <strong>₹ {calculateTotalCashBalance().toFixed(2)}</strong>
               </TableCell>
               <TableCell colSpan={2}>
                 <strong>
