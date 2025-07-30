@@ -174,6 +174,8 @@ const DailySalesReport = () => {
 
       const pureBalance = bill.totalPurity - received.pure;
 
+      console.log("pure balance", pureBalance, bill.id)
+
       let cashBalance = 0;
       if (hallmarkBalance > 0) {
         cashBalance =
@@ -184,6 +186,8 @@ const DailySalesReport = () => {
         cashBalance =
           latestGoldRate > 0 ? pureBalance * latestGoldRate : hallmarkCharge;
       }
+
+       console.log("pure balance", hallmarkBalance, latestGoldRate, cashBalance, bill.id)
 
       totalCashBalance += cashBalance;
     });
