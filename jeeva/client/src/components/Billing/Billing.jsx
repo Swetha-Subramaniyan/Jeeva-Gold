@@ -111,17 +111,15 @@ const Billing = () => {
         return sum;
       }, 0);
 
-      console.log("Ssss", totalAmount)
+      console.log("Ssss", totalAmount);
 
       setPureBalance(totalPurity.toFixed(3));
       setTotalBalance(
         (parseFloat(totalAmount) + parseFloat(hallmarkCharges || 0)).toFixed(2)
       );
-      setHallmarkBalance(parseFloat(hallmarkCharges || 0).toFixed(2));
     } else {
       setPureBalance(0);
       setTotalBalance(0);
-      setHallmarkBalance(0);
     }
   }, [billItems, hallmarkCharges]);
 
@@ -461,13 +459,33 @@ const Billing = () => {
         } else return sum;
       }, 0);
 
+      const totalFromRows = rows.reduce((total, row) => {
+        const amount = parseFloat(row.amount);
+
+        if (!isNaN(amount)) {
+          return total + amount ;
+        }
+
+        return total;
+      }, 0);
+
+      console.log("sssss", totalFromRows, hallmarkCharges)
+
+      let hallbalance = 0;
+
+      if (totalFromRows >= hallmarkCharges) {
+        hallbalance = 0;
+      } else {
+        hallbalance = hallmarkCharges - totalFromRows ;
+      }
+
       const totalAmount = totalAmountCalc + parseFloat(hallmarkCharges || 0);
 
       const billData = {
         customerId: selectedCustomer.id,
         goldRate: parseFloat(goldRate),
         hallmarkCharges: parseFloat(displayHallmarkCharges || 0),
-        hallmarkBalance: parseFloat(hallmarkBalance || 0),
+        hallmarkBalance: hallbalance,
         totalWeight,
         totalPurity,
         totalAmount,
@@ -846,7 +864,6 @@ const Billing = () => {
             initialHallmarkBalance={hallmarkCharges}
             setPureBalance={setPureBalance}
             setTotalBalance={setTotalBalance}
-            setHallmarkBalance={setHallmarkBalance}
             isViewMode={viewMode && selectedBill}
             setIsUpdating={setIsUpdating}
             displayedTotalBalance={calculateTotals().totalAmount}

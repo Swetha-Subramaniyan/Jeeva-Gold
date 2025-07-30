@@ -16,7 +16,6 @@ const ReceivedDetails = ({
   displayHallmarkCharges,
   setPureBalance,
   setTotalBalance,
-  setHallmarkBalance,
   isViewMode,
   setIsUpdating,
   displayedTotalBalance,
@@ -37,20 +36,8 @@ const ReceivedDetails = ({
     let total = parseFloatSafe(initialTotalBalance);
     let hallmark = parseFloatSafe(initialHallmarkBalance);
 
-
-    rows.forEach((row) => {
-      if (row.purityWeight) {
-        if (row.paidAmount > 0) {
-          pure += parseFloatSafe(row.purityWeight);
-        } else {
-          pure -= parseFloatSafe(row.purityWeight);
-          console.log("srowssssss", pure)
-        }
-      }
-    });
-    
-  
-    /* rows.forEach((row) => {
+   
+     rows.forEach((row) => {
       if (row.mode === "weight" && row.purityWeight) {
         if (row.paidAmount > 0) {
           pure += parseFloatSafe(row.purityWeight);
@@ -81,9 +68,7 @@ const ReceivedDetails = ({
           pure += purity;
         }
       }
-    }); */
-
-    setHallmarkBalance(Math.max(0, hallmark))
+    });
 
     return {
       pureBalance: pure,
@@ -106,7 +91,6 @@ const ReceivedDetails = ({
     let newTotalBalance;
 
     let latestGoldRate = 0;
-
 
     if (goldRateRows.length > 0) {
       latestGoldRate = parseFloatSafe(
@@ -262,9 +246,9 @@ const ReceivedDetails = ({
         let wanttodeducthall = false;
         let deductedhall = true;
 
-        if(firstAmountIndex === index){
-          wanttodeducthall = true
-          deductedhall = false
+        if (firstAmountIndex === index) {
+          wanttodeducthall = true;
+          deductedhall = false;
         }
 
         let purityWeight = 0;
@@ -277,7 +261,7 @@ const ReceivedDetails = ({
                 remainingAmount - initialHallmarkBalance;
               purityWeight = cashtogeneratepurity / goldRate;
               deductedhall = true;
-              wanttodeducthall=false;
+              wanttodeducthall = false;
             } else {
               purityWeight = remainingAmount / goldRate;
             }
