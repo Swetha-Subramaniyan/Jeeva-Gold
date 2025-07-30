@@ -432,7 +432,7 @@ const DailySalesReport = () => {
                 </strong>
               </TableCell>
               <TableCell>
-                <strong>
+                <strong  style={{ color: "yellow", fontSize: "1.1rem" }}>
                   {parseFloat(metrics.totalPurity) % 1 === 0
                     ? parseInt(metrics.totalPurity)
                     : parseFloat(metrics.totalPurity)
@@ -461,7 +461,7 @@ const DailySalesReport = () => {
                 </strong>
               </TableCell>
               <TableCell>
-                <strong>
+                <strong  style={{ color: "yellow", fontSize: "1.1rem"      }}>
                   {parseFloat(metrics.pureReceived) % 1 === 0
                     ? parseInt(metrics.pureReceived)
                     : parseFloat(metrics.pureReceived)
