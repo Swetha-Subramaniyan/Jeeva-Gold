@@ -34,17 +34,19 @@ const ReceivedDetails = ({
   const calculateBalances = () => {
     let pure = parseFloatSafe(initialPureBalance);
     let total = parseFloatSafe(initialTotalBalance);
-    let hallmark = parseFloatSafe(initialHallmarkBalance);
 
-   
-     rows.forEach((row) => {
+    let hallmark;
+    if (isViewMode) {
+      hallmark = parseFloatSafe(displayHallmarkCharges);
+    } else {
+      hallmark = parseFloatSafe(initialHallmarkBalance);
+    }
+
+    console.log("pureeeee", pure, hallmark, rows);
+
+    rows.forEach((row) => {
       if (row.mode === "weight" && row.purityWeight) {
-        if (row.paidAmount > 0) {
-          pure += parseFloatSafe(row.purityWeight);
-        } else {
-          pure -= parseFloatSafe(row.purityWeight);
-          console.log("srowssssss", pure)
-        }
+        pure -= parseFloatSafe(row.purityWeight);
       } else if (row.mode === "amount" && parseFloatSafe(row.amount) > 0) {
         const amount = parseFloatSafe(row.amount);
         const hallmarkDeduction = Math.min(amount, hallmark);
@@ -54,6 +56,8 @@ const ReceivedDetails = ({
 
         if (amountAfterHallmark > 0 && row.goldRate) {
           const purity = amountAfterHallmark / parseFloatSafe(row.goldRate);
+
+          console.log("11111111111111", purity);
           pure -= purity;
         }
       } else if (row.mode === "amount" && parseFloatSafe(row.paidAmount) > 0) {
@@ -65,6 +69,7 @@ const ReceivedDetails = ({
 
         if (amountAfterHallmark > 0 && row.goldRate) {
           const purity = amountAfterHallmark / parseFloatSafe(row.goldRate);
+          console.log("2222222222222", purity);
           pure += purity;
         }
       }
@@ -144,11 +149,14 @@ const ReceivedDetails = ({
   };
 
   const handleAddRow = () => {
+
+    const lastRowWithGoldRate = [...rows].reverse().find(row => row.goldRate && row.goldRate !== "");
+
     setRows([
       ...rows,
       {
         date: new Date().toISOString().slice(0, 10),
-        goldRate: "",
+        goldRate: lastRowWithGoldRate ? lastRowWithGoldRate.goldRate : "",
         givenGold: "",
         touch: "",
         purityWeight: "",
@@ -158,6 +166,8 @@ const ReceivedDetails = ({
         paidAmount: "",
       },
     ]);
+
+    setRows([...rows, newRow]);
     setIsUpdating(true);
   };
 
@@ -177,10 +187,11 @@ const ReceivedDetails = ({
     const updatedRows = [...rows];
     const row = updatedRows[index];
 
-    if (value === "") {
-      row[field] = "";
+    console.log("vvvvvvvvvvvvvvvvvvvvvvvvvv", value);
+
+    if (value === "" || value === null || value === undefined) {
+      row[field] = 0;
       setRows(updatedRows);
-      return;
     }
 
     if (field !== "date") {
@@ -194,14 +205,18 @@ const ReceivedDetails = ({
     }
 
     if (
-      (field === "givenGold" || field === "touch") &&
-      row.givenGold &&
+      field === "givenGold" ||
+      field === "touch" ||
+      row.givenGold ||
       row.touch
     ) {
+      console.log("sssssssssssssssssssssssssssssssssssssss");
+
       const givenGold = parseFloatSafe(row.givenGold);
       const touch = parseFloatSafe(row.touch);
 
-      if (givenGold > 0 && touch > 0) {
+      if (givenGold > 0 || touch > 0) {
+        console.log("sssssssssssssssssssssssssssssssssssssss");
         row.mode = "weight";
         const purityWeight = givenGold * (touch / 100);
 
@@ -209,8 +224,8 @@ const ReceivedDetails = ({
         row.amount = "";
       }
     } else if (
-      (field === "amount" || field === "goldRate" || field === "paidAmount") &&
-      (row.amount || row.goldRate || row.paidAmount)
+      (field === "amount" || field === "goldRate" || field === "paidAmount" ||
+      row.amount || row.goldRate || row.paidAmount)
     ) {
       row.mode = "amount";
       row.givenGold = "";
@@ -308,7 +323,10 @@ const ReceivedDetails = ({
             <th className="th">Purity WT</th>
             <th className="th">Received Amount</th>
             <th className="th">Paid Amount</th>
-            <th className="th">Action</th>
+
+            <div className="no-print-receive">
+              <th className="th"> Action</th>
+            </div>
           </tr>
         </thead>
         <tbody>
@@ -345,7 +363,7 @@ const ReceivedDetails = ({
                 <NumericFormat
                   customInput={TextField}
                   size="small"
-                  value={row.goldRate}
+                  value={row.goldRate === "" ? "" : row.goldRate}
                   onValueChange={(e) => {
                     handleRowChange(index, "goldRate", e.floatValue);
                     calculateBalances();
@@ -372,7 +390,6 @@ const ReceivedDetails = ({
                     (isViewMode && !row.isNew) ||
                     (row.mode === "amount" && !(isViewMode && row.isNew))
                   }
-                  inputProps={{ min: 0 }}
                 />
               </td>
               <td className="td">
@@ -424,14 +441,17 @@ const ReceivedDetails = ({
                   inputProps={{ min: 0 }}
                 />
               </td>
-              <td className="td">
-                <IconButton
-                  onClick={() => handleDeleteRow(index)}
-                  disabled={isViewMode && !row.isNew}
-                >
-                  <MdDeleteForever />
-                </IconButton>
-              </td>
+
+              <div className="no-prints-receive">
+                <td className="td">
+                  <IconButton
+                    onClick={() => handleDeleteRow(index)}
+                    disabled={isViewMode && !row.isNew}
+                  >
+                    <MdDeleteForever />
+                  </IconButton>
+                </td>
+              </div>
             </tr>
           ))}
         </tbody>
