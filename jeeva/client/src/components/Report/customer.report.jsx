@@ -131,22 +131,38 @@ const CustomerReport = () => {
     }, 0);
 
     let advanceUsed = 0;
-    if (remainingAdvance > 0) {
-      advanceUsed = Math.min(
-        remainingAdvance,
-        bill.totalPurity - receivedPurity
-      );
-    }
+    let usedFromAdvance = 0;
+    let advanceUsedForBal = {};
 
     const balance = (bill.totalPurity || 0) - receivedPurity;
-    remainingAdvance -= advanceUsed;
 
-    console.log("Ssbillllllllllll", bill, balance, receivedPurity);
+    if (balance >= 0) {
+      if (remainingAdvance > 0) {
+        advanceUsed = Math.min(remainingAdvance, balance);
+        remainingAdvance -= advanceUsed;
+      }
+    } else {
+      const excess = Math.abs(balance);
+      usedFromAdvance = Math.min(remainingAdvance, excess);
+
+      console.log("Negative Balance Case:");
+      console.log("Bill ID:", bill.id);
+      console.log("Excess:", excess);
+      console.log("Used from Advance:", usedFromAdvance);
+
+      if (usedFromAdvance > 0) {
+        advanceUsedForBal[bill.id] = usedFromAdvance;
+        advanceUsed += usedFromAdvance;
+        remainingAdvance -= usedFromAdvance;
+      }
+    }
 
     return {
       balance,
       advanceUsed,
       remainingAdvance,
+      advanceUsedForBal,
+      usedFromAdvance,
     };
   };
 
@@ -175,12 +191,40 @@ const CustomerReport = () => {
     return (
       <>
         <div>Received: {formatNumber(totalReceived, 3)}g</div>
-        {balanceInfo.advanceUsed > 0 && (
+        {balanceInfo.advanceUsed > 0 && !(balanceInfo.usedFromAdvance > 0)  &&  (
           <div>
             Advance applied: {formatNumber(balanceInfo.advanceUsed, 3)}g
           </div>
         )}
-        {balanceInfo.remainingAdvance > 0 && (
+        {balanceInfo.remainingAdvance > 0 &&!(balanceInfo.usedFromAdvance > 0)  &&  (
+          <div>
+            Advance available: {formatNumber(balanceInfo.remainingAdvance, 3)}g
+          </div>
+        )}
+      </>
+    );
+  };
+
+  const getAdvanceDetailsSummary = (bill) => {
+    if (!bill.receivedDetails || !Array.isArray(bill.receivedDetails)) {
+      return "No payments received";
+    }
+
+    const balanceInfo = calculateBillBalance(bill, bill.customerId);
+
+    console.log("sssssssssssssss", balanceInfo);
+
+    const ownerBalance = balanceInfo.balance < 0 ? balanceInfo.balance : 0;
+
+    return (
+      <>
+        <div>Balance: {formatNumber(ownerBalance, 3)}g</div>
+        {balanceInfo.usedFromAdvance > 0 && (
+          <div>
+            Advance applied: {formatNumber(balanceInfo.usedFromAdvance, 3)}g
+          </div>
+        )}
+        {balanceInfo.usedFromAdvance > 0 && (
           <div>
             Advance available: {formatNumber(balanceInfo.remainingAdvance, 3)}g
           </div>
@@ -361,13 +405,13 @@ const CustomerReport = () => {
 
                 return (
                   <TableRow key={bill.id}>
-                    <TableCell>{bill.billNo}</TableCell>
+                    <TableCell>{bill.id}</TableCell>
                     <TableCell>
                       {new Date(bill.date).toLocaleDateString()}
                     </TableCell>
                     <TableCell>{getBillDescription(bill)}</TableCell>
                     <TableCell>{getReceivedDetailsSummary(bill)}</TableCell>
-                    <TableCell>{formatNumber(ownerBalance, 3)}g</TableCell>
+                    <TableCell>{getAdvanceDetailsSummary(bill)}</TableCell>
                     <TableCell>{formatNumber(customerBalance, 3)} </TableCell>
                     <TableCell>
                       ₹{formatNumber(cashBalances.customerCashBalance, 2)}
@@ -382,8 +426,9 @@ const CustomerReport = () => {
               })}
           </TableBody>
           <TableFooter>
-            <TableRow  sx={{
-                backgroundColor: "#424242", 
+            <TableRow
+              sx={{
+                backgroundColor: "#424242",
                 color: "#fff",
                 "& .MuiTableCell-root": {
                   color: "#fff",
@@ -392,7 +437,8 @@ const CustomerReport = () => {
                 "&:hover": {
                   backgroundColor: "#424242",
                 },
-              }}>
+              }}
+            >
               <TableCell colSpan={2} align="right">
                 <strong>Totals:</strong>
               </TableCell>
@@ -407,8 +453,8 @@ const CustomerReport = () => {
                 </div>
                 <div>
                   <strong>
-                    Advance Available:{" "}
-                    {formatNumber(calculateTotalAdvanceAvailable(), 3)}g
+                    Advance: {formatNumber(calculateTotalAdvanceAvailable(), 3)}
+                    g
                   </strong>
                 </div>
                 <div

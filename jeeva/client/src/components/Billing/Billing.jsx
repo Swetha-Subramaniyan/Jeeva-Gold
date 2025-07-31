@@ -318,32 +318,94 @@ const Billing = () => {
 
   const handlePrint = async () => {
     const input = billRef.current;
-    const searchSection = document.querySelector(".searchSection");
-    if (searchSection) searchSection.style.display = "none";
 
-    const addIconInForm = document.querySelector(
-      'p > .MuiIconButton-root svg[data-testid="AddCircleOutlineIcon"]'
-    );
-    const addIconWrapper = addIconInForm?.closest("p");
-    if (addIconWrapper) addIconWrapper.style.display = "none";
+    const elementsToHide = [
+      document.querySelector(".searchSection"),
+      document.querySelector(".customerDetails"),
+      document.querySelector(".sidebar"),
+      ...Array.from(document.querySelectorAll(".no-print-receive")),
+      ...Array.from(document.querySelectorAll(".no-prints-receive")),
+      ...Array.from(document.querySelectorAll(".no-print-bill")),
+      ...Array.from(document.querySelectorAll(".no-prints-bill")),
+      document
+        .querySelector(
+          'p > .MuiIconButton-root svg[data-testid="AddCircleOutlineIcon"]'
+        )
+        ?.closest("p"),
+    ];
 
-    if (input) {
+    const originalValues = new Map();
+
+    const dateTimeDiv = document.querySelector(".cus-info");
+    if (dateTimeDiv && selectedCustomer) {
+      const customerElement = document.createElement("strong");
+      customerElement.className = "customer";
+      customerElement.textContent = `Customer: ${selectedCustomer.name}`;
+
+      originalValues.set(dateTimeDiv, {
+        innerHTML: dateTimeDiv.innerHTML,
+        element: customerElement,
+      });
+
+      dateTimeDiv.querySelector("p").innerHTML += `<br/><br/>`;
+      dateTimeDiv.querySelector("p").appendChild(customerElement);
+    }
+
+    const originalFontSizes = new Map();
+
+    const increaseFontSizeByPercent = (selector, percent) => {
+      document.querySelectorAll(selector).forEach((el) => {
+        if (!originalFontSizes.has(el)) {
+          const currentSize = window.getComputedStyle(el).fontSize;
+          originalFontSizes.set(el, currentSize);
+        }
+
+        const numericSize = parseFloat(window.getComputedStyle(el).fontSize);
+        const newSize = numericSize * (percent / 100 + 1);
+        el.style.setProperty("font-size", `${newSize}px`, "important");
+      });
+    };
+
+    increaseFontSizeByPercent(".td", 20);
+    increaseFontSizeByPercent(".th", 25);
+    increaseFontSizeByPercent("input", 20);
+
+    elementsToHide.forEach((el) => {
+      if (el) el.style.display = "none";
+    });
+
+    const restoreOriginalFontSizes = () => {
+      originalFontSizes.forEach((size, el) => {
+        if (el) {
+          el.style.setProperty("font-size", size, "important");
+        }
+      });
+    };
+
+    try {
       const canvas = await html2canvas(input, {
         scale: window.devicePixelRatio || 2,
         useCORS: true,
         scrollY: -window.scrollY,
       });
 
-      if (searchSection) searchSection.style.display = "";
-      if (addIconWrapper) addIconWrapper.style.display = "";
+      elementsToHide.forEach((el) => {
+        if (el) el.style.display = "";
+      });
+
+      originalValues.forEach((value, el) => {
+        if (el) {
+          if (value.innerHTML !== undefined) {
+            el.innerHTML = value.innerHTML;
+          } else {
+            el.style.display = value.display;
+          }
+        }
+      });
+
+      restoreOriginalFontSizes();
 
       const imgData = canvas.toDataURL("image/png");
-      /*  const pdf = new jsPDF("l", "mm", "a5");
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
-
-      pdf.addImage(imgData, "PNG", 0, 0, pageWidth, pageHeight);
-      pdf.save("bill.pdf"); */
       const iframe = document.createElement("iframe");
       iframe.style.position = "fixed";
       iframe.style.right = "0";
@@ -361,21 +423,39 @@ const Billing = () => {
       };
 
       iframe.srcdoc = `
-        <html>
-          <head>
-            <title>Print Bill</title>
-            <style>
-              body { margin: 0; padding: 0; }
-              img { width: 100%; height: auto; }
-            </style>
-          </head>
-          <body>
-            <img src="${imgData}" />
-          </body>
-        </html>
-      `;
+      <html>
+        <head>
+          <title>Print Bill</title>
+          <style>
+            body { margin: 0; padding: 0; }
+            img { width: 100%; height: auto; }
+          </style>
+        </head>
+        <body>
+          <img src="${imgData}" />
+        </body>
+      </html>
+    `;
 
       document.body.appendChild(iframe);
+    } catch (error) {
+      console.error("Printing error:", error);
+
+      originalValues.forEach((value, el) => {
+        if (el) {
+          if (value.innerHTML !== undefined) {
+            el.innerHTML = value.innerHTML;
+          } else {
+            el.style.display = value.display;
+          }
+        }
+      });
+
+      elementsToHide.forEach((el) => {
+        if (el) el.style.display = "";
+      });
+
+      restoreOriginalFontSizes();
     }
   };
 
@@ -463,20 +543,20 @@ const Billing = () => {
         const amount = parseFloat(row.amount);
 
         if (!isNaN(amount)) {
-          return total + amount ;
+          return total + amount;
         }
 
         return total;
       }, 0);
 
-      console.log("sssss", totalFromRows, hallmarkCharges)
+      console.log("sssss", totalFromRows, hallmarkCharges);
 
       let hallbalance = 0;
 
       if (totalFromRows >= hallmarkCharges) {
         hallbalance = 0;
       } else {
-        hallbalance = hallmarkCharges - totalFromRows ;
+        hallbalance = hallmarkCharges - totalFromRows;
       }
 
       const totalAmount = totalAmountCalc + parseFloat(hallmarkCharges || 0);
@@ -771,9 +851,13 @@ const Billing = () => {
           <h1 className="heading">Estimate Only</h1>
 
           <Box className="billInfo">
-            <p>
-              <strong>Bill No:</strong> {billNo}
-            </p>
+            <div className="cus-info">
+              <p>
+                <strong>Bill No:</strong> {viewMode ? selectedBill.id : billNo}{" "}
+                <br /> <br />
+                <strong className="customer"></strong>
+              </p>
+            </div>
 
             {viewMode ? (
               <p className="date-time">

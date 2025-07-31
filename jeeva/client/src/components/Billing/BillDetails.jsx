@@ -202,7 +202,9 @@ const BillDetails = ({
             <th className="th">Purity</th>
             <th className="th">Amount</th>
             <th className="th">Gold Rate</th>
-            <th className="th">Action</th>
+            <div className="no-print-bill">
+              <th className="th">Action</th>
+            </div>
           </tr>
         </thead>
         <tbody>
@@ -246,16 +248,18 @@ const BillDetails = ({
                   inputProps={{ min: 0 }}
                 />
               </td>
-              <td className="td">
-                {!viewMode && (
-                  <IconButton
-                    onClick={() => handleDeleteItem(index)}
-                    disabled={viewMode && selectedBill}
-                  >
-                    <MdDeleteForever />
-                  </IconButton>
-                )}
-              </td>
+              <div className="no-prints-bill">
+                <td className="td">
+                  {!viewMode && (
+                    <IconButton
+                      onClick={() => handleDeleteItem(index)}
+                      disabled={viewMode && selectedBill}
+                    >
+                      <MdDeleteForever />
+                    </IconButton>
+                  )}
+                </td>
+              </div>
             </tr>
           ))}
 
@@ -294,7 +298,9 @@ const BillDetails = ({
               <strong>{formatINRCurrency(totalAmount.toFixed(2))}</strong>
             </td>
             <td className="td"></td>
-            <td className="td"></td>
+            <div className="no-prints-bill">
+              <td className="td"></td>
+            </div>
           </tr>
 
           <tr>
@@ -314,7 +320,9 @@ const BillDetails = ({
               />
             </td>
             <td className="td"></td>
-            <td className="td"></td>
+            <div className="no-prints-bill">
+              <td className="td"></td>
+            </div>
           </tr>
           <tr>
             <td className="td" colSpan={5}>
@@ -333,8 +341,11 @@ const BillDetails = ({
                     )}
               </strong>
             </td>
+
             <td className="td"></td>
-            <td className="td"></td>
+            <div className="no-prints-bill">
+              <td className="td"></td>
+            </div>
           </tr>
         </tbody>
       </table>

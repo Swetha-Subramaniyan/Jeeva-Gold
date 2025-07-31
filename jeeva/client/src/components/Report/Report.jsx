@@ -174,8 +174,6 @@ const DailySalesReport = () => {
 
       const pureBalance = bill.totalPurity - received.pure;
 
-      console.log("pure balance", pureBalance, bill.id)
-
       let cashBalance = 0;
       if (hallmarkBalance > 0) {
         cashBalance =
@@ -186,16 +184,13 @@ const DailySalesReport = () => {
         cashBalance =
           latestGoldRate > 0 ? pureBalance * latestGoldRate : hallmarkCharge;
       }
-
-       console.log("pure balance", hallmarkBalance, latestGoldRate, cashBalance, bill.id)
+      console.log("pure balance", cashBalance, bill);
 
       totalCashBalance += cashBalance;
     });
 
     return totalCashBalance;
   };
-
-  console.log("gggggggggggggg", selectedBill);
 
   return (
     <Box sx={{ p: 3 }}>
@@ -293,7 +288,6 @@ const DailySalesReport = () => {
 
                 const hallmarkCharge = bill.hallmarkCharges || 0;
 
-                console.log("sssssssssssssss", filteredBills);
                 const received = bill.receivedDetails?.reduce(
                   (sum, detail) => ({
                     cash: sum.cash + (detail.amount || 0),
@@ -318,12 +312,12 @@ const DailySalesReport = () => {
                 let cashBalance = 0;
 
                 if (hallmarkBalance > 0) {
-                  latestGoldRate 
+                  latestGoldRate
                     ? (cashBalance =
                         pureBalance * latestGoldRate - hallmarkBalance)
                     : hallmarkCharge;
                 } else {
-                  latestGoldRate 
+                  latestGoldRate
                     ? (cashBalance = pureBalance * latestGoldRate)
                     : hallmarkCharge;
                 }
@@ -436,7 +430,7 @@ const DailySalesReport = () => {
                 </strong>
               </TableCell>
               <TableCell>
-                <strong  style={{ color: "yellow", fontSize: "1.1rem" }}>
+                <strong style={{ color: "yellow", fontSize: "1.1rem" }}>
                   {parseFloat(metrics.totalPurity) % 1 === 0
                     ? parseInt(metrics.totalPurity)
                     : parseFloat(metrics.totalPurity)
@@ -465,7 +459,7 @@ const DailySalesReport = () => {
                 </strong>
               </TableCell>
               <TableCell>
-                <strong  style={{ color: "yellow", fontSize: "1.1rem"      }}>
+                <strong style={{ color: "yellow", fontSize: "1.1rem" }}>
                   {parseFloat(metrics.pureReceived) % 1 === 0
                     ? parseInt(metrics.pureReceived)
                     : parseFloat(metrics.pureReceived)

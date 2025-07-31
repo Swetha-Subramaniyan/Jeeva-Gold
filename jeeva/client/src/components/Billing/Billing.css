@@ -1,12 +1,12 @@
 .container {
-  width:94%;
-  margin: 5rem ;
+  width: 94%;
+  margin: 5rem;
   padding: 2.5rem;
   border: 1px solid #e0e0e0;
   border-radius: 12px;
   background-color: #ffffff;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   position: relative;
   bottom: 25rem;
 }
@@ -22,7 +22,7 @@
   padding-bottom: 0.5rem;
 }
 .heading::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: 0;
   left: 50%;
@@ -32,7 +32,6 @@
   background-color: #3498db;
   border-radius: 3px;
 }
-
 
 .billInfo {
   display: flex;
@@ -60,6 +59,9 @@
   text-align: right;
 }
 
+.cus-info {
+  text-align: left;
+}
 
 .searchSection {
   margin-bottom: 2rem;
@@ -89,7 +91,6 @@
   padding-bottom: 0.5rem;
 }
 
-
 .itemsSection {
   margin-top: 2rem;
   margin-bottom: 3rem;
@@ -117,7 +118,8 @@
   box-shadow: 0 1px 10px rgba(0, 0, 0, 0.08);
 }
 
-.th, .td {
+.th,
+.td {
   padding: 12px 15px;
   text-align: center;
   border: 1px solid #e0e0e0;
@@ -130,24 +132,40 @@
   text-transform: uppercase;
   font-size: 0.85rem;
   letter-spacing: 0.5px;
+  padding: 12px 15px;
 }
+
+.no-print-receive, .no-print-bill {
+  padding: 12px 15px;
+  background-color: #2c3e50;
+  border: 1px solid #e0e0e0;
+}
+
+.no-print-receive th, .no-print-bill th {
+  border: none !important;
+}
+
+
+
+.no-prints-receive td , .no-prints-bill td {
+ border: none !important;
+}
+
 
 .td {
   /* color: #495057; */
   color: black;
-  font-size:1rem;
+  font-size: 1rem;
   /* font-weight: 100; */
 }
 
 tr:nth-child(even) {
   background-color: #f8f9fa;
-
 }
 
 tr:hover {
   background-color: #f1f8fe;
 }
-
 
 .action-buttons {
   position: fixed;
@@ -189,7 +207,6 @@ tr:hover {
   margin: 1rem auto;
   gap: 1.5rem;
 }
-
 
 .sidebar {
   width: 70px;
@@ -237,7 +254,6 @@ tr:hover {
   font-weight: 500;
 }
 
-
 .container {
   flex: 1;
   padding: 2rem;
@@ -247,12 +263,11 @@ tr:hover {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
-
 @media (max-width: 768px) {
   .main-container {
     flex-direction: column;
   }
-  
+
   .sidebar {
     width: 100%;
     flex-direction: row;
@@ -260,7 +275,7 @@ tr:hover {
     position: static;
     margin-bottom: 1rem;
   }
-  
+
   .sidebar-button {
     padding: 0.5rem;
     flex: 1;
@@ -316,7 +331,6 @@ tr:hover {
   transform: translateY(-1px);
 }
 
-
 .flex {
   display: flex;
   justify-content: space-between;
@@ -342,7 +356,6 @@ tr:hover {
   align-items: center;
 }
 
-
 .MuiTextField-root {
   background-color: white !important;
 }
@@ -355,53 +368,56 @@ tr:hover {
   font-size: 0.9rem !important;
 }
 
-
-  .close-btnsss {
-    position: absolute;
-    top: 10px;
-    right: 15px;
-    background-color: #dc3545;
-    color: #fff;
-    border: none;
-    border-radius: 50%;
-    font-size: 18px;
-    width: 32px;
-    height: 32px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
+.close-btnsss {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  background-color: #dc3545;
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  font-size: 18px;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
 @media (max-width: 1200px) {
   .container {
-    width:94%;
+    width: 94%;
     padding: 1.5rem;
   }
 }
 
 @media (max-width: 768px) {
   .container {
-    width:94%;
+    width: 94%;
     padding: 1rem;
   }
-  
-  .th, .td {
+
+  .th,
+  .td {
     padding: 8px 10px;
     font-size: 0.8rem;
   }
-  
+
   .action-buttons {
     flex-direction: column;
     right: 10px;
   }
 }
 
+
+
 @media print {
+
   .action-buttons {
     display: none;
   }
-  
+
   .container {
     box-shadow: none;
     border: none;
@@ -409,23 +425,20 @@ tr:hover {
     padding: 0;
   }
 
-@media print {
-  .container {
-    width: 100% !important;
-    margin: 0 !important;
-    padding: 0 !important;
-  }
-}
-
   .table {
     box-shadow: none;
   }
-  
-  .billInfo, .customerDetails {
+
+  .billInfo,
+  .customerDetails {
     box-shadow: none;
-    background-color:transparent;
+    background-color: transparent;
+  }
+  .buttons {
+    display: none !important;
   }
 }
+
 .flex {
   display: flex;
   justify-content: space-between;
@@ -452,11 +465,8 @@ tr:hover {
   border-top: 1px solid #ccc;
   padding-top: 1rem;
 }
-@media print {
-  .no-print {
-    display: none !important;
-  }
-}
+
+
 input[readonly],
 input[disabled] {
   color: #000 !important;
