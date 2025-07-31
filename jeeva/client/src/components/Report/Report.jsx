@@ -60,8 +60,6 @@ const DailySalesReport = () => {
     setPage(0);
   }, [date, bills]);
 
-  console.log("ssssssssssssssssssssaaaaaaaaaaaa", filteredBills);
-
   const calculateMetrics = () => {
     return filteredBills.reduce(
       (acc, bill) => {
@@ -184,7 +182,6 @@ const DailySalesReport = () => {
         cashBalance =
           latestGoldRate > 0 ? pureBalance * latestGoldRate : hallmarkCharge;
       }
-      console.log("pure balance", cashBalance, bill);
 
       totalCashBalance += cashBalance;
     });
@@ -225,31 +222,13 @@ const DailySalesReport = () => {
         }}
       >
         <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-          Total Weight:{" "}
-          {parseFloat(metrics.totalWeight) % 1 === 0
-            ? parseInt(metrics.totalWeight)
-            : parseFloat(metrics.totalWeight)
-                .toFixed(2)
-                .replace(/\.?0+$/, "")}{" "}
-          g
+          Total Weight: {formatNumber(metrics.totalWeight, 3)} g
         </Typography>
         <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-          Total Purity:{" "}
-          {parseFloat(metrics.totalPurity) % 1 === 0
-            ? parseInt(metrics.totalPurity)
-            : parseFloat(metrics.totalPurity)
-                .toFixed(3)
-                .replace(/\.?0+$/, "")}{" "}
-          g
+          Total Purity: {formatNumber(metrics.totalPurity, 3)} g
         </Typography>
         <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-          Pure Received:{" "}
-          {parseFloat(metrics.pureReceived) % 1 === 0
-            ? parseInt(metrics.pureReceived)
-            : parseFloat(metrics.pureReceived)
-                .toFixed(3)
-                .replace(/\.?0+$/, "")}{" "}
-          g
+          Pure Received: {formatNumber(metrics.pureReceived, 3)} g
         </Typography>
 
         <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
@@ -331,55 +310,19 @@ const DailySalesReport = () => {
                   <TableRow key={bill.id}>
                     <TableCell>BILL-{bill.id}</TableCell>
                     <TableCell>{bill.customer?.name || "Unknown"}</TableCell>
+                    <TableCell>{formatNumber(totalWeight, 3)}</TableCell>
+                    <TableCell>{formatNumber(totalPurity, 3)}</TableCell>
+                    <TableCell>₹{formatNumber(totalAmount, 2)}</TableCell>
                     <TableCell>
-                      {parseFloat(totalWeight) % 1 === 0
-                        ? parseInt(totalWeight)
-                        : parseFloat(totalWeight)
-                            .toFixed(2)
-                            .replace(/\.?0+$/, "")}
+                      ₹{formatNumber(received.cash + received.hallmark, 2)}
                     </TableCell>
-                    <TableCell>
-                      {parseFloat(totalPurity) % 1 === 0
-                        ? parseInt(totalPurity)
-                        : parseFloat(totalPurity)
-                            .toFixed(3)
-                            .replace(/\.?0+$/, "")}
-                    </TableCell>
-                    <TableCell>
-                      ₹
-                      {parseFloat(totalAmount) % 1 === 0
-                        ? parseInt(totalAmount)
-                        : parseFloat(totalAmount)
-                            .toFixed(2)
-                            .replace(/\.?0+$/, "")}
-                    </TableCell>
-                    <TableCell>
-                      ₹
-                      {(received.cash + received.hallmark) % 1 === 0
-                        ? parseInt(received.cash + received.hallmark)
-                        : (received.cash + received.hallmark)
-                            .toFixed(2)
-                            .replace(/\.?0+$/, "")}
-                    </TableCell>
-                    <TableCell>
-                      {parseFloat(received.pure) % 1 === 0
-                        ? parseInt(received.pure)
-                        : parseFloat(received.pure)
-                            .toFixed(3)
-                            .replace(/\.?0+$/, "")}{" "}
-                      g
-                    </TableCell>
+                    <TableCell>{formatNumber(received.pure, 3)} g</TableCell>
                     <TableCell
                       sx={{
                         color: "success.main",
                       }}
                     >
-                      ₹
-                      {(cashBalance + hallmarkBalance) % 1 === 0
-                        ? parseInt(cashBalance + hallmarkBalance)
-                        : (cashBalance + hallmarkBalance)
-                            .toFixed(2)
-                            .replace(/\.?0+$/, "")}
+                      ₹{formatNumber(cashBalance + hallmarkBalance, 2)}
                     </TableCell>
 
                     <TableCell
@@ -387,12 +330,7 @@ const DailySalesReport = () => {
                         color: pureBalance > 0 ? "error.main" : "success.main",
                       }}
                     >
-                      {parseFloat(pureBalance) % 1 === 0
-                        ? parseInt(pureBalance)
-                        : parseFloat(pureBalance)
-                            .toFixed(3)
-                            .replace(/\.?0+$/, "")}
-                      g
+                      {formatNumber(pureBalance, 3)}g
                     </TableCell>
                     <TableCell>
                       <IconButton onClick={() => handleViewBill(bill)}>
@@ -421,65 +359,37 @@ const DailySalesReport = () => {
                 <strong>Total</strong>
               </TableCell>
               <TableCell>
-                <strong>
-                  {parseFloat(metrics.totalWeight) % 1 === 0
-                    ? parseInt(metrics.totalWeight)
-                    : parseFloat(metrics.totalWeight)
-                        .toFixed(2)
-                        .replace(/\.?0+$/, "")}
-                </strong>
+                <strong>{formatNumber(metrics.totalWeight, 3)}</strong>
               </TableCell>
               <TableCell>
                 <strong style={{ color: "yellow", fontSize: "1.1rem" }}>
-                  {parseFloat(metrics.totalPurity) % 1 === 0
-                    ? parseInt(metrics.totalPurity)
-                    : parseFloat(metrics.totalPurity)
-                        .toFixed(3)
-                        .replace(/\.?0+$/, "")}
+                  {formatNumber(metrics.totalPurity, 3)}
                 </strong>
+              </TableCell>
+              <TableCell>
+                <strong>₹{formatNumber(metrics.totalSales, 2)}</strong>
               </TableCell>
               <TableCell>
                 <strong>
                   ₹
-                  {parseFloat(metrics.totalSales) % 1 === 0
-                    ? parseInt(metrics.totalSales)
-                    : parseFloat(metrics.totalSales)
-                        .toFixed(2)
-                        .replace(/\.?0+$/, "")}
-                </strong>
-              </TableCell>
-              <TableCell>
-                <strong>
-                  ₹
-                  {(metrics.cashReceived + metrics.hallmarkReceived) % 1 === 0
-                    ? parseInt(metrics.cashReceived + metrics.hallmarkReceived)
-                    : (metrics.cashReceived + metrics.hallmarkReceived)
-                        .toFixed(2)
-                        .replace(/\.?0+$/, "")}
+                  {formatNumber(
+                    metrics.cashReceived + metrics.hallmarkReceived,
+                    2
+                  )}
                 </strong>
               </TableCell>
               <TableCell>
                 <strong style={{ color: "yellow", fontSize: "1.1rem" }}>
-                  {parseFloat(metrics.pureReceived) % 1 === 0
-                    ? parseInt(metrics.pureReceived)
-                    : parseFloat(metrics.pureReceived)
-                        .toFixed(3)
-                        .replace(/\.?0+$/, "")}{" "}
-                  g
+                  {formatNumber(metrics.pureReceived, 3)} g
                 </strong>
               </TableCell>
               <TableCell>
-                <strong>₹ {calculateTotalCashBalance().toFixed(2)}</strong>
+                <strong>
+                  ₹ {formatNumber(calculateTotalCashBalance(), 2)}
+                </strong>
               </TableCell>
               <TableCell colSpan={2}>
-                <strong>
-                  {parseFloat(metrics.outstandingPure) % 1 === 0
-                    ? parseInt(metrics.outstandingPure)
-                    : parseFloat(metrics.outstandingPure)
-                        .toFixed(3)
-                        .replace(/\.?0+$/, "")}{" "}
-                  g
-                </strong>
+                <strong>{formatNumber(metrics.outstandingPure, 3)} g</strong>
               </TableCell>
             </TableRow>
           </TableFooter>
@@ -575,10 +485,10 @@ const DailySalesReport = () => {
                             {formatNumber(detail.purityWeight, 3) || "-"}
                           </TableCell>
                           <TableCell>
-                            {formatNumber(detail.amount) || "-"}
+                            {formatNumber(detail.amount, 2) || "-"}
                           </TableCell>
                           <TableCell>
-                            {formatNumber(detail.paidAmount) || "-"}
+                            {formatNumber(detail.paidAmount, 2) || "-"}
                           </TableCell>
                         </TableRow>
                       ))}

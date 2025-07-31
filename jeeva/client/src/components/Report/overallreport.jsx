@@ -3,6 +3,7 @@ import "./overallreport.css";
 import { BACKEND_SERVER_URL } from "../../Config/Config";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { formatNumber } from "../../utils/formatNumber";
 
 const OverallReport = () => {
   const [reportData, setReportData] = useState([]);
@@ -120,7 +121,6 @@ const OverallReport = () => {
 
           if (balance.toFixed(3) > 0) {
             totalCustomerBalance += balance;
-            console.log("balances", balance, totalCustomerBalance, bill);
           }
         });
 
@@ -141,43 +141,44 @@ const OverallReport = () => {
       setReportData([
         {
           label: "Customer Balance",
-          value: `${totalCustomerBalance.toFixed(3)}g`,
+          value: `${formatNumber(totalCustomerBalance, 3)}g`,
           tooltip:
             "Total sum of 'pureBalance' (i.e. totalPurity) across all saved bills",
         },
         {
           label: "Cash/Gold (Entries Purity)",
-          value: `${totalCashGoldEntriesPurity.toFixed(3)}g`,
-          tooltip: `Total gold purity from all manual Cash/Gold entries in the system (Sum of manual entries ${manualEntriesPurity.toFixed(
+          value: `${formatNumber(totalCashGoldEntriesPurity, 3)}g`,
+          tooltip: `Total gold purity from all manual Cash/Gold entries in the system (Sum of manual entries ${formatNumber(
+            manualEntriesPurity,
             3
-          )}g and received bill entries ${receivedEntriesPurity.toFixed(3)}g)`,
+          )}g and received bill entries ${formatNumber(
+            receivedEntriesPurity,
+            3
+          )}g)`,
         },
         {
           label: "Coin Stock",
-          value: ` ${totalCoinPurity.toFixed(3)}g Purity (${
+          value: ` ${formatNumber(totalCoinPurity, 3)}g Purity (${
             coinData.length
           } Coins)`,
           tooltip: "Current coin inventory with total purity",
         },
         {
           label: "Jewel Stock",
-          value: ` ${totalJewelPurity.toFixed(3)}g Purity (${
+          value: ` ${formatNumber(totalJewelPurity, 3)}g Purity (${
             jewelData.length
           } Items)`,
           tooltip: "Current jewel inventory with total purity",
         },
         {
           label: "Advances in Gold (Purity)",
-          value: `${advancesGold.toFixed(3)}g`,
+          value: `${formatNumber(advancesGold, 3)}g`,
           tooltip:
             "Total gold purity equivalent from all customer advance transactions",
         },
         {
           label: "Overall Value",
-          value: `${overallValue.toLocaleString("en-IN", {
-            minimumFractionDigits: 3,
-            maximumFractionDigits: 3,
-          })} g`,
+          value: `${formatNumber(overallValue, 3)} g`,
           tooltip: "Pure Balance + Cash/Gold + Coin + Jewel - Advances in Gold",
         },
       ]);

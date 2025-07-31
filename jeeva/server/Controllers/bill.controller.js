@@ -15,8 +15,6 @@ const createBill = async (req, res) => {
       totalAmount,
     } = req.body;
 
-    console.log("req body", req.body);
-
     if (
       totalWeight === undefined ||
       totalPurity === undefined ||
@@ -162,8 +160,6 @@ const addReceiveEntry = async (req, res) => {
     const { id } = req.params;
     const { receivedDetails = [] } = req.body;
 
-    console.log("reee", req.body);
-
     if (!receivedDetails.length) {
       return res.status(400).json({ error: "No receive details provided" });
     }
@@ -186,8 +182,6 @@ const addReceiveEntry = async (req, res) => {
     if (!existingBill) {
       return res.status(404).json({ error: "Bill not found" });
     }
-
-    console.log("existing", existingBill);
 
     const sanitizedDetails = receivedDetails
       .filter((detail) => !detail.id)

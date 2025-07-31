@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "./Advance.css";
 import { BACKEND_SERVER_URL } from "../../Config/Config";
+import { formatNumber } from "../../utils/formatNumber";
 
 const Advancereport = () => {
   const [transactions, setTransactions] = useState([]);
@@ -20,9 +21,11 @@ const Advancereport = () => {
 
     const fetchTransactions = async () => {
       try {
-        const res = await axios.get(`${BACKEND_SERVER_URL}/api/transactions/all`);
+        const res = await axios.get(
+          `${BACKEND_SERVER_URL}/api/transactions/all`
+        );
         setTransactions(res.data);
-        
+
         // Calculate total purity
         const puritySum = res.data.reduce((sum, txn) => {
           if (txn.purity) {
@@ -69,22 +72,23 @@ const Advancereport = () => {
                 <td>{txn.type}</td>
                 <td>
                   {txn.type === "Cash"
-                    ? `₹${txn.value.toFixed(2)}`
-                    : `${txn.value.toFixed(3)}g`}
+                    ? `₹${formatNumber(txn.value, 2)}`
+                    : `${formatNumber(txn.value, 3)}g`}
                 </td>
-                <td>{txn.purity?.toFixed(3) || "-"}</td>
-                <td>{txn.touch ? `${txn.touch}%` : "-"}</td>
+                <td>{formatNumber(txn.purity, 3) || "-"}</td>
+                <td>{txn.touch ? `${formatNumber(txn.touch, 3)}%` : "-"}</td>
                 <td>
                   {txn.goldRate && txn.type === "Cash"
-                    ? `₹${txn.goldRate.toFixed(2)}`
+                    ? `₹${formatNumber(txn.goldRate, 2)}`
                     : "-"}
                 </td>
               </tr>
             ))}
           </tbody>
           <tfoot>
-            <tr  style={{
-                backgroundColor: "#424242", 
+            <tr
+              style={{
+                backgroundColor: "#424242",
                 color: "#fff",
                 "& .MuiTableCell-root": {
                   color: "#fff",
@@ -93,19 +97,16 @@ const Advancereport = () => {
                 "&:hover": {
                   backgroundColor: "#424242",
                 },
-              }} >
-              <td colSpan="4" >
-                Total Purity:
-              </td>
-              <td   >{totalPurity.toFixed(3)}g</td>
+              }}
+            >
+              <td colSpan="4">Total Purity:</td>
+              <td>{formatNumber(totalPurity, 3)}g</td>
               <td colSpan="2  "></td>
             </tr>
           </tfoot>
         </table>
       ) : (
-        <p className="no-data">
-          No advance payments found.
-        </p>
+        <p className="no-data">No advance payments found.</p>
       )}
     </div>
   );

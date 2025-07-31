@@ -16,6 +16,7 @@ import {
 } from "@mui/material";
 import { BACKEND_SERVER_URL } from "../../Config/Config";
 import VisibilityIcon from "@mui/icons-material/Visibility";
+import { formatNumber } from "../../utils/formatNumber";
 
 const BalanceReport = () => {
   const [customers, setCustomers] = useState([]);
@@ -174,11 +175,11 @@ const BalanceReport = () => {
         <Box sx={{ display: "flex", gap: 3 }}>
           <Typography variant="subtitle1">
             Total Customer Owes:{" "}
-            <strong>{totalCustomerOutstandingBalance.toFixed(3)}g</strong>
+            <strong>{formatNumber(totalCustomerOutstandingBalance, 3)}g</strong>
           </Typography>
           <Typography variant="subtitle1">
             Total Owner Owes:{" "}
-            <strong>{totalOwnerOutstandingBalance.toFixed(3)}g</strong>
+            <strong>{formatNumber(totalOwnerOutstandingBalance, 3)}g</strong>
           </Typography>
         </Box>
       </Box>
@@ -203,12 +204,12 @@ const BalanceReport = () => {
                       <TableCell>{customer.customerName}</TableCell>
                       <TableCell>
                         {customer.customerOwed > 0
-                          ? customer.customerOwed.toFixed(3)
+                          ? formatNumber(customer.customerOwed, 3)
                           : "0"}
                       </TableCell>
                       <TableCell>
                         {customer.ownerOwed > 0
-                          ? customer.ownerOwed.toFixed(3)
+                          ? formatNumber(customer.ownerOwed, 3)
                           : "0"}
                       </TableCell>
                       <TableCell>
@@ -221,7 +222,8 @@ const BalanceReport = () => {
                               handleViewBills(customer.customerId, true)
                             }
                           >
-                            View Customer Bills ({customer.customerBillsWithBalance.length})
+                            View Customer Bills (
+                            {customer.customerBillsWithBalance.length})
                           </Button>
                         )}
                         {customer.ownerOwed > 0 && (
@@ -232,7 +234,8 @@ const BalanceReport = () => {
                               handleViewBills(customer.customerId, false)
                             }
                           >
-                            View Owner Bills ({customer.ownerBillsWithBalance.length})
+                            View Owner Bills (
+                            {customer.ownerBillsWithBalance.length})
                           </Button>
                         )}
                       </TableCell>
@@ -282,9 +285,9 @@ const BalanceReport = () => {
                     <TableCell>
                       {new Date(bill.date).toLocaleDateString()}
                     </TableCell>
-                    <TableCell>{bill.totalPurity.toFixed(3)}</TableCell>
+                    <TableCell>{formatNumber(bill.totalPurity, 3)}</TableCell>
                     <TableCell>
-                      {bill.balance?.toFixed(3) || "0"} grams
+                      {formatNumber(bill.balance, 3) || "0"} grams
                     </TableCell>
                     <TableCell>
                       <IconButton onClick={() => handleViewBill(bill)}>
@@ -330,7 +333,7 @@ const BalanceReport = () => {
               </Typography>
               <Typography variant="body1">
                 <strong>Total Purity:</strong>{" "}
-                {selectedBill.totalPurity.toFixed(3)}g
+                {formatNumber(selectedBill.totalPurity, 3)}g
               </Typography>
               <Typography
                 variant="body1"
@@ -340,12 +343,14 @@ const BalanceReport = () => {
               >
                 <strong>Balance:</strong>
                 {calculateBillBalance(selectedBill) > 0
-                  ? `Customer owes: ${calculateBillBalance(
-                      selectedBill
-                    ).toFixed(3)}g`
+                  ? `Customer owes: ${formatNumber(
+                      calculateBillBalance(selectedBill),
+                      3
+                    )}g`
                   : `Owner owes: ${Math.abs(
-                      calculateBillBalance(selectedBill)
-                    ).toFixed(3)}g`}
+                      formatNumber(calculateBillBalance(selectedBill)),
+                      3
+                    )}g`}
               </Typography>
 
               <Typography variant="subtitle1" sx={{ mt: 2 }}>
@@ -366,8 +371,8 @@ const BalanceReport = () => {
                       <TableRow key={index}>
                         <TableCell>{item.coinValue}</TableCell>
                         <TableCell>{item.quantity}</TableCell>
-                        <TableCell>{item.weight.toFixed(3)}</TableCell>
-                        <TableCell>{item.purity.toFixed(3)}</TableCell>
+                        <TableCell>{formatNumber(item.weight, 3)}</TableCell>
+                        <TableCell>{formatNumber(item.purity, 3)}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -399,13 +404,13 @@ const BalanceReport = () => {
                             {detail.givenGold ? "Gold" : "Cash"}
                           </TableCell>
                           <TableCell>
-                            {detail.purityWeight?.toFixed(3) || "-"}
+                            {formatNumber(detail.purityWeight, 3) || "-"}
                           </TableCell>
                           <TableCell>
-                            {detail.amount?.toFixed(2) || "-"}
+                            {formatNumber(detail.amount, 2) || "-"}
                           </TableCell>
                           <TableCell>
-                            {detail.paidAmount?.toFixed(2) || "-"}
+                            {formatNumber(detail.paidAmount, 2) || "-"}
                           </TableCell>
                         </TableRow>
                       ))}

@@ -145,11 +145,6 @@ const CustomerReport = () => {
       const excess = Math.abs(balance);
       usedFromAdvance = Math.min(remainingAdvance, excess);
 
-      console.log("Negative Balance Case:");
-      console.log("Bill ID:", bill.id);
-      console.log("Excess:", excess);
-      console.log("Used from Advance:", usedFromAdvance);
-
       if (usedFromAdvance > 0) {
         advanceUsedForBal[bill.id] = usedFromAdvance;
         advanceUsed += usedFromAdvance;
@@ -212,8 +207,6 @@ const CustomerReport = () => {
 
     const balanceInfo = calculateBillBalance(bill, bill.customerId);
 
-    console.log("sssssssssssssss", balanceInfo);
-
     const ownerBalance = balanceInfo.balance < 0 ? balanceInfo.balance : 0;
 
     return (
@@ -259,8 +252,6 @@ const CustomerReport = () => {
       const billReceived = bill.receivedDetails.reduce((sum, detail) => {
         return sum + Math.abs(detail.purityWeight || 0);
       }, 0);
-
-      console.log("total", total, billReceived);
 
       return total + billReceived;
     }, 0);
@@ -337,7 +328,7 @@ const CustomerReport = () => {
       return total + cashBalances.ownerCashBalance;
     }, 0);
   };
-
+ 
   return (
     <Box sx={{ p: 3 }}>
       <Typography style={{ textAlign: "center" }} variant="h5" gutterBottom>
@@ -494,7 +485,7 @@ const CustomerReport = () => {
                 </strong>
               </TableCell>
               <TableCell>
-                ₹ {formatNumber(calculateTotalCustomerCashBalance(), 3)}
+                ₹ {formatNumber(calculateTotalCustomerCashBalance(), 2)}
               </TableCell>
 
               <TableCell></TableCell>
@@ -616,10 +607,10 @@ const CustomerReport = () => {
                             {formatNumber(detail.purityWeight, 3) || "-"}
                           </TableCell>
                           <TableCell>
-                            {formatNumber(detail.amount) || "-"}
+                            {formatNumber(detail.amount, 2) || "-"}
                           </TableCell>
                           <TableCell>
-                            {formatNumber(detail.paidAmount) || "-"}
+                            {formatNumber(detail.paidAmount, 2) || "-"}
                           </TableCell>
                         </TableRow>
                       ))}

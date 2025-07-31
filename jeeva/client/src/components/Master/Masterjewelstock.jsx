@@ -3,6 +3,7 @@ import "./masterjewelstock.css";
 import { BACKEND_SERVER_URL } from "../../Config/Config";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { formatNumber } from "../../utils/formatNumber";
 
 const Masterjewelstock = () => {
   const [formData, setFormData] = useState({
@@ -287,11 +288,11 @@ const Masterjewelstock = () => {
                 <tr key={entry.id}>
                   <td>{index + 1}</td>
                   <td>{entry.jewelName}</td>
-                  <td>{entry.weight}</td>
-                  <td>{entry.stoneWeight}</td>
-                  <td>{entry.finalWeight}</td>
+                  <td>{formatNumber(entry.weight, 3)}</td>
+                  <td>{formatNumber(entry.stoneWeight, 3)}</td>
+                  <td>{formatNumber(entry.finalWeight, 3)}</td>
                   <td>{entry.touch}</td>
-                  <td>{parseFloat(entry.purityValue).toFixed(3)}</td>
+                  <td>{formatNumber(entry.purityValue, 3)}</td>
                   <td>
                     <button
                       className="edit-btn"
@@ -322,7 +323,7 @@ const Masterjewelstock = () => {
                   Total Purity:
                 </td>
                 <td colSpan="3" style={{ fontWeight: "bold" }}>
-                  {totalPurity}
+                  {formatNumber(totalPurity, 3)}
                 </td>
               </tr>
             </tfoot>
