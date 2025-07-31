@@ -3,6 +3,7 @@ import "./Stock.css";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { BACKEND_SERVER_URL } from "../../Config/Config";
+import { formatNumber } from "../../utils/formatNumber";
 
 const Stock = () => {
   const [showPopup, setShowPopup] = useState(false);
@@ -223,7 +224,6 @@ const Stock = () => {
     const index = stockItems.findIndex((item) => item.id === id);
     if (index === -1) return;
 
-    console.log("indddddd", index);
     setFormData({
       ...stockItems[index],
       gram: stockItems[index].gram.toString(),
@@ -758,23 +758,19 @@ const Stock = () => {
                     {item.coinType}
                   </td>
                   <td style={{ padding: "0.75rem 1rem", color: "#374151" }}>
-                    {item.gram}
+                    {formatNumber(item.gram, 3)}
                   </td>
                   <td style={{ padding: "0.75rem 1rem", color: "#374151" }}>
                     {item.quantity}
                   </td>
                   <td style={{ padding: "0.75rem 1rem", color: "#374151" }}>
-                    {item.touch}
+                    {formatNumber(item.touch, 3)}
                   </td>
                   <td style={{ padding: "0.75rem 1rem", color: "#374151" }}>
-                    {parseFloat(item.totalWeight) % 1 === 0
-                      ? parseInt(item.totalWeight)
-                      : parseFloat(item.totalWeight).toFixed(2)}
+                    {formatNumber(item.totalWeight, 3)}
                   </td>
                   <td style={{ padding: "0.75rem 1rem", color: "#374151" }}>
-                    {parseFloat(item.purity) % 1 === 0
-                      ? parseInt(item.purity)
-                      : parseFloat(item.purity).toFixed(2)}
+                    {formatNumber(item.purity, 3)}
                   </td>
                   <td
                     style={{
@@ -843,14 +839,11 @@ const Stock = () => {
                 Totals:
               </td>
               <td style={{ padding: "1rem" }}>
-                {parseFloat(totals.totalWeight) % 1 === 0
-                  ? parseInt(totals.totalWeight)
-                  : parseFloat(totals.totalWeight).toFixed(2)}
+               {formatNumber(totals.totalWeight,3)}
               </td>
               <td style={{ padding: "1rem" }}>
-                 {parseFloat(totals.purity) % 1 === 0
-                  ? parseInt(totals.purity)
-                  : parseFloat(totals.purity).toFixed(2)}</td>
+               {formatNumber(totals.purity, 3)}
+              </td>
               <td></td>
             </tr>
           </tfoot>

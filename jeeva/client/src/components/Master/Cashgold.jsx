@@ -4,6 +4,7 @@ import "./Cashgold.css";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { BACKEND_SERVER_URL } from "../../Config/Config";
+import { formatNumber } from "../../utils/formatNumber";
 
 function Cashgold() {
   const [showFormPopup, setShowFormPopup] = useState(false);
@@ -38,8 +39,6 @@ function Cashgold() {
           const paid = parseFloat(detail.paidAmount || 0);
 
           if (!purityMap[date]) purityMap[date] = 0;
-
-          console.log("sssssssssssss", purityMap[date], purity);
 
           if (paid > 0) {
             purityMap[date] -= Math.abs(purity);
@@ -145,8 +144,6 @@ function Cashgold() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    console.log("formdata ", formData);
 
     if (formData.type === "Select") {
       toast.error("Please select a valid type: Cash or Gold");
@@ -278,10 +275,10 @@ function Cashgold() {
       <h2>Cash/Gold</h2>
       <button className="add-btn" onClick={() => setShowFormPopup(true)}>
         Add Cash or Gold
-      </button>  
+      </button>
 
       {showFormPopup && (
-        <div className="popup-overlay">  
+        <div className="popup-overlay">
           <div className="popup-contentss">
             <h3>{isEditMode ? "Edit Entry" : "Enter Cash or Gold Details"}</h3>
             <button
@@ -432,17 +429,17 @@ function Cashgold() {
                   {entry.isBillSummary
                     ? ""
                     : entry.type === "Cash"
-                    ? `₹${entry.cashAmount}`
-                    : `${entry.goldValue}g`}
+                    ? `₹${formatNumber(entry.cashAmount, 2)}`
+                    : `${formatNumber(entry.goldValue, 3)}g`}
                 </td>
                 <td>
                   {entry.isBillSummary
                     ? ""
                     : entry.type === "Cash"
-                    ? `₹${entry.goldRate}/g`
-                    : `${entry.touch}%`}
+                    ? `₹${formatNumber(entry.goldRate, 2)}/g`
+                    : `${formatNumber(entry.touch, 3)}%`}
                 </td>
-                <td>{entry.purity}</td>
+                <td>{formatNumber(entry.purity,3)}</td>
                 <td>{entry.isBillSummary ? "" : entry.remarks || "-"}</td>
                 <td>
                   {!entry.isBillSummary && (

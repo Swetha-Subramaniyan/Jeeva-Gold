@@ -7,6 +7,7 @@ import { BACKEND_SERVER_URL } from "../../Config/Config";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { FaEdit, FaTrash } from "react-icons/fa";
+import { formatNumber } from "../../utils/formatNumber";
 
 const Customertrans = () => {
   const [searchParams] = useSearchParams();
@@ -64,7 +65,7 @@ const Customertrans = () => {
         const cash = parseFloat(value);
         const rate = parseFloat(goldRate);
         if (!isNaN(cash) && !isNaN(rate) && rate > 0) {
-          updatedTransaction.purity = (cash / rate).toFixed(3);
+          updatedTransaction.purity = (cash / rate);
         }
       }
     } else if (name === "goldValue" && updatedTransaction.type === "Gold") {
@@ -72,13 +73,13 @@ const Customertrans = () => {
       const touch = parseFloat(updatedTransaction.touch);
       const gold = parseFloat(value);
       if (!isNaN(gold) && !isNaN(touch)) {
-        updatedTransaction.purity = ((gold * touch) / 100).toFixed(3);
+        updatedTransaction.purity = ((gold * touch) / 100);
       }
     } else if (name === "touch" && updatedTransaction.type === "Gold") {
       const gold = parseFloat(updatedTransaction.goldValue);
       const touch = parseFloat(value);
       if (!isNaN(gold) && !isNaN(touch)) {
-        updatedTransaction.purity = ((gold * touch) / 100).toFixed(3);
+        updatedTransaction.purity = ((gold * touch) / 100);
       }
     }
 
@@ -303,9 +304,7 @@ const Customertrans = () => {
                           const rate = parseFloat(e.target.value);
                           if (!isNaN(cash) && !isNaN(rate) && rate > 0) {
                             const updatedTransaction = { ...newTransaction };
-                            updatedTransaction.purity = (cash / rate).toFixed(
-                              3
-                            );
+                            updatedTransaction.purity = (cash / rate);
                             setNewTransaction(updatedTransaction);
                           }
                         }
@@ -402,17 +401,17 @@ const Customertrans = () => {
               <td>{transaction.type}</td>
               <td>
                 {transaction.type === "Cash"
-                  ? `₹${transaction.value.toFixed(2)}`
-                  : `${transaction.value.toFixed(3)}g`}
+                  ? `₹${formatNumber(transaction.value, 2)}`
+                  : `${formatNumber(transaction.value, 3)}g`}
               </td>
               <td>
                 {transaction.type === "Cash"
-                  ? transaction.goldRate?.toFixed(2)
+                  ? formatNumber(transaction.goldRate,2)
                   : "-"}
               </td>
-              <td>{transaction.purity.toFixed(3)}</td>
+              <td>{formatNumber(transaction.purity,3)}</td>
               <td>
-                {transaction.type === "Gold" ? `${transaction.touch}%` : "-"}
+                {transaction.type === "Gold" ? `${formatNumber(transaction.touch,3)}%` : "-"}
               </td>
               <td style={{ display: "flex", gap: "0.5rem" }}>
                 <button
@@ -438,7 +437,7 @@ const Customertrans = () => {
           <h3>Transaction Totals</h3>
           <div className="total-row">
             <span>Total Purity:</span>
-            <span>{totals.totalPurity.toFixed(3)} g</span>
+            <span>{formatNumber(totals.totalPurity, 3)} g</span>
           </div>
         </div>
       )}

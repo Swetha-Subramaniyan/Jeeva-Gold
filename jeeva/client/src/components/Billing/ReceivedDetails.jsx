@@ -3,9 +3,8 @@ import { TextField, IconButton, Box, Alert, Snackbar } from "@mui/material";
 import { MdDeleteForever } from "react-icons/md";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import "./Billing.css";
-import { formatINRCurrency } from "../../utils/formatCurrency";
 import { NumericFormat } from "react-number-format";
-import { useState } from "react";
+import { formatNumber } from "../../utils/formatNumber";
 
 const ReceivedDetails = ({
   rows,
@@ -42,8 +41,6 @@ const ReceivedDetails = ({
       hallmark = parseFloatSafe(initialHallmarkBalance);
     }
 
-    console.log("pureeeee", pure, hallmark, rows);
-
     rows.forEach((row) => {
       if (row.mode === "weight" && row.purityWeight) {
         pure -= parseFloatSafe(row.purityWeight);
@@ -57,7 +54,6 @@ const ReceivedDetails = ({
         if (amountAfterHallmark > 0 && row.goldRate) {
           const purity = amountAfterHallmark / parseFloatSafe(row.goldRate);
 
-          console.log("11111111111111", purity);
           pure -= purity;
         }
       } else if (row.mode === "amount" && parseFloatSafe(row.paidAmount) > 0) {
@@ -69,7 +65,6 @@ const ReceivedDetails = ({
 
         if (amountAfterHallmark > 0 && row.goldRate) {
           const purity = amountAfterHallmark / parseFloatSafe(row.goldRate);
-          console.log("2222222222222", purity);
           pure += purity;
         }
       }
@@ -149,8 +144,9 @@ const ReceivedDetails = ({
   };
 
   const handleAddRow = () => {
-
-    const lastRowWithGoldRate = [...rows].reverse().find(row => row.goldRate && row.goldRate !== "");
+    const lastRowWithGoldRate = [...rows]
+      .reverse()
+      .find((row) => row.goldRate && row.goldRate !== "");
 
     setRows([
       ...rows,
@@ -187,8 +183,6 @@ const ReceivedDetails = ({
     const updatedRows = [...rows];
     const row = updatedRows[index];
 
-    console.log("vvvvvvvvvvvvvvvvvvvvvvvvvv", value);
-
     if (value === "" || value === null || value === undefined) {
       row[field] = 0;
       setRows(updatedRows);
@@ -210,13 +204,11 @@ const ReceivedDetails = ({
       row.givenGold ||
       row.touch
     ) {
-      console.log("sssssssssssssssssssssssssssssssssssssss");
 
       const givenGold = parseFloatSafe(row.givenGold);
       const touch = parseFloatSafe(row.touch);
 
       if (givenGold > 0 || touch > 0) {
-        console.log("sssssssssssssssssssssssssssssssssssssss");
         row.mode = "weight";
         const purityWeight = givenGold * (touch / 100);
 
@@ -224,8 +216,12 @@ const ReceivedDetails = ({
         row.amount = "";
       }
     } else if (
-      (field === "amount" || field === "goldRate" || field === "paidAmount" ||
-      row.amount || row.goldRate || row.paidAmount)
+      field === "amount" ||
+      field === "goldRate" ||
+      field === "paidAmount" ||
+      row.amount ||
+      row.goldRate ||
+      row.paidAmount
     ) {
       row.mode = "amount";
       row.givenGold = "";
@@ -396,13 +392,7 @@ const ReceivedDetails = ({
                 <TextField
                   size="small"
                   value={
-                    row.purityWeight
-                      ? parseFloat(row.purityWeight) % 1 === 0
-                        ? parseInt(row.purityWeight)
-                        : parseFloat(row.purityWeight)
-                            .toFixed(2)
-                            .replace(/\.?0+$/, "")
-                      : ""
+                    row.purityWeight ? formatNumber(row.purityWeight, 3) : ""
                   }
                   InputProps={{ readOnly: true }}
                 />
@@ -459,34 +449,15 @@ const ReceivedDetails = ({
 
       <div className="flex">
         <div>
-          <b>
-            Pure Balance:{" "}
-            {parseFloat(currentBalances.pureBalance) % 1 === 0
-              ? parseInt(currentBalances.pureBalance)
-              : parseFloat(currentBalances.pureBalance)
-                  .toFixed(3)
-                  .replace(/\.?0+$/, "")}
-          </b>
+          <b>Pure Balance: {formatNumber(currentBalances.pureBalance, 3)}</b>
         </div>
         <div>
           <b>
-            Hallmark Balance:{" "}
-            {parseFloat(currentBalances.hallmarkBalance) % 1 === 0
-              ? parseInt(currentBalances.hallmarkBalance)
-              : parseFloat(currentBalances.hallmarkBalance)
-                  .toFixed(2)
-                  .replace(/\.?0+$/, "")}
+            Hallmark Balance: {formatNumber(currentBalances.hallmarkBalance, 2)}
           </b>
         </div>
         <div>
-          <b>
-            Total Balance:{" "}
-            {parseFloat(currentBalances.totalBalance) % 1 === 0
-              ? parseInt(currentBalances.totalBalance)
-              : parseFloat(currentBalances.totalBalance)
-                  .toFixed(2)
-                  .replace(/\.?0+$/, "")}
-          </b>
+          <b>Total Balance: {formatNumber(currentBalances.totalBalance, 2)}</b>
         </div>
       </div>
 

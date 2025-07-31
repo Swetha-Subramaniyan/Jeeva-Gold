@@ -9,9 +9,8 @@ import {
   IconButton,
 } from "@mui/material";
 import { MdDeleteForever } from "react-icons/md";
-
-import { formatINRCurrency } from "../../utils/formatCurrency";
 import { NumericFormat } from "react-number-format";
+import { formatNumber } from "../../utils/formatNumber";
 
 const BillDetails = ({
   billItems,
@@ -214,24 +213,11 @@ const BillDetails = ({
                 {item.coinValue}g {item.percentage}
               </td>
               <td className="td">{item.quantity}</td>
-              <td className="td">{item.touch}</td>
+              <td className="td">{formatNumber(item.touch, 3)}</td>
+              <td className="td">{formatNumber(item.weight, 3)}</td>
+              <td className="td"> {formatNumber(item.purity, 3)}</td>
               <td className="td">
-                {parseFloat(item.weight) % 1 === 0
-                  ? parseInt(item.weight)
-                  : parseFloat(item.weight)
-                      .toFixed(2)
-                      .replace(/\.?0+$/, "")}
-              </td>
-              <td className="td">
-                {" "}
-                {parseFloat(item.purity) % 1 === 0
-                  ? parseInt(item.purity)
-                  : parseFloat(item.purity)
-                      .toFixed(2)
-                      .replace(/\.?0+$/, "")}
-              </td>
-              <td className="td">
-                {item.goldRate ? formatINRCurrency(item.amount) : ""}
+                {item.goldRate ? formatNumber(item.amount, 2) : ""}
               </td>
 
               <td className="td">
@@ -277,25 +263,13 @@ const BillDetails = ({
             </td>
             <td className="td"></td>
             <td className="td">
-              <strong>
-                {parseFloat(totalWeight) % 1 === 0
-                  ? parseInt(totalWeight)
-                  : parseFloat(totalWeight)
-                      .toFixed(2)
-                      .replace(/\.?0+$/, "")}
-              </strong>
+              <strong>{formatNumber(totalWeight, 3)}</strong>
             </td>
             <td className="td">
-              <strong>
-                {parseFloat(totalPurity) % 1 === 0
-                  ? parseInt(totalPurity)
-                  : parseFloat(totalPurity)
-                      .toFixed(2)
-                      .replace(/\.?0+$/, "")}
-              </strong>
+              <strong>{formatNumber(totalPurity, 3)}</strong>
             </td>
             <td className="td">
-              <strong>{formatINRCurrency(totalAmount.toFixed(2))}</strong>
+              <strong>{formatNumber(totalAmount.toFixed(2))}</strong>
             </td>
             <td className="td"></td>
             <div className="no-prints-bill">
@@ -331,11 +305,11 @@ const BillDetails = ({
             <td className="td">
               <strong>
                 {selectedBill
-                  ? formatINRCurrency(
+                  ? formatNumber(
                       parseFloat(totalAmount) +
                         parseFloat(selectedBill?.hallmarkCharges || 0)
                     )
-                  : formatINRCurrency(
+                  : formatNumber(
                       parseFloat(totalAmount) +
                         parseFloat(displayHallmarkCharges || 0)
                     )}

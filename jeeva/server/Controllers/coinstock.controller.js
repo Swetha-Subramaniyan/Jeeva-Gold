@@ -189,7 +189,6 @@ const reduceStock = async (req, res) => {
 
 const incrementStock = async (req, res) => {
   try {
-    console.log("rrrrrrrrrrrrrrrrrrrrrrrrrr", req.body)
 
     const { coinType, gram, quantity, reason } = req.body;
     const stock = await prisma.coinStock.findFirst({
@@ -202,7 +201,6 @@ const incrementStock = async (req, res) => {
     const purityToAdd =
       (parseFloat(stock.touch) * parseFloat(gram) * parseInt(quantity)) / 100;
 
-      console.log("ssssssssssssss", stock, weightToAdd, purityToAdd)
 
     const updatedStock = await prisma.coinStock.update({
       where: { id: stock.id },

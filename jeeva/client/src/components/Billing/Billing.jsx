@@ -12,7 +12,6 @@ import {
   Snackbar,
 } from "@mui/material";
 import PrintIcon from "@mui/icons-material/Print";
-import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
 import AddIcon from "@mui/icons-material/Add";
 import "./Billing.css";
@@ -20,7 +19,6 @@ import { BACKEND_SERVER_URL } from "../../Config/Config";
 import BillDetails from "./BillDetails";
 import ReceivedDetails from "./ReceivedDetails";
 import ViewBill from "./ViewBill";
-import { formatINRCurrency } from "../../utils/formatCurrency";
 
 const Billing = () => {
   const [selectedCustomer, setSelectedCustomer] = useState(null);
@@ -111,8 +109,6 @@ const Billing = () => {
         return sum;
       }, 0);
 
-      console.log("Ssss", totalAmount);
-
       setPureBalance(totalPurity.toFixed(3));
       setTotalBalance(
         (parseFloat(totalAmount) + parseFloat(hallmarkCharges || 0)).toFixed(2)
@@ -171,7 +167,6 @@ const Billing = () => {
 
   const addStockForBill = async (items) => {
     try {
-      console.log("innnnnnnnnnnnnnnnnnnnnnn", items);
       const results = await Promise.allSettled(
         items.map(async (item) => {
           const response = await fetch(
@@ -548,8 +543,6 @@ const Billing = () => {
 
         return total;
       }, 0);
-
-      console.log("sssss", totalFromRows, hallmarkCharges);
 
       let hallbalance = 0;
 
