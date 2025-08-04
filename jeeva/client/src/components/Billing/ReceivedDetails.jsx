@@ -109,10 +109,11 @@ const ReceivedDetails = ({
           parseFloatSafe(currentBalances.pureBalance) * latestGoldRate;
       }
     } else {
-      console.log("saikhflioas", displayedTotalBalance, displayHallmarkCharges)
+      console.log("saikhflioas", displayedTotalBalance, displayHallmarkCharges);
       newTotalBalance =
         displayedTotalBalance > 0
-          ? parseFloatSafe(displayedTotalBalance) + parseFloatSafe(displayHallmarkCharges)
+          ? parseFloatSafe(displayedTotalBalance) +
+            parseFloatSafe(displayHallmarkCharges)
           : displayHallmarkCharges > 0
           ? displayHallmarkCharges
           : 0;
@@ -168,8 +169,7 @@ const ReceivedDetails = ({
     setIsUpdating(true);
   };
 
-  
-    console.log("New Commit ");
+  console.log("New Commit ");
 
   const handleDeleteRow = (index) => {
     if (!isViewMode || (isViewMode && rows[index].isNew)) {
@@ -184,7 +184,7 @@ const ReceivedDetails = ({
       return;
     }
 
-    console.log("yyyyyyyyyyyy", rows, index, field, value)
+    console.log("yyyyyyyyyyyy", rows, index, field, value);
 
     const updatedRows = [...rows];
     const row = updatedRows[index];
@@ -205,24 +205,27 @@ const ReceivedDetails = ({
     }
 
     const isEmptyRow = Object.entries(row).every(([key, val]) => {
-    if (key === "date" || key === "mode") return true; 
-    if (typeof val === "string") return val === "" || val === "0";
-    return val === 0 || val === null || val === undefined;
-  });
+      if (key === "date" || key === "isNew" || key === "mode") return true;
 
-  if (isEmptyRow) {
-    row.mode = ""; 
-    setRows(updatedRows);
-    setIsUpdating(true);
-    return;
-  }
+      if (typeof val === "string") return val === "" || val === "0";
+      return val === 0 || val === null || val === undefined;
+    });
 
+    console.log("isEmptyRow", isEmptyRow);
+
+    if (isEmptyRow) {
+      console.log("in");
+      row.mode = "";
+      setRows(updatedRows);
+      setIsUpdating(true);
+      return;
+    }
 
     if (
       field === "givenGold" ||
       field === "touch" ||
       row.givenGold ||
-      row.touch 
+      row.touch
     ) {
       const givenGold = parseFloatSafe(row.givenGold);
       const touch = parseFloatSafe(row.touch);
@@ -300,8 +303,8 @@ const ReceivedDetails = ({
         }
 
         row.purityWeight = purityWeight;
-      }else{
-        row.purityWeight = 0
+      } else {
+        row.purityWeight = 0;
       }
     }
 
