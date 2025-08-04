@@ -109,9 +109,10 @@ const ReceivedDetails = ({
           parseFloatSafe(currentBalances.pureBalance) * latestGoldRate;
       }
     } else {
+      console.log("saikhflioas", displayedTotalBalance, displayHallmarkCharges)
       newTotalBalance =
         displayedTotalBalance > 0
-          ? displayedTotalBalance
+          ? parseFloatSafe(displayedTotalBalance) + parseFloatSafe(displayHallmarkCharges)
           : displayHallmarkCharges > 0
           ? displayHallmarkCharges
           : 0;
