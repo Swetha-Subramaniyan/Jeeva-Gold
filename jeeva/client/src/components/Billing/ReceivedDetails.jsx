@@ -183,14 +183,17 @@ const ReceivedDetails = ({
     const updatedRows = [...rows];
     const row = updatedRows[index];
 
+    console.log("sssssssssssssss", value);
+
     if (value === "" || value === null || value === undefined) {
-      row[field] = 0;
-      setRows(updatedRows);
+      value = 0;
     }
 
     if (field !== "date") {
       const numValue = parseFloat(value);
+
       if (isNaN(numValue)) {
+        console.log("ttttttt", numValue);
         return;
       }
       row[field] = field === "touch" ? numValue : value;
@@ -204,12 +207,13 @@ const ReceivedDetails = ({
       row.givenGold ||
       row.touch
     ) {
-
       const givenGold = parseFloatSafe(row.givenGold);
       const touch = parseFloatSafe(row.touch);
 
       if (givenGold > 0 || touch > 0) {
         row.mode = "weight";
+
+        console.log("ooooooooo", givenGold, touch);
         const purityWeight = givenGold * (touch / 100);
 
         row.purityWeight = purityWeight;
@@ -282,6 +286,8 @@ const ReceivedDetails = ({
         }
 
         row.purityWeight = purityWeight;
+      }else{
+        row.purityWeight = 0
       }
     }
 
@@ -344,7 +350,7 @@ const ReceivedDetails = ({
               <td className="td">
                 <TextField
                   size="small"
-                  value={row.givenGold}
+                  value={row.givenGold === 0 ? "" : row.givenGold}
                   onChange={(e) =>
                     handleRowChange(index, "givenGold", e.target.value)
                   }
@@ -352,14 +358,13 @@ const ReceivedDetails = ({
                     (isViewMode && !row.isNew) ||
                     (row.mode === "amount" && !(isViewMode && row.isNew))
                   }
-                  inputProps={{ min: 0, step: "0.001" }}
                 />
               </td>
               <td className="td">
                 <NumericFormat
                   customInput={TextField}
                   size="small"
-                  value={row.goldRate === "" ? "" : row.goldRate}
+                  value={row.goldRate === 0 ? "" : row.goldRate}
                   onValueChange={(e) => {
                     handleRowChange(index, "goldRate", e.floatValue);
                     calculateBalances();
@@ -377,7 +382,7 @@ const ReceivedDetails = ({
                 <NumericFormat
                   customInput={TextField}
                   size="small"
-                  value={row.touch}
+                  value={row.touch === 0 ? "" : row.touch}
                   onValueChange={(e) =>
                     handleRowChange(index, "touch", e.floatValue)
                   }
@@ -401,7 +406,7 @@ const ReceivedDetails = ({
                 <NumericFormat
                   customInput={TextField}
                   size="small"
-                  value={row.amount}
+                  value={row.amount === 0 ? "" : row.amount}
                   onValueChange={(e) =>
                     handleRowChange(index, "amount", e.floatValue)
                   }
@@ -418,7 +423,7 @@ const ReceivedDetails = ({
                 <NumericFormat
                   customInput={TextField}
                   size="small"
-                  value={row.paidAmount}
+                  value={row.paidAmount === 0 ? "" : row.paidAmount}
                   onValueChange={(e) =>
                     handleRowChange(index, "paidAmount", e.floatValue)
                   }
