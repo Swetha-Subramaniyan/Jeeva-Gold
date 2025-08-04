@@ -205,7 +205,7 @@ const ReceivedDetails = ({
       field === "givenGold" ||
       field === "touch" ||
       row.givenGold ||
-      row.touch
+      row.touch 
     ) {
       const givenGold = parseFloatSafe(row.givenGold);
       const touch = parseFloatSafe(row.touch);
@@ -221,10 +221,8 @@ const ReceivedDetails = ({
       }
     } else if (
       field === "amount" ||
-      field === "goldRate" ||
       field === "paidAmount" ||
       row.amount ||
-      row.goldRate ||
       row.paidAmount
     ) {
       row.mode = "amount";
