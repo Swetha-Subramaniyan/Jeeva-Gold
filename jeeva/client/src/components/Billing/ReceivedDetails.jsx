@@ -167,6 +167,9 @@ const ReceivedDetails = ({
     setIsUpdating(true);
   };
 
+  
+    console.log("New Commit ");
+
   const handleDeleteRow = (index) => {
     if (!isViewMode || (isViewMode && rows[index].isNew)) {
       const updatedRows = [...rows];
@@ -180,10 +183,10 @@ const ReceivedDetails = ({
       return;
     }
 
+    console.log("yyyyyyyyyyyy", rows, index, field, value)
+
     const updatedRows = [...rows];
     const row = updatedRows[index];
-
-    console.log("sssssssssssssss", value);
 
     if (value === "" || value === null || value === undefined) {
       value = 0;
@@ -193,7 +196,6 @@ const ReceivedDetails = ({
       const numValue = parseFloat(value);
 
       if (isNaN(numValue)) {
-        console.log("ttttttt", numValue);
         return;
       }
       row[field] = field === "touch" ? numValue : value;
@@ -201,11 +203,25 @@ const ReceivedDetails = ({
       row[field] = value;
     }
 
+    const isEmptyRow = Object.entries(row).every(([key, val]) => {
+    if (key === "date" || key === "mode") return true; 
+    if (typeof val === "string") return val === "" || val === "0";
+    return val === 0 || val === null || val === undefined;
+  });
+
+  if (isEmptyRow) {
+    row.mode = ""; 
+    setRows(updatedRows);
+    setIsUpdating(true);
+    return;
+  }
+
+
     if (
       field === "givenGold" ||
       field === "touch" ||
       row.givenGold ||
-      row.touch
+      row.touch 
     ) {
       const givenGold = parseFloatSafe(row.givenGold);
       const touch = parseFloatSafe(row.touch);
@@ -213,7 +229,6 @@ const ReceivedDetails = ({
       if (givenGold > 0 || touch > 0) {
         row.mode = "weight";
 
-        console.log("ooooooooo", givenGold, touch);
         const purityWeight = givenGold * (touch / 100);
 
         row.purityWeight = purityWeight;
@@ -221,10 +236,8 @@ const ReceivedDetails = ({
       }
     } else if (
       field === "amount" ||
-      field === "goldRate" ||
       field === "paidAmount" ||
       row.amount ||
-      row.goldRate ||
       row.paidAmount
     ) {
       row.mode = "amount";
