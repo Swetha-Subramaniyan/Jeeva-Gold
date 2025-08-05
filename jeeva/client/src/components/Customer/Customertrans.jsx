@@ -9,6 +9,7 @@ import { FaEdit, FaTrash } from "react-icons/fa";
 import { formatNumber } from "../../utils/formatNumber";
 
 const Customertrans = () => {
+  
   const [searchParams] = useSearchParams();
   const customerId = searchParams.get("id");
   const customerName = searchParams.get("name");
@@ -205,6 +206,7 @@ const Customertrans = () => {
 
   return (
     <div className="customer-transactions">
+      {/* new commit  */}
       <ToastContainer position="top-right" autoClose={3000} />
       <h2>
         Customer Transactions{" "}
@@ -452,7 +454,7 @@ const Customertrans = () => {
       {totals.totalPurity > 0 && (
         <div className="transaction-totals">
           <h3>Transaction Totals</h3>
-          <div className="total-row">
+          <div className="total-rows">
             <span>Total Purity:</span>
             <span>{formatNumber(totals.totalPurity, 3)} g</span>
           </div>

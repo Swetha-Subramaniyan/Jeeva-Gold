@@ -45,7 +45,9 @@ const OverallReport = () => {
       const manualEntriesPurity = entriesData.reduce(
         (sum, entry) => sum + parseFloat(entry.purity || 0),
         0
-      );
+      );  
+
+      {/* new commit  */}
 
       let receivedEntriesPurity = 0;
       bills.forEach((bill) => {
