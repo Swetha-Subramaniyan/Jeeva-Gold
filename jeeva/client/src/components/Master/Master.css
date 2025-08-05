@@ -14,3 +14,9 @@
 .nav-button:hover {
   background-color: aliceblue;
 }
+
+.nav-button.active {
+  background-color: #ffffff !important;
+  color: #A31D1D;
+  border-radius: 5px;
+}

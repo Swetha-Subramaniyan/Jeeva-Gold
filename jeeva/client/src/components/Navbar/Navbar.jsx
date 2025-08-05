@@ -1,11 +1,23 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { FiLogOut, FiChevronDown, FiChevronUp } from "react-icons/fi";
 import Logo from "../../Assets/logo.png";
 
-
 function Navbar() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const isActive = (path) => location.pathname === path;
+  const isReportsActive = () => {
+    const reportsPaths = [
+      "/report",
+      "/customerreport",
+      "/advancereport",
+      "/balancereport",
+      "/overallreport",
+    ];
+    return reportsPaths.some((path) => location.pathname.startsWith(path));
+  };
+  const isActiveStartsWith = (prefix) => location.pathname.startsWith(prefix);
   const [showReportsDropdown, setShowReportsDropdown] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -57,7 +69,13 @@ function Navbar() {
                 </a>
               </li>
               <li style={navItemStyle}>
-                <a href="/customer" style={linkStyle}>
+                <a
+                  href="/customer"
+                  style={{
+                    ...linkStyle,
+                    ...(isActive("/customer") && activeLinkStyle),
+                  }}
+                >
                   Customer
                 </a>
               </li>
@@ -72,20 +90,38 @@ function Navbar() {
           )}
 
           <li style={navItemStyle}>
-            <a href="/stock" style={linkStyle}>
+            <a
+              href="/stock"
+              style={{
+                ...linkStyle,
+                ...(isActive("/stock") && activeLinkStyle),
+              }}
+            >
               Coin Stock
             </a>
           </li>
 
           <li style={navItemStyle}>
-            <a href="/coinbill" style={linkStyle}>
+            <a
+              href="/coinbill"
+              style={{
+                ...linkStyle,
+                ...(isActive("/coinbill") && activeLinkStyle),
+              }}
+            >
               Coin Bill
             </a>
           </li>
 
           {userRole !== "user" && (
             <li style={navItemStyle}>
-              <div style={dropdownHeaderStyle} onClick={toggleReportsDropdown}>
+              <div
+                style={{
+                  ...dropdownHeaderStyle,
+                  ...(isReportsActive() && activeLinkStyle),
+                }}
+                onClick={toggleReportsDropdown}
+              >
                 Reports{" "}
                 {showReportsDropdown ? <FiChevronUp /> : <FiChevronDown />}
               </div>
@@ -93,35 +129,55 @@ function Navbar() {
                 <div style={dropdownMenuStyle}>
                   <a
                     href="/report"
-                    style={dropdownItemStyle}
+                    style={{
+                      ...dropdownItemStyle,
+                      ...(isActiveStartsWith("/report") &&
+                        activeDropdownItemStyle),
+                    }}
                     className="dropdown-item"
                   >
                     Daily Sales Report
                   </a>
                   <a
                     href="/customerreport"
-                    style={dropdownItemStyle}
+                    style={{
+                      ...dropdownItemStyle,
+                      ...(isActiveStartsWith("/customerreport") &&
+                        activeDropdownItemStyle),
+                    }}
                     className="dropdown-item"
                   >
                     Customer Report
                   </a>
                   <a
                     href="/advancereport"
-                    style={dropdownItemStyle}
+                    style={{
+                      ...dropdownItemStyle,
+                      ...(isActiveStartsWith("/advancereport") &&
+                        activeDropdownItemStyle),
+                    }}
                     className="dropdown-item"
                   >
                     Advance Payments Report
                   </a>
                   <a
                     href="/balancereport"
-                    style={dropdownItemStyle}
+                    style={{
+                      ...dropdownItemStyle,
+                      ...(isActiveStartsWith("/balancereport") &&
+                        activeDropdownItemStyle),
+                    }}
                     className="dropdown-item"
                   >
                     Balance Report
                   </a>
                   <a
                     href="/overallreport"
-                    style={dropdownItemStyle}
+                    style={{
+                      ...dropdownItemStyle,
+                      ...(isActiveStartsWith("/overallreport") &&
+                        activeDropdownItemStyle),
+                    }}
                     className="dropdown-item"
                   >
                     Overall Report
@@ -222,6 +278,16 @@ const logoutButtonStyle = {
   display: "flex",
   alignItems: "center",
   gap: "5px",
+};
+
+const activeLinkStyle = {
+  backgroundColor: "#ffffff",
+  color: "#A31D1D",
+};
+
+const activeDropdownItemStyle = {
+  backgroundColor: "#ffffff",
+  color: "#A31D1D",
 };
 
 export default Navbar;
