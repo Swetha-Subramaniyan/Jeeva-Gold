@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "./Customertrans.css";
@@ -65,7 +64,7 @@ const Customertrans = () => {
         const cash = parseFloat(value);
         const rate = parseFloat(goldRate);
         if (!isNaN(cash) && !isNaN(rate) && rate > 0) {
-          updatedTransaction.purity = (cash / rate);
+          updatedTransaction.purity = cash / rate;
         }
       }
     } else if (name === "goldValue" && updatedTransaction.type === "Gold") {
@@ -73,13 +72,13 @@ const Customertrans = () => {
       const touch = parseFloat(updatedTransaction.touch);
       const gold = parseFloat(value);
       if (!isNaN(gold) && !isNaN(touch)) {
-        updatedTransaction.purity = ((gold * touch) / 100);
+        updatedTransaction.purity = (gold * touch) / 100;
       }
     } else if (name === "touch" && updatedTransaction.type === "Gold") {
       const gold = parseFloat(updatedTransaction.goldValue);
       const touch = parseFloat(value);
       if (!isNaN(gold) && !isNaN(touch)) {
-        updatedTransaction.purity = ((gold * touch) / 100);
+        updatedTransaction.purity = (gold * touch) / 100;
       }
     }
 
@@ -286,7 +285,14 @@ const Customertrans = () => {
                     <input
                       name="cashValue"
                       value={newTransaction.cashValue}
-                      onChange={handleChange}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (/^\d*\.?\d*$/.test(value)) {
+                          handleChange({
+                            target: { name: "cashValue", value },
+                          });
+                        }
+                      }}
                       step="0.01"
                       required
                     />
@@ -296,14 +302,17 @@ const Customertrans = () => {
                     <input
                       value={goldRate}
                       onChange={(e) => {
-                        setGoldRate(e.target.value);
-                        if (newTransaction.cashValue) {
-                          const cash = parseFloat(newTransaction.cashValue);
-                          const rate = parseFloat(e.target.value);
-                          if (!isNaN(cash) && !isNaN(rate) && rate > 0) {
-                            const updatedTransaction = { ...newTransaction };
-                            updatedTransaction.purity = (cash / rate);
-                            setNewTransaction(updatedTransaction);
+                        const value = e.target.value;
+                        if (/^\d*\.?\d*$/.test(value)) {
+                          setGoldRate(e.target.value);
+                          if (newTransaction.cashValue) {
+                            const cash = parseFloat(newTransaction.cashValue);
+                            const rate = parseFloat(e.target.value);
+                            if (!isNaN(cash) && !isNaN(rate) && rate > 0) {
+                              const updatedTransaction = { ...newTransaction };
+                              updatedTransaction.purity = cash / rate;
+                              setNewTransaction(updatedTransaction);
+                            }
                           }
                         }
                       }}
@@ -329,7 +338,14 @@ const Customertrans = () => {
                     <input
                       name="goldValue"
                       value={newTransaction.goldValue}
-                      onChange={handleChange}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (/^\d*\.?\d*$/.test(value)) {
+                          handleChange({
+                            target: { name: "goldValue", value },
+                          });
+                        }
+                      }}
                       step="0.001"
                       required
                     />
@@ -339,7 +355,12 @@ const Customertrans = () => {
                     <input
                       name="touch"
                       value={newTransaction.touch}
-                      onChange={handleChange}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (/^\d*\.?\d*$/.test(value)) {
+                          handleChange({ target: { name: "touch", value } });
+                        }
+                      }}
                       min="0"
                       max="100"
                       step="0.01"
@@ -400,12 +421,14 @@ const Customertrans = () => {
               </td>
               <td>
                 {transaction.type === "Cash"
-                  ? formatNumber(transaction.goldRate,2)
+                  ? formatNumber(transaction.goldRate, 2)
                   : "-"}
               </td>
-              <td>{formatNumber(transaction.purity,3)}</td>
+              <td>{formatNumber(transaction.purity, 3)}</td>
               <td>
-                {transaction.type === "Gold" ? `${formatNumber(transaction.touch,3)}%` : "-"}
+                {transaction.type === "Gold"
+                  ? `${formatNumber(transaction.touch, 3)}%`
+                  : "-"}
               </td>
               <td style={{ display: "flex", gap: "0.5rem" }}>
                 <button
