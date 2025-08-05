@@ -264,9 +264,10 @@ function Cashgold() {
   };
 
   const calculateTotalPurity = () => {
-    return entries
-      .reduce((sum, entry) => sum + parseFloat(entry.purity || 0), 0)
-      .toFixed(3);
+    return getMergedRows().reduce(
+      (sum, entry) => sum + parseFloat(entry.purity || 0),
+      0
+    );
   };
 
   return (
@@ -439,7 +440,7 @@ function Cashgold() {
                     ? `₹${formatNumber(entry.goldRate, 2)}/g`
                     : `${formatNumber(entry.touch, 3)}%`}
                 </td>
-                <td>{formatNumber(entry.purity,3)}</td>
+                <td>{formatNumber(entry.purity, 3)}</td>
                 <td>{entry.isBillSummary ? "" : entry.remarks || "-"}</td>
                 <td>
                   {!entry.isBillSummary && (
@@ -464,6 +465,20 @@ function Cashgold() {
               </tr>
             ))}
           </tbody>
+          <tfoot>
+            <tr className="footer-row">
+              <td
+                colSpan="5"
+                style={{ textAlign: "right", fontWeight: "bold" }}
+              >
+                Total Purity:
+              </td>
+              <td style={{ fontWeight: "bold" }}>
+                {formatNumber(calculateTotalPurity(), 3)}
+              </td>
+              <td colSpan="2"></td>
+            </tr>
+          </tfoot>
         </table>
       </div>
     </div>

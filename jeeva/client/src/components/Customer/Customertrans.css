@@ -145,9 +145,10 @@ button {
   margin-bottom: 10px;
 }
 
-.total-row {
+.total-rows {
   display: flex;
-  justify-content: space-between;
+  align-items: center;
+  justify-content: center;
   margin-bottom: 5px;
   font-weight: bold;
 }

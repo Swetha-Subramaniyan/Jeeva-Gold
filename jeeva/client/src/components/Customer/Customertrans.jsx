@@ -452,7 +452,7 @@ const Customertrans = () => {
       {totals.totalPurity > 0 && (
         <div className="transaction-totals">
           <h3>Transaction Totals</h3>
-          <div className="total-row">
+          <div className="total-rows">
             <span>Total Purity:</span>
             <span>{formatNumber(totals.totalPurity, 3)} g</span>
           </div>

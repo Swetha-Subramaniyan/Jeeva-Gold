@@ -569,7 +569,7 @@ const CustomerReport = () => {
                   <TableBody>
                     {selectedBill.items.map((item, index) => (
                       <TableRow key={index}>
-                        <TableCell>{item.coinValue}g</TableCell>
+                        <TableCell>{item.coinValue}g{item.percentage}</TableCell>
                         <TableCell>{item.quantity}</TableCell>
                         <TableCell>{formatNumber(item.weight, 3)}</TableCell>
                         <TableCell>{formatNumber(item.purity, 3)}</TableCell>
