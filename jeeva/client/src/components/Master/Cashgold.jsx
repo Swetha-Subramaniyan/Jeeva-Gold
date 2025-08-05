@@ -465,6 +465,7 @@ function Cashgold() {
               </tr>
             ))}
           </tbody>
+          {/* new commit  */}
           <tfoot>
             <tr className="footer-row">
               <td

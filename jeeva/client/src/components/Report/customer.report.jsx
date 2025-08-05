@@ -567,6 +567,7 @@ const CustomerReport = () => {
                     </TableRow>
                   </TableHead>
                   <TableBody>
+                    {/* new commit  */}
                     {selectedBill.items.map((item, index) => (
                       <TableRow key={index}>
                         <TableCell>{item.coinValue}g{item.percentage}</TableCell>

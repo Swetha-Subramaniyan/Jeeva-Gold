@@ -9,6 +9,7 @@ import { FaEdit, FaTrash } from "react-icons/fa";
 import { formatNumber } from "../../utils/formatNumber";
 
 const Customertrans = () => {
+  
   const [searchParams] = useSearchParams();
   const customerId = searchParams.get("id");
   const customerName = searchParams.get("name");
@@ -205,6 +206,7 @@ const Customertrans = () => {
 
   return (
     <div className="customer-transactions">
+      {/* new commit  */}
       <ToastContainer position="top-right" autoClose={3000} />
       <h2>
         Customer Transactions{" "}

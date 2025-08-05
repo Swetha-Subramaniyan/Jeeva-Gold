@@ -47,6 +47,8 @@ const OverallReport = () => {
         0
       );  
 
+      {/* new commit  */}
+
       let receivedEntriesPurity = 0;
       bills.forEach((bill) => {
         if (bill.receivedDetails && Array.isArray(bill.receivedDetails)) {

@@ -446,6 +446,7 @@ const DailySalesReport = () => {
                       <TableCell>Purity</TableCell>
                     </TableRow>
                   </TableHead>
+                  {/* new commit  */}
                   <TableBody>
                     {selectedBill.items.map((item, index) => (
                       <TableRow key={index}>
