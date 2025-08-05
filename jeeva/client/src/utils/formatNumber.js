@@ -1,4 +1,6 @@
 export const formatNumber = (value, precision) => {
+
+  console.log("va", value)
   if (isNaN(value)) return "-";
   const floatVal = parseFloat(value);
   return floatVal % 1 === 0

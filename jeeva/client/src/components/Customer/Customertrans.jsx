@@ -284,7 +284,6 @@ const Customertrans = () => {
                   <label>
                     Cash Amount (₹):
                     <input
-                      type="number"
                       name="cashValue"
                       value={newTransaction.cashValue}
                       onChange={handleChange}
@@ -295,7 +294,6 @@ const Customertrans = () => {
                   <label>
                     Gold Rate (₹/gram):
                     <input
-                      type="number"
                       value={goldRate}
                       onChange={(e) => {
                         setGoldRate(e.target.value);
@@ -316,9 +314,8 @@ const Customertrans = () => {
                   <label>
                     Purity (grams):
                     <input
-                      type="number"
                       name="purity"
-                      value={newTransaction.purity || ""}
+                      value={formatNumber(newTransaction.purity, 3) || ""}
                       readOnly
                     />
                   </label>
@@ -330,7 +327,6 @@ const Customertrans = () => {
                   <label>
                     Gold Value (grams):
                     <input
-                      type="number"
                       name="goldValue"
                       value={newTransaction.goldValue}
                       onChange={handleChange}
@@ -341,7 +337,6 @@ const Customertrans = () => {
                   <label>
                     Touch (%):
                     <input
-                      type="number"
                       name="touch"
                       value={newTransaction.touch}
                       onChange={handleChange}
@@ -353,9 +348,8 @@ const Customertrans = () => {
                   <label>
                     Purity (grams):
                     <input
-                      type="number"
                       name="purity"
-                      value={newTransaction.purity}
+                      value={formatNumber(newTransaction.purity, 3)}
                       readOnly
                     />
                   </label>
