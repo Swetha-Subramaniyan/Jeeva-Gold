@@ -7,9 +7,10 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { FaEdit, FaTrash } from "react-icons/fa";
 import { formatNumber } from "../../utils/formatNumber";
+import { formatToFixed3Strict } from "../../utils/formatToFixed3Strict";
+import { NumericFormat } from "react-number-format";
 
 const Customertrans = () => {
-  
   const [searchParams] = useSearchParams();
   const customerId = searchParams.get("id");
   const customerName = searchParams.get("name");
@@ -65,7 +66,7 @@ const Customertrans = () => {
         const cash = parseFloat(value);
         const rate = parseFloat(goldRate);
         if (!isNaN(cash) && !isNaN(rate) && rate > 0) {
-          updatedTransaction.purity = cash / rate;
+          updatedTransaction.purity = formatToFixed3Strict(cash / rate);
         }
       }
     } else if (name === "goldValue" && updatedTransaction.type === "Gold") {
@@ -73,13 +74,13 @@ const Customertrans = () => {
       const touch = parseFloat(updatedTransaction.touch);
       const gold = parseFloat(value);
       if (!isNaN(gold) && !isNaN(touch)) {
-        updatedTransaction.purity = (gold * touch) / 100;
+        updatedTransaction.purity = formatToFixed3Strict((gold * touch) / 100);
       }
     } else if (name === "touch" && updatedTransaction.type === "Gold") {
       const gold = parseFloat(updatedTransaction.goldValue);
       const touch = parseFloat(value);
       if (!isNaN(gold) && !isNaN(touch)) {
-        updatedTransaction.purity = (gold * touch) / 100;
+        updatedTransaction.purity = formatToFixed3Strict((gold * touch) / 100);
       }
     }
 
@@ -198,7 +199,7 @@ const Customertrans = () => {
 
   const totals = filteredTransactions.reduce(
     (acc, transaction) => {
-      acc.totalPurity += parseFloat(transaction.purity) || 0;
+      acc.totalPurity += parseFloat(formatToFixed3Strict(transaction.purity)) || 0;
       return acc;
     },
     { totalPurity: 0 }
@@ -206,7 +207,6 @@ const Customertrans = () => {
 
   return (
     <div className="customer-transactions">
-      {/* new commit  */}
       <ToastContainer position="top-right" autoClose={3000} />
       <h2>
         Customer Transactions{" "}
@@ -239,7 +239,7 @@ const Customertrans = () => {
       </button>
 
       {showPopup && (
-        <div className="popup">
+        <div className="popups">
           <div className="popup-content">
             <span
               className="popup-close"
@@ -284,49 +284,60 @@ const Customertrans = () => {
                 <>
                   <label>
                     Cash Amount (₹):
-                    <input
+                    <NumericFormat
                       name="cashValue"
                       value={newTransaction.cashValue}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        if (/^\d*\.?\d*$/.test(value)) {
-                          handleChange({
-                            target: { name: "cashValue", value },
-                          });
+                      onValueChange={(values) => {
+                        handleChange({
+                          target: {
+                            name: "cashValue",
+                            value: values.floatValue,
+                          },
+                        });
+
+                        if (values.floatValue && goldRate) {
+                          const updatedTransaction = { ...newTransaction };
+                          updatedTransaction.purity =
+                            values.floatValue / goldRate;
+                          setNewTransaction(updatedTransaction);
                         }
                       }}
-                      step="0.01"
+                      thousandSeparator=","
+                      decimalScale={2}
+                      allowNegative={false}
                       required
                     />
                   </label>
+
                   <label>
                     Gold Rate (₹/gram):
-                    <input
+                    <NumericFormat
                       value={goldRate}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        if (/^\d*\.?\d*$/.test(value)) {
-                          setGoldRate(e.target.value);
-                          if (newTransaction.cashValue) {
-                            const cash = parseFloat(newTransaction.cashValue);
-                            const rate = parseFloat(e.target.value);
-                            if (!isNaN(cash) && !isNaN(rate) && rate > 0) {
-                              const updatedTransaction = { ...newTransaction };
-                              updatedTransaction.purity = cash / rate;
-                              setNewTransaction(updatedTransaction);
-                            }
-                          }
+                      onValueChange={(values) => {
+                        setGoldRate(values.floatValue);
+
+                        if (newTransaction.cashValue && values.floatValue) {
+                          const updatedTransaction = { ...newTransaction };
+                          updatedTransaction.purity =
+                            newTransaction.cashValue / values.floatValue;
+                          setNewTransaction(updatedTransaction);
                         }
                       }}
-                      step="0.01"
+                      thousandSeparator=","
+                      decimalScale={2}
+                      allowNegative={false}
                       required
                     />
                   </label>
+
                   <label>
                     Purity (grams):
-                    <input
+                    <NumericFormat
                       name="purity"
-                      value={formatNumber(newTransaction.purity, 3) || ""}
+                      value={newTransaction.purity}
+                      displayType="text"
+                      thousandSeparator=","
+                      decimalScale={3}
                       readOnly
                     />
                   </label>
@@ -337,42 +348,70 @@ const Customertrans = () => {
                 <>
                   <label>
                     Gold Value (grams):
-                    <input
+                    <NumericFormat
                       name="goldValue"
                       value={newTransaction.goldValue}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        if (/^\d*\.?\d*$/.test(value)) {
-                          handleChange({
-                            target: { name: "goldValue", value },
-                          });
+                      onValueChange={(values) => {
+                        handleChange({
+                          target: {
+                            name: "goldValue",
+                            value: values.floatValue,
+                          },
+                        });
+
+                        if (values.floatValue && newTransaction.touch) {
+                          const updatedTransaction = { ...newTransaction };
+                          updatedTransaction.purity =
+                            (values.floatValue * newTransaction.touch) / 100;
+                          setNewTransaction(updatedTransaction);
                         }
                       }}
-                      step="0.001"
+                      thousandSeparator=","
+                      decimalScale={3}
+                      allowNegative={false}
                       required
                     />
                   </label>
+
                   <label>
                     Touch (%):
-                    <input
+                    <NumericFormat
                       name="touch"
                       value={newTransaction.touch}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        if (/^\d*\.?\d*$/.test(value)) {
-                          handleChange({ target: { name: "touch", value } });
+                      onValueChange={(values) => {
+                        handleChange({
+                          target: { name: "touch", value: values.floatValue },
+                        });
+                        if (newTransaction.goldValue && values.floatValue) {
+                          const updatedTransaction = { ...newTransaction };
+                          updatedTransaction.purity =
+                            (newTransaction.goldValue * values.floatValue) /
+                            100;
+                          setNewTransaction(updatedTransaction);
                         }
                       }}
-                      min="0"
-                      max="100"
-                      step="0.01"
+                      thousandSeparator=","
+                      decimalScale={2}
+                      allowNegative={false}
+                      isAllowed={(values) => {
+                        const { floatValue } = values;
+                        return (
+                          floatValue === undefined ||
+                          (floatValue >= 0 && floatValue <= 100)
+                        );
+                      }}
                     />
                   </label>
+
+                 
+
                   <label>
                     Purity (grams):
-                    <input
+                    <NumericFormat
                       name="purity"
-                      value={formatNumber(newTransaction.purity, 3)}
+                      value={newTransaction.purity}
+                      thousandSeparator=","
+                      decimalScale={3}
                       readOnly
                     />
                   </label>
@@ -419,17 +458,17 @@ const Customertrans = () => {
               <td>
                 {transaction.type === "Cash"
                   ? `₹${formatNumber(transaction.value, 2)}`
-                  : `${formatNumber(transaction.value, 3)}g`}
+                  : `${formatToFixed3Strict(transaction.value)}g`}
               </td>
               <td>
                 {transaction.type === "Cash"
                   ? formatNumber(transaction.goldRate, 2)
                   : "-"}
               </td>
-              <td>{formatNumber(transaction.purity, 3)}</td>
+              <td>{formatToFixed3Strict(transaction.purity, 3)}</td>
               <td>
                 {transaction.type === "Gold"
-                  ? `${formatNumber(transaction.touch, 3)}%`
+                  ? `${formatNumber(transaction.touch, 2)}%`
                   : "-"}
               </td>
               <td style={{ display: "flex", gap: "0.5rem" }}>
@@ -456,7 +495,7 @@ const Customertrans = () => {
           <h3>Transaction Totals</h3>
           <div className="total-rows">
             <span>Total Purity:</span>
-            <span>{formatNumber(totals.totalPurity, 3)} g</span>
+            <span>{formatToFixed3Strict(totals.totalPurity, 3)} g</span>
           </div>
         </div>
       )}

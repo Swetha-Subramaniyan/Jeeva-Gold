@@ -5,6 +5,8 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { BACKEND_SERVER_URL } from "../../Config/Config";
 import { formatNumber } from "../../utils/formatNumber";
+import { formatToFixed3Strict } from "../../utils/formatToFixed3Strict";
+import { NumericFormat } from "react-number-format";
 
 function Cashgold() {
   const [showFormPopup, setShowFormPopup] = useState(false);
@@ -92,12 +94,6 @@ function Cashgold() {
     return rows.sort((a, b) => new Date(b.date) - new Date(a.date));
   };
 
-  const calculateTotalCash = () => {
-    return entries
-      .filter((entry) => entry.type === "Cash")
-      .reduce((sum, entry) => sum + parseFloat(entry.cashAmount || 0), 0)
-      .toFixed(2);
-  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -120,7 +116,7 @@ function Cashgold() {
       );
       const touch = parseFloat(name === "touch" ? value : formData.touch);
       if (!isNaN(goldValue) && !isNaN(touch)) {
-        updatedForm.purity = ((goldValue * touch) / 100).toFixed(3);
+        updatedForm.purity = formatToFixed3Strict((goldValue * touch) / 100);
       } else {
         updatedForm.purity = "";
       }
@@ -136,7 +132,7 @@ function Cashgold() {
       if (!isNaN(cashAmount) && !isNaN(rate)) {
         setFormData((prev) => ({
           ...prev,
-          purity: (cashAmount / rate).toFixed(3),
+          purity: formatToFixed3Strict(cashAmount / rate),
         }));
       }
     }
@@ -302,6 +298,7 @@ function Cashgold() {
                   required
                 />
               </div>
+
               <div className="form-group">
                 <label>Type:</label>
                 <select
@@ -315,65 +312,117 @@ function Cashgold() {
                   <option value="Gold">Gold</option>
                 </select>
               </div>
+
               {formData.type === "Cash" && (
                 <>
                   <div className="form-group">
                     <label>Cash Amount:</label>
-                    <input
+                    <NumericFormat
                       name="cashAmount"
                       value={formData.cashAmount}
-                      onChange={handleChange}
-                      step="0.01"
+                      onValueChange={(values) => {
+                        handleChange({
+                          target: {
+                            name: "cashAmount",
+                            value: values.floatValue,
+                          },
+                        });
+                      }}
+                      thousandSeparator=","
+                      decimalScale={2}
+                      allowNegative={false}
                       required
                     />
                   </div>
+
                   <div className="form-group">
                     <label>Gold Rate (per gram):</label>
-                    <input
+                    <NumericFormat
                       value={goldRate}
-                      onChange={(e) => setGoldRate(e.target.value)}
-                      step="0.01"
+                      onValueChange={(values) => setGoldRate(values.floatValue)}
+                      thousandSeparator=","
+                      decimalScale={2}
+                      allowNegative={false}
                       required
                     />
                   </div>
                 </>
               )}
+
               {formData.type === "Gold" && (
                 <>
                   <div className="form-group">
                     <label>Gold Value (g):</label>
-                    <input
+                    <NumericFormat
                       name="goldValue"
                       value={formData.goldValue}
-                      onChange={handleChange}
-                      step="0.001"
+                      onValueChange={(values) => {
+                        handleChange({
+                          target: {
+                            name: "goldValue",
+                            value: values.floatValue,
+                          },
+                        });
+                      }}
+                      thousandSeparator=","
+                      decimalScale={3}
+                      allowNegative={false}
                       required
                     />
                   </div>
+
                   <div className="form-group">
                     <label>Touch (%):</label>
-                    <input
+                    <NumericFormat
                       name="touch"
                       value={formData.touch}
-                      onChange={handleChange}
-                      step="0.01"
-                      max="100"
+                      onValueChange={(values) => {
+                        handleChange({
+                          target: {
+                            name: "touch",
+                            value: values.floatValue,
+                          },
+                        });
+                      }}
+                      thousandSeparator=","
+                      decimalScale={2}
+                      allowNegative={false}
+                      isAllowed={(values) => {
+                        const { floatValue } = values;
+                        return (
+                          floatValue === undefined ||
+                          (floatValue >= 0 && floatValue <= 100)
+                        );
+                      }}
                       required
                     />
                   </div>
                 </>
               )}
+
               <div className="form-group">
                 <label>Purity (g):</label>
-                <input
+                <NumericFormat
                   name="purity"
                   value={formData.purity}
-                  onChange={handleChange}
+                  onValueChange={(values) => {
+                    if (isEditMode) {
+                      handleChange({
+                        target: {
+                          name: "purity",
+                          value: values.floatValue,
+                        },
+                      });
+                    }
+                  }}
+                  thousandSeparator=","
+                  decimalScale={3}
+                  allowNegative={false}
                   readOnly={!isEditMode}
                   className={isEditMode ? "" : "read-only"}
-                  step="0.001"
                 />
               </div>
+
               <div className="form-group">
                 <label>Remarks:</label>
                 <textarea
@@ -392,6 +441,7 @@ function Cashgold() {
                   }}
                 />
               </div>
+
               <div className="button-group">
                 <button type="submit" className="submit-btn">
                   {isEditMode ? "Update" : "Save"}
@@ -431,16 +481,16 @@ function Cashgold() {
                     ? ""
                     : entry.type === "Cash"
                     ? `₹${formatNumber(entry.cashAmount, 2)}`
-                    : `${formatNumber(entry.goldValue, 3)}g`}
+                    : `${formatToFixed3Strict(entry.goldValue)}g`}
                 </td>
                 <td>
                   {entry.isBillSummary
                     ? ""
                     : entry.type === "Cash"
                     ? `₹${formatNumber(entry.goldRate, 2)}/g`
-                    : `${formatNumber(entry.touch, 3)}%`}
+                    : `${formatNumber(entry.touch, 2)}%`}
                 </td>
-                <td>{formatNumber(entry.purity, 3)}</td>
+                <td>{formatToFixed3Strict(entry.purity, 3)}</td>
                 <td>{entry.isBillSummary ? "" : entry.remarks || "-"}</td>
                 <td>
                   {!entry.isBillSummary && (
@@ -465,7 +515,6 @@ function Cashgold() {
               </tr>
             ))}
           </tbody>
-          {/* new commit  */}
           <tfoot>
             <tr className="footer-row">
               <td
@@ -475,7 +524,7 @@ function Cashgold() {
                 Total Purity:
               </td>
               <td style={{ fontWeight: "bold" }}>
-                {formatNumber(calculateTotalPurity(), 3)}
+                {formatToFixed3Strict(calculateTotalPurity(), 3)}
               </td>
               <td colSpan="2"></td>
             </tr>

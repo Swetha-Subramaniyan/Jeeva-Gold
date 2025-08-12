@@ -19,6 +19,7 @@ import {
 import { BACKEND_SERVER_URL } from "../../Config/Config";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import { formatNumber } from "../../utils/formatNumber";
+import { formatToFixed3Strict } from "../../utils/formatToFixed3Strict";
 
 const DailySalesReport = () => {
   const [bills, setBills] = useState([]);
@@ -224,13 +225,13 @@ const DailySalesReport = () => {
         }}
       >
         <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-          Total Weight: {formatNumber(metrics.totalWeight, 3)} g
+          Total Weight: {formatToFixed3Strict(metrics.totalWeight)} g
         </Typography>
         <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-          Total Purity: {formatNumber(metrics.totalPurity, 3)} g
+          Total Purity: {formatToFixed3Strict(metrics.totalPurity)} g
         </Typography>
         <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-          Pure Received: {formatNumber(metrics.pureReceived, 3)} g
+          Pure Received: {formatToFixed3Strict(metrics.pureReceived)} g
         </Typography>
 
         <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
@@ -312,13 +313,13 @@ const DailySalesReport = () => {
                   <TableRow key={bill.id}>
                     <TableCell>BILL-{bill.id}</TableCell>
                     <TableCell>{bill.customer?.name || "Unknown"}</TableCell>
-                    <TableCell>{formatNumber(totalWeight, 3)}</TableCell>
-                    <TableCell>{formatNumber(totalPurity, 3)}</TableCell>
+                    <TableCell>{formatToFixed3Strict(totalWeight)}</TableCell>
+                    <TableCell>{formatToFixed3Strict(totalPurity)}</TableCell>
                     <TableCell>₹{formatNumber(totalAmount, 2)}</TableCell>
                     <TableCell>
                       ₹{formatNumber(received.cash + received.hallmark, 2)}
                     </TableCell>
-                    <TableCell>{formatNumber(received.pure, 3)} g</TableCell>
+                    <TableCell>{formatToFixed3Strict(received.pure)} g</TableCell>
                     <TableCell
                       sx={{
                         color: "success.main",
@@ -332,7 +333,7 @@ const DailySalesReport = () => {
                         color: pureBalance > 0 ? "error.main" : "success.main",
                       }}
                     >
-                      {formatNumber(pureBalance, 3)}g
+                      {formatToFixed3Strict(pureBalance)}g
                     </TableCell>
                     <TableCell>
                       <IconButton onClick={() => handleViewBill(bill)}>
@@ -361,11 +362,11 @@ const DailySalesReport = () => {
                 <strong>Total</strong>
               </TableCell>
               <TableCell>
-                <strong>{formatNumber(metrics.totalWeight, 3)}</strong>
+                <strong>{formatToFixed3Strict(metrics.totalWeight)}</strong>
               </TableCell>
               <TableCell>
                 <strong style={{ color: "yellow", fontSize: "1.1rem" }}>
-                  {formatNumber(metrics.totalPurity, 3)}
+                  {formatToFixed3Strict(metrics.totalPurity)}
                 </strong>
               </TableCell>
               <TableCell>
@@ -382,7 +383,7 @@ const DailySalesReport = () => {
               </TableCell>
               <TableCell>
                 <strong style={{ color: "yellow", fontSize: "1.1rem" }}>
-                  {formatNumber(metrics.pureReceived, 3)} g
+                  {formatToFixed3Strict(metrics.pureReceived)} g
                 </strong>
               </TableCell>
               <TableCell>
@@ -391,7 +392,7 @@ const DailySalesReport = () => {
                 </strong>
               </TableCell>
               <TableCell colSpan={2}>
-                <strong>{formatNumber(metrics.outstandingPure, 3)} g</strong>
+                <strong>{formatToFixed3Strict(metrics.outstandingPure)} g</strong>
               </TableCell>
             </TableRow>
           </TableFooter>
@@ -429,7 +430,7 @@ const DailySalesReport = () => {
                 </Typography>
                 <Typography variant="body1">
                   <strong>Total Purity:</strong>{" "}
-                  {formatNumber(selectedBill.totalPurity, 3)}g
+                  {formatToFixed3Strict(selectedBill.totalPurity)}g
                 </Typography>
               </Box>
 
@@ -452,8 +453,8 @@ const DailySalesReport = () => {
                       <TableRow key={index}>
                         <TableCell>{item.coinValue}g{item.percentage}</TableCell>
                         <TableCell>{item.quantity}</TableCell>
-                        <TableCell>{formatNumber(item.weight, 3)}</TableCell>
-                        <TableCell>{formatNumber(item.purity, 3)}</TableCell>
+                        <TableCell>{formatToFixed3Strict(item.weight)}</TableCell>
+                        <TableCell>{formatToFixed3Strict(item.purity)}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -485,7 +486,7 @@ const DailySalesReport = () => {
                             {detail.givenGold ? "Gold" : "Cash"}
                           </TableCell>
                           <TableCell>
-                            {formatNumber(detail.purityWeight, 3) || "-"}
+                            {formatToFixed3Strict(detail.purityWeight) || "-"}
                           </TableCell>
                           <TableCell>
                             {formatNumber(detail.amount, 2) || "-"}

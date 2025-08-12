@@ -5,6 +5,7 @@ import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import "./Billing.css";
 import { NumericFormat } from "react-number-format";
 import { formatNumber } from "../../utils/formatNumber";
+import { formatToFixed3Strict } from "../../utils/formatToFixed3Strict";
 
 const ReceivedDetails = ({
   rows,
@@ -33,6 +34,8 @@ const ReceivedDetails = ({
   const calculateBalances = () => {
     let pure = parseFloatSafe(initialPureBalance);
     let total = parseFloatSafe(initialTotalBalance);
+
+    console.log("sssssssssssssssss", pure, rows)
 
     let hallmark;
     if (isViewMode) {
@@ -79,6 +82,10 @@ const ReceivedDetails = ({
 
   const currentBalances = calculateBalances();
 
+  console.log("Sssssssssssssssssssss", currentBalances);
+
+  console.log("saikhflioas", displayedTotalBalance, displayHallmarkCharges);
+
   useEffect(() => {
     const goldRateRows = rows.filter(
       (row) => row.goldRate && parseFloatSafe(row.goldRate) > 0
@@ -109,7 +116,7 @@ const ReceivedDetails = ({
           parseFloatSafe(currentBalances.pureBalance) * latestGoldRate;
       }
     } else {
-      console.log("saikhflioas", displayedTotalBalance, displayHallmarkCharges);
+      
       newTotalBalance =
         displayedTotalBalance > 0
           ? parseFloatSafe(displayedTotalBalance) +
@@ -342,9 +349,8 @@ const ReceivedDetails = ({
             <th className="th">Purity WT</th>
             <th className="th">Received Amount</th>
             <th className="th">Paid Amount</th>
-
             <div className="no-print-receive">
-              <th className="th"> Action</th>
+              <th className="th">Action</th>
             </div>
           </tr>
         </thead>
@@ -365,16 +371,22 @@ const ReceivedDetails = ({
                 />
               </td>
               <td className="td">
-                <TextField
+                <NumericFormat
+                  customInput={TextField}
                   size="small"
                   value={row.givenGold === 0 ? "" : row.givenGold}
-                  onChange={(e) =>
-                    handleRowChange(index, "givenGold", e.target.value)
-                  }
+                  onValueChange={(e) => {
+                    handleRowChange(index, "givenGold", e.floatValue);
+                    calculateBalances();
+                  }}
+                  thousandSeparator=","
+                  decimalScale={3}
+                  allowNegative={false}
                   disabled={
                     (isViewMode && !row.isNew) ||
                     (row.mode === "amount" && !(isViewMode && row.isNew))
                   }
+                  inputProps={{ min: 0 }}
                 />
               </td>
               <td className="td">
@@ -387,7 +399,8 @@ const ReceivedDetails = ({
                     calculateBalances();
                   }}
                   thousandSeparator=","
-                  decimalScale={3}
+                  decimalScale={2}
+                  allowNegative={false}
                   disabled={
                     (isViewMode && !row.isNew) ||
                     (row.mode === "weight" && !(isViewMode && row.isNew))
@@ -404,18 +417,25 @@ const ReceivedDetails = ({
                     handleRowChange(index, "touch", e.floatValue)
                   }
                   thousandSeparator=","
+                  decimalScale={2}
+                  allowNegative={false}
                   disabled={
                     (isViewMode && !row.isNew) ||
                     (row.mode === "amount" && !(isViewMode && row.isNew))
                   }
+                  inputProps={{ min: 0, max: 100 }}
                 />
               </td>
               <td className="td">
-                <TextField
+                <NumericFormat
+                  customInput={TextField}
                   size="small"
                   value={
                     row.purityWeight ? formatNumber(row.purityWeight, 3) : ""
                   }
+                  thousandSeparator=","
+                  decimalScale={3}
+                  displayType="text"
                   InputProps={{ readOnly: true }}
                 />
               </td>
@@ -428,7 +448,8 @@ const ReceivedDetails = ({
                     handleRowChange(index, "amount", e.floatValue)
                   }
                   thousandSeparator=","
-                  decimalScale={3}
+                  decimalScale={2}
+                  allowNegative={false}
                   disabled={
                     (isViewMode && !row.isNew) ||
                     (row.mode === "weight" && !(isViewMode && row.isNew))
@@ -445,7 +466,8 @@ const ReceivedDetails = ({
                     handleRowChange(index, "paidAmount", e.floatValue)
                   }
                   thousandSeparator=","
-                  decimalScale={3}
+                  decimalScale={2}
+                  allowNegative={false}
                   disabled={
                     (isViewMode && !row.isNew) ||
                     (row.mode === "weight" && !(isViewMode && row.isNew))
@@ -453,7 +475,6 @@ const ReceivedDetails = ({
                   inputProps={{ min: 0 }}
                 />
               </td>
-
               <div className="no-prints-receive">
                 <td className="td">
                   <IconButton
@@ -471,7 +492,7 @@ const ReceivedDetails = ({
 
       <div className="flex">
         <div>
-          <b>Pure Balance: {formatNumber(currentBalances.pureBalance, 3)}</b>
+          <b>Pure Balance: {formatToFixed3Strict(currentBalances.pureBalance)}</b>
         </div>
         <div>
           <b>
