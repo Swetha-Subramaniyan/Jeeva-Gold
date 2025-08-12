@@ -4,6 +4,8 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { BACKEND_SERVER_URL } from "../../Config/Config";
 import { formatNumber } from "../../utils/formatNumber";
+import { formatToFixed3Strict } from "../../utils/formatToFixed3Strict";
+import { NumericFormat } from "react-number-format";
 
 const Stock = () => {
   const [showPopup, setShowPopup] = useState(false);
@@ -50,8 +52,8 @@ const Stock = () => {
       const gram = parseFloat(updatedData.gram) || 0;
       const quantity = parseInt(updatedData.quantity) || 0;
       const touch = parseFloat(updatedData.touch) || 0;
-      updatedData.totalWeight = (gram * quantity).toFixed(2);
-      updatedData.purity = ((touch * gram * quantity) / 100).toFixed(3);
+      updatedData.totalWeight = formatToFixed3Strict(gram * quantity);
+      updatedData.purity = formatToFixed3Strict((touch * gram * quantity) / 100);
     }
 
     setFormData(updatedData);
@@ -151,13 +153,13 @@ const Stock = () => {
         quantity: (
           parseInt(stockItems[index].quantity) + parseInt(formData.quantity)
         ).toString(),
-        totalWeight: (
+        totalWeight: formatToFixed3Strict(
           parseFloat(stockItems[index].totalWeight) +
           parseFloat(formData.totalWeight)
-        ).toFixed(2),
-        purity: (
+        ),
+        purity: formatToFixed3Strict(
           parseFloat(stockItems[index].purity) + parseFloat(formData.purity)
-        ).toFixed(3),
+        ),
       };
 
       const response = await fetch(
@@ -282,8 +284,8 @@ const Stock = () => {
     });
 
     return {
-      totalWeight: totalWeightSum.toFixed(2),
-      purity: totalPuritySum.toFixed(3),
+      totalWeight: formatToFixed3Strict(totalWeightSum),
+      purity: formatToFixed3Strict(totalPuritySum),
     };
   }, [filteredStockItems]);
 
@@ -433,7 +435,11 @@ const Stock = () => {
                 name="coinType"
                 placeholder="Coin Type Eg:916,999"
                 value={formData.coinType}
-                onChange={handleChange}
+                onChange={(e) => {
+                  if (/^[0-9,]*$/.test(e.target.value)) {
+                    handleChange(e);
+                  }
+                }}
                 onKeyDown={(e) => handleKeyDown(e, gramRef)}
                 required
                 ref={coinTypeRef}
@@ -447,18 +453,27 @@ const Stock = () => {
                 aria-label="Coin Type"
               />
             </div>
+
             <div className="form-groups">
               <label htmlFor="gram">Gram</label>
-              <input
+              <NumericFormat
                 id="gram"
                 name="gram"
                 placeholder="Gram"
                 value={formData.gram}
-                onChange={handleChange}
+                onValueChange={(values) => {
+                  handleChange({
+                    target: {
+                      name: "gram",
+                      value: values.floatValue,
+                    },
+                  });
+                }}
                 onKeyDown={(e) => handleKeyDown(e, quantityRef)}
-                ref={gramRef}
-                step="0.01"
-                min="0"
+                getInputRef={gramRef}
+                thousandSeparator=","
+                decimalScale={3}
+                allowNegative={false}
                 required
                 style={{
                   padding: "0.75rem 1rem",
@@ -470,16 +485,27 @@ const Stock = () => {
                 aria-label="Gram"
               />
             </div>
+
             <div className="form-groups">
               <label htmlFor="quantity">Quantity</label>
-              <input
+              <NumericFormat
                 id="quantity"
                 name="quantity"
                 placeholder="Quantity"
                 value={formData.quantity}
-                onChange={handleChange}
+                onValueChange={(values) => {
+                  handleChange({
+                    target: {
+                      name: "quantity",
+                      value: values.floatValue,
+                    },
+                  });
+                }}
                 onKeyDown={(e) => handleKeyDown(e, touchRef)}
-                ref={quantityRef}
+                getInputRef={quantityRef}
+                thousandSeparator=","
+                decimalScale={0} // No decimals allowed
+                allowNegative={false}
                 min="1"
                 required
                 style={{
@@ -492,19 +518,34 @@ const Stock = () => {
                 aria-label="Quantity"
               />
             </div>
+
             <div className="form-groups">
               <label htmlFor="touch">Touch</label>
-              <input
+              <NumericFormat
                 id="touch"
                 name="touch"
                 placeholder="Touch"
                 value={formData.touch}
-                onChange={handleChange}
+                onValueChange={(values) => {
+                  handleChange({
+                    target: {
+                      name: "touch",
+                      value: values.floatValue,
+                    },
+                  });
+                }}
                 onKeyDown={(e) => handleKeyDown(e, saveBtnRef)}
-                ref={touchRef}
-                step="0.01"
-                min="0"
-                max="999.9"
+                getInputRef={touchRef}
+                thousandSeparator=","
+                decimalScale={2}
+                allowNegative={false}
+                isAllowed={(values) => {
+                  const { floatValue } = values;
+                  return (
+                    floatValue === undefined ||
+                    (floatValue >= 0 && floatValue <= 999.9)
+                  );
+                }}
                 required
                 style={{
                   padding: "0.75rem 1rem",
@@ -516,14 +557,26 @@ const Stock = () => {
                 aria-label="Touch"
               />
             </div>
+
             <div className="form-groups">
               <label htmlFor="totalWeight">Total Weight</label>
-              <input
+              <NumericFormat
                 id="totalWeight"
                 name="totalWeight"
                 placeholder="Total Weight"
                 value={formData.totalWeight}
-                readOnly
+                onValueChange={(values) => {
+                  handleChange({
+                    target: {
+                      name: "totalWeight",
+                      value: values.floatValue,
+                    },
+                  });
+                }}
+                thousandSeparator=","
+                decimalScale={3}
+                allowNegative={false}
+                disabled
                 style={{
                   padding: "0.75rem 1rem",
                   borderRadius: "0.75rem",
@@ -531,18 +584,23 @@ const Stock = () => {
                   backgroundColor: "#f9fafb",
                   fontSize: "1rem",
                   color: "#6b7280",
+                  cursor: "not-allowed",
                 }}
                 aria-label="Total Weight"
               />
             </div>
+
             <div className="form-groups">
               <label htmlFor="purity">Purity</label>
-              <input
+              <NumericFormat
                 id="purity"
                 name="purity"
                 placeholder="Purity"
                 value={formData.purity}
-                readOnly
+                thousandSeparator=","
+                decimalScale={3}
+                allowNegative={false}
+                disabled
                 style={{
                   padding: "0.75rem 1rem",
                   borderRadius: "0.75rem",
@@ -550,6 +608,7 @@ const Stock = () => {
                   backgroundColor: "#f9fafb",
                   fontSize: "1rem",
                   color: "#6b7280",
+                  cursor: "not-allowed",
                 }}
                 aria-label="Purity"
               />
@@ -758,19 +817,19 @@ const Stock = () => {
                     {item.coinType}
                   </td>
                   <td style={{ padding: "0.75rem 1rem", color: "#374151" }}>
-                    {formatNumber(item.gram, 3)}
+                    {formatToFixed3Strict(item.gram)}
                   </td>
                   <td style={{ padding: "0.75rem 1rem", color: "#374151" }}>
                     {item.quantity}
                   </td>
                   <td style={{ padding: "0.75rem 1rem", color: "#374151" }}>
-                    {formatNumber(item.touch, 3)}
+                    {formatNumber(item.touch, 2)}
                   </td>
                   <td style={{ padding: "0.75rem 1rem", color: "#374151" }}>
-                    {formatNumber(item.totalWeight, 3)}
+                    {formatToFixed3Strict(item.totalWeight)}
                   </td>
                   <td style={{ padding: "0.75rem 1rem", color: "#374151" }}>
-                    {formatNumber(item.purity, 3)}
+                    {formatToFixed3Strict(item.purity)}
                   </td>
                   <td
                     style={{
@@ -839,10 +898,10 @@ const Stock = () => {
                 Totals:
               </td>
               <td style={{ padding: "1rem" }}>
-               {formatNumber(totals.totalWeight,3)}
+                {formatToFixed3Strict(totals.totalWeight)}
               </td>
               <td style={{ padding: "1rem" }}>
-               {formatNumber(totals.purity, 3)}
+                {formatToFixed3Strict(totals.purity)}
               </td>
               <td></td>
             </tr>

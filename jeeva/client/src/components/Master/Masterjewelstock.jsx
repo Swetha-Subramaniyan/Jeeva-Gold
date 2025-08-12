@@ -4,6 +4,8 @@ import { BACKEND_SERVER_URL } from "../../Config/Config";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { formatNumber } from "../../utils/formatNumber";
+import { formatToFixed3Strict } from "../../utils/formatToFixed3Strict";
+import { NumericFormat } from "react-number-format";
 
 const Masterjewelstock = () => {
   const [formData, setFormData] = useState({
@@ -43,7 +45,7 @@ const Masterjewelstock = () => {
       (sum, entry) => sum + parseFloat(entry.purityValue || 0),
       0
     );
-    setTotalPurity(total.toFixed(3));
+    setTotalPurity(formatToFixed3Strict(total));
   };
 
   const handleChange = (e) => {
@@ -64,10 +66,10 @@ const Masterjewelstock = () => {
     const touch = parseFloat(updatedData.touch) || 0;
 
     const finalWeight = weight - stoneWeight;
-    updatedData.finalWeight = finalWeight.toFixed(3);
+    updatedData.finalWeight = formatToFixed3Strict(finalWeight);
 
     updatedData.purityValue =
-      finalWeight && touch ? ((finalWeight * touch) / 100).toFixed(3) : "";
+      finalWeight && touch ? formatToFixed3Strict((finalWeight * touch) / 100) : "";
 
     setFormData(updatedData);
   };
@@ -186,6 +188,7 @@ const Masterjewelstock = () => {
             >
               ×
             </button>
+
             <form onSubmit={handleSubmit}>
               <div className="form-group">
                 <label>Jewel Name:</label>
@@ -197,63 +200,119 @@ const Masterjewelstock = () => {
                   required
                 />
               </div>
+
               <div className="form-group">
                 <label>Weight (grams):</label>
-                <input
+                <NumericFormat
                   name="weight"
                   value={formData.weight}
-                  onChange={handleChange}
-                  step="any"
-                  min="0"
+                  onValueChange={(values) => {
+                    handleChange({
+                      target: {
+                        name: "weight",
+                        value: values.floatValue,
+                      },
+                    });
+                  }}
+                  thousandSeparator=","
+                  decimalScale={3}
+                  allowNegative={false}
                   required
                 />
               </div>
+
               <div className="form-group">
                 <label>Stone Weight (grams):</label>
-                <input
+                <NumericFormat
                   name="stoneWeight"
                   value={formData.stoneWeight}
-                  onChange={handleChange}
-                  step="any"
-                  min="0"
+                  onValueChange={(values) => {
+                    handleChange({
+                      target: {
+                        name: "stoneWeight",
+                        value: values.floatValue,
+                      },
+                    });
+                  }}
+                  thousandSeparator=","
+                  decimalScale={3}
+                  allowNegative={false}
                 />
               </div>
+
               <div className="form-group">
                 <label>Final Weight (grams):</label>
-                <input
+                <NumericFormat
                   name="finalWeight"
                   value={formData.finalWeight}
-                  onChange={handleChange}
-                  step="any"
-                  min="0"
+                  onValueChange={(values) => {
+                    if (isEditMode) {
+                      handleChange({
+                        target: {
+                          name: "finalWeight",
+                          value: values.floatValue,
+                        },
+                      });
+                    }
+                  }}
+                  thousandSeparator=","
+                  decimalScale={3}
+                  allowNegative={false}
                   readOnly={!isEditMode}
                   className={!isEditMode ? "read-only" : ""}
                 />
               </div>
+
               <div className="form-group">
                 <label>Touch (%):</label>
-                <input
+                <NumericFormat
                   name="touch"
                   value={formData.touch}
-                  onChange={handleChange}
-                  step="any"
-                  min="0"
-                  max="100"
+                  onValueChange={(values) => {
+                    handleChange({
+                      target: {
+                        name: "touch",
+                        value: values.floatValue,
+                      },
+                    });
+                  }}
+                  thousandSeparator=","
+                  decimalScale={2}
+                  allowNegative={false}
+                  isAllowed={(values) => {
+                    const { floatValue } = values;
+                    return (
+                      floatValue === undefined ||
+                      (floatValue >= 0 && floatValue <= 100)
+                    );
+                  }}
                   required
                 />
               </div>
+
               <div className="form-group">
                 <label>Purity Value (grams):</label>
-                <input
+                <NumericFormat
                   name="purityValue"
                   value={formData.purityValue}
-                  onChange={handleChange}
-                  step="any"
-                  min="0"
+                  onValueChange={(values) => {
+                    if (isEditMode) {
+                      handleChange({
+                        target: {
+                          name: "purityValue",
+                          value: values.floatValue,
+                        },
+                      });
+                    }
+                  }}
+                  thousandSeparator=","
+                  decimalScale={3}
+                  allowNegative={false}
                   readOnly={!isEditMode}
                   className={!isEditMode ? "read-only" : ""}
                 />
               </div>
+
               <div className="button-group">
                 <button type="submit" className="submit-btn">
                   {isEditMode ? "Update" : "Save"}
@@ -288,11 +347,11 @@ const Masterjewelstock = () => {
                 <tr key={entry.id}>
                   <td>{index + 1}</td>
                   <td>{entry.jewelName}</td>
-                  <td>{formatNumber(entry.weight, 3)}</td>
-                  <td>{formatNumber(entry.stoneWeight, 3)}</td>
-                  <td>{formatNumber(entry.finalWeight, 3)}</td>
-                  <td>{entry.touch}</td>
-                  <td>{formatNumber(entry.purityValue, 3)}</td>
+                  <td>{formatToFixed3Strict(entry.weight)}</td>
+                  <td>{formatToFixed3Strict(entry.stoneWeight)}</td>
+                  <td>{formatToFixed3Strict(entry.finalWeight)}</td>
+                  <td>{formatNumber(entry.touch, 2)}</td>
+                  <td>{formatToFixed3Strict(entry.purityValue)}</td>
                   <td>
                     <button
                       className="edit-btn"
@@ -323,7 +382,7 @@ const Masterjewelstock = () => {
                   Total Purity:
                 </td>
                 <td colSpan="3" style={{ fontWeight: "bold" }}>
-                  {formatNumber(totalPurity, 3)}
+                  {formatToFixed3Strict(totalPurity)}
                 </td>
               </tr>
             </tfoot>

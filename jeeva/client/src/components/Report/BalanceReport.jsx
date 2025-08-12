@@ -17,6 +17,7 @@ import {
 import { BACKEND_SERVER_URL } from "../../Config/Config";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import { formatNumber } from "../../utils/formatNumber";
+import { formatToFixed3Strict } from "../../utils//formatToFixed3Strict";
 
 const BalanceReport = () => {
   const [customers, setCustomers] = useState([]);
@@ -175,11 +176,11 @@ const BalanceReport = () => {
         <Box sx={{ display: "flex", gap: 3 }}>
           <Typography variant="subtitle1">
             Total Customer Owes:{" "}
-            <strong>{formatNumber(totalCustomerOutstandingBalance, 3)}g</strong>
+            <strong>{formatToFixed3Strict(totalCustomerOutstandingBalance)}g</strong>
           </Typography>
           <Typography variant="subtitle1">
             Total Owner Owes:{" "}
-            <strong>{formatNumber(totalOwnerOutstandingBalance, 3)}g</strong>
+            <strong>{formatToFixed3Strict(totalOwnerOutstandingBalance)}g</strong>
           </Typography>
         </Box>
       </Box>
@@ -204,12 +205,12 @@ const BalanceReport = () => {
                       <TableCell>{customer.customerName}</TableCell>
                       <TableCell>
                         {customer.customerOwed > 0
-                          ? formatNumber(customer.customerOwed, 3)
+                          ? formatToFixed3Strict(customer.customerOwed)
                           : "0"}
                       </TableCell>
                       <TableCell>
                         {customer.ownerOwed > 0
-                          ? formatNumber(customer.ownerOwed, 3)
+                          ? formatToFixed3Strict(customer.ownerOwed)
                           : "0"}
                       </TableCell>
                       <TableCell>
@@ -285,9 +286,9 @@ const BalanceReport = () => {
                     <TableCell>
                       {new Date(bill.date).toLocaleDateString()}
                     </TableCell>
-                    <TableCell>{formatNumber(bill.totalPurity, 3)}</TableCell>
+                    <TableCell>{formatToFixed3Strict(bill.totalPurity)}</TableCell>
                     <TableCell>
-                      {formatNumber(bill.balance, 3) || "0"} grams
+                      {formatToFixed3Strict(bill.balance) || "0"} grams
                     </TableCell>
                     <TableCell>
                       <IconButton onClick={() => handleViewBill(bill)}>
@@ -333,7 +334,7 @@ const BalanceReport = () => {
               </Typography>
               <Typography variant="body1">
                 <strong>Total Purity:</strong>{" "}
-                {formatNumber(selectedBill.totalPurity, 3)}g
+                {formatToFixed3Strict(selectedBill.totalPurity)}g
               </Typography>
               <Typography
                 variant="body1"
@@ -343,13 +344,11 @@ const BalanceReport = () => {
               >
                 <strong>Balance:</strong>
                 {calculateBillBalance(selectedBill) > 0
-                  ? `Customer owes: ${formatNumber(
-                      calculateBillBalance(selectedBill),
-                      3
+                  ? `Customer owes: ${formatToFixed3Strict(
+                      calculateBillBalance(selectedBill)
                     )}g`
                   : `Owner owes: ${Math.abs(
-                      formatNumber(calculateBillBalance(selectedBill)),
-                      3
+                      formatToFixed3Strict(calculateBillBalance(selectedBill))
                     )}g`}
               </Typography>
 
@@ -371,8 +370,8 @@ const BalanceReport = () => {
                       <TableRow key={index}>
                         <TableCell>{item.coinValue}</TableCell>
                         <TableCell>{item.quantity}</TableCell>
-                        <TableCell>{formatNumber(item.weight, 3)}</TableCell>
-                        <TableCell>{formatNumber(item.purity, 3)}</TableCell>
+                        <TableCell>{formatToFixed3Strict(item.weight)}</TableCell>
+                        <TableCell>{formatToFixed3Strict(item.purity)}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -404,7 +403,7 @@ const BalanceReport = () => {
                             {detail.givenGold ? "Gold" : "Cash"}
                           </TableCell>
                           <TableCell>
-                            {formatNumber(detail.purityWeight, 3) || "-"}
+                            {formatToFixed3Strict(detail.purityWeight) || "-"}
                           </TableCell>
                           <TableCell>
                             {formatNumber(detail.amount, 2) || "-"}

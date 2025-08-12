@@ -11,6 +11,7 @@ import {
 import { MdDeleteForever } from "react-icons/md";
 import { NumericFormat } from "react-number-format";
 import { formatNumber } from "../../utils/formatNumber";
+import { formatToFixed3Strict } from "../../utils/formatToFixed3Strict";
 
 const BillDetails = ({
   billItems,
@@ -213,9 +214,9 @@ const BillDetails = ({
                 {item.coinValue}g {item.percentage}
               </td>
               <td className="td">{item.quantity}</td>
-              <td className="td">{formatNumber(item.touch, 3)}</td>
-              <td className="td">{formatNumber(item.weight, 3)}</td>
-              <td className="td"> {formatNumber(item.purity, 3)}</td>
+              <td className="td">{formatNumber(item.touch, 2)}</td>
+              <td className="td">{formatToFixed3Strict(item.weight)}</td>
+              <td className="td"> {formatToFixed3Strict(item.purity)}</td>
               <td className="td">
                 {item.goldRate ? formatNumber(item.amount, 2) : ""}
               </td>
@@ -229,7 +230,7 @@ const BillDetails = ({
                     handleBillItemChange(index, "goldRate", values.floatValue);
                   }}
                   thousandSeparator=","
-                  decimalScale={3}
+                  decimalScale={2}
                   disabled={viewMode && selectedBill}
                   inputProps={{ min: 0 }}
                 />
@@ -263,13 +264,13 @@ const BillDetails = ({
             </td>
             <td className="td"></td>
             <td className="td">
-              <strong>{formatNumber(totalWeight, 3)}</strong>
+              <strong>{formatToFixed3Strict(totalWeight)}</strong>
             </td>
             <td className="td">
-              <strong>{formatNumber(totalPurity, 3)}</strong>
+              <strong>{formatToFixed3Strict(totalPurity)}</strong>
             </td>
             <td className="td">
-              <strong>{formatNumber(totalAmount.toFixed(2))}</strong>
+              <strong>{formatNumber(totalAmount, 2)}</strong>
             </td>
             <td className="td"></td>
             <div className="no-prints-bill">
@@ -288,7 +289,7 @@ const BillDetails = ({
                 value={displayHallmarkCharges > 0 ? displayHallmarkCharges : ""}
                 onChange={handleHallmarkChange}
                 thousandSeparator=","
-                decimalScale={3}
+                decimalScale={2}
                 disabled={viewMode && selectedBill}
                 inputProps={{ min: 0 }}
               />
@@ -307,11 +308,13 @@ const BillDetails = ({
                 {selectedBill
                   ? formatNumber(
                       parseFloat(totalAmount) +
-                        parseFloat(selectedBill?.hallmarkCharges || 0)
+                        parseFloat(selectedBill?.hallmarkCharges || 0),
+                      2
                     )
                   : formatNumber(
                       parseFloat(totalAmount) +
-                        parseFloat(displayHallmarkCharges || 0)
+                        parseFloat(displayHallmarkCharges || 0),
+                      2
                     )}
               </strong>
             </td>
@@ -393,6 +396,7 @@ const BillDetails = ({
               required
               disabled={viewMode && selectedBill}
             />
+
             {newItem.percentage && (
               <Box>
                 {newItem.name ? (
@@ -418,59 +422,80 @@ const BillDetails = ({
               </Box>
             )}
 
-            <TextField
+            <NumericFormat
               fullWidth
               label="No of Coins"
               name="no"
               value={newItem.no}
-              onChange={handleInputChange}
+              onValueChange={(values) => {
+                handleInputChange({
+                  target: {
+                    name: "no",
+                    value: values.floatValue,
+                  },
+                });
+              }}
               margin="normal"
               required
               disabled={viewMode && selectedBill}
+              decimalScale={0}
+              allowNegative={false}
+              customInput={TextField}
               inputProps={{ min: 0 }}
             />
 
-            <TextField
+            <NumericFormat
               fullWidth
               label="Percentage"
               name="touch"
               value={newItem.touch || ""}
-              onChange={handleInputChange}
+              onValueChange={(values) => {
+                handleInputChange({
+                  target: {
+                    name: "touch",
+                    value: values.floatValue,
+                  },
+                });
+              }}
               margin="normal"
               required
               disabled={viewMode && selectedBill}
+              decimalScale={2}
+              allowNegative={false}
+              customInput={TextField}
               inputProps={{ min: 0 }}
             />
 
-            <TextField
+            <NumericFormat
               fullWidth
               label="Weight (Auto-calculated)"
               name="weight"
               value={newItem.weight}
-              onChange={handleInputChange}
+              onValueChange={(values) => {
+                handleInputChange({
+                  target: {
+                    name: "weight",
+                    value: values.floatValue,
+                  },
+                });
+              }}
               margin="normal"
-              inputProps={{ step: "0.001", min: 0 }}
+              decimalScale={3}
+              allowNegative={false}
+              customInput={TextField}
+              inputProps={{ min: 0 }}
             />
 
-            {/* <TextField
-              fullWidth
-              label="Purity (Auto-calculated)"
-              name="pure"
-              value={newItem.pure}
-             
-              onChange={handleInputChange}
-              margin="normal"
-              type="number"
-              inputProps={{ step: "0.001" }}
-            /> */}
-            <TextField
+            <NumericFormat
               fullWidth
               label="Purity (Auto-calculated or Manual)"
               name="pure"
               value={newItem.pure}
-              onChange={(e) => {
-                const input = e.target.value;
-                setNewItem((prev) => ({ ...prev, pure: input }));
+              onValueChange={(values) => {
+                setNewItem((prev) => ({
+                  ...prev,
+                  pure: values.floatValue,
+                }));
               }}
               onBlur={(e) => {
                 const val = parseFloat(e.target.value);
@@ -482,7 +507,10 @@ const BillDetails = ({
                 }
               }}
               margin="normal"
-              inputProps={{ step: "0.001", min: 0 }}
+              decimalScale={3}
+              allowNegative={false}
+              customInput={TextField}
+              inputProps={{ min: 0 }}
             />
 
             <Box className="modal-actions">

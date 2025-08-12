@@ -12,13 +12,16 @@ import {
   Snackbar,
 } from "@mui/material";
 import PrintIcon from "@mui/icons-material/Print";
-import html2canvas from "html2canvas";
 import AddIcon from "@mui/icons-material/Add";
 import "./Billing.css";
 import { BACKEND_SERVER_URL } from "../../Config/Config";
 import BillDetails from "./BillDetails";
 import ReceivedDetails from "./ReceivedDetails";
 import ViewBill from "./ViewBill";
+import { formatToFixed3Strict } from "../../utils/formatToFixed3Strict";
+import { formatNumber } from "../../utils/formatNumber";
+import PrintableBill from "./PrintableBill";
+import ReactDOMServer from 'react-dom/server';
 
 const Billing = () => {
   const [selectedCustomer, setSelectedCustomer] = useState(null);
@@ -109,9 +112,12 @@ const Billing = () => {
         return sum;
       }, 0);
 
-      setPureBalance(totalPurity.toFixed(3));
+      setPureBalance(formatToFixed3Strict(totalPurity));
       setTotalBalance(
-        (parseFloat(totalAmount) + parseFloat(hallmarkCharges || 0)).toFixed(2)
+        formatNumber(
+          parseFloat(totalAmount) + parseFloat(hallmarkCharges || 0),
+          2
+        )
       );
     } else {
       setPureBalance(0);
@@ -138,7 +144,9 @@ const Billing = () => {
 
   useEffect(() => {
     if (viewMode && selectedBill) {
-      setDisplayHallmarkCharges(selectedBill.hallmarkCharges || 0);
+      setDisplayHallmarkCharges(
+        formatNumber(selectedBill.hallmarkCharges, 2) || 0
+      );
     } else if (!selectedBill && !viewMode) {
       setDisplayHallmarkCharges(0);
       setHallmarkCharges(0);
@@ -176,8 +184,8 @@ const Billing = () => {
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
                 coinType: item.percentage.toString(),
-                gram: item.coinValue.toString(),
-                quantity: item.quantity.toString(),
+                gram: parseFloat(formatToFixed3Strict(item.coinValue)),
+                quantity: parseInt(item.quantity),
                 reason: `Deleted the bill which contains(${item.coinValue}g ${item.percentage})`,
               }),
             }
@@ -230,7 +238,9 @@ const Billing = () => {
       if (response.ok) {
         await addStockForBill(items);
         showSnackbar("Bill deleted successfully", "success");
+
         setViewMode(false);
+        window.location.reload();
       } else {
         throw new Error("Deletion failed");
       }
@@ -275,7 +285,7 @@ const Billing = () => {
         purityWeight: detail.purityWeight.toString(),
         amount: detail.amount?.toString(),
         paidAmount: detail.paidAmount?.toString(),
-        mode: detail.amount ? "amount" : "weight",
+        mode: detail.amount || detail.paidAmount ? "amount" : "weight",
       }))
     );
 
@@ -311,163 +321,69 @@ const Billing = () => {
     setBillNo(newBillNo);
   };
 
-  const handlePrint = async () => {
-    const input = billRef.current;
+  const handlePrint = () => {
+  const printContent = (
+    <PrintableBill
+      billNo={billNo}
+      date={date}
+      time={time}
+      selectedCustomer={selectedCustomer}
+      billItems={billItems}
+      totalWeight={totalWeight}
+      totalPurity={totalPurity}
+      totalAmount={totalAmount}
+      hallmarkCharges={displayHallmarkCharges}
+      rows={rows}
+      pureBalance={pureBalance}
+      hallmarkBalance={hallmarkBalance}
+      goldRate={goldRate}
+      viewMode={viewMode}
+      selectedBill={selectedBill}
+    />
+  );
 
-    const elementsToHide = [
-      document.querySelector(".searchSection"),
-      document.querySelector(".customerDetails"),
-      document.querySelector(".sidebar"),
-      ...Array.from(document.querySelectorAll(".no-print-receive")),
-      ...Array.from(document.querySelectorAll(".no-prints-receive")),
-      ...Array.from(document.querySelectorAll(".no-print-bill")),
-      ...Array.from(document.querySelectorAll(".no-prints-bill")),
-      document
-        .querySelector(
-          'p > .MuiIconButton-root svg[data-testid="AddCircleOutlineIcon"]'
-        )
-        ?.closest("p"),
-    ];
+  const printHtml = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <title>Bill Print</title>
+        <link rel="stylesheet" href="./PrintableBill.css">
+      </head>
+      <body>
+        ${ReactDOMServer.renderToString(printContent)}
+        <script>
+          window.onload = function() {
+            setTimeout(function() {
+              window.print();
+              window.close();
+            }, 200);
+          };
+        </script>
+      </body>
+    </html>
+  `;
 
-    const originalValues = new Map();
+  const printWindow = window.open('', '_blank', 'width=1000,height=800');
+  printWindow.document.write(printHtml);
+  printWindow.document.close();
+};
 
-    const dateTimeDiv = document.querySelector(".cus-info");
-    if (dateTimeDiv && selectedCustomer) {
-      const customerElement = document.createElement("strong");
-      customerElement.className = "customer";
-      customerElement.textContent = `Customer: ${selectedCustomer.name}`;
-
-      originalValues.set(dateTimeDiv, {
-        innerHTML: dateTimeDiv.innerHTML,
-        element: customerElement,
-      });
-
-      dateTimeDiv.querySelector("p").innerHTML += `<br/><br/>`;
-      dateTimeDiv.querySelector("p").appendChild(customerElement);
-    }
-
-    const originalFontSizes = new Map();
-
-    const increaseFontSizeByPercent = (selector, percent) => {
-      document.querySelectorAll(selector).forEach((el) => {
-        if (!originalFontSizes.has(el)) {
-          const currentSize = window.getComputedStyle(el).fontSize;
-          originalFontSizes.set(el, currentSize);
-        }
-
-        const numericSize = parseFloat(window.getComputedStyle(el).fontSize);
-        const newSize = numericSize * (percent / 100 + 1);
-        el.style.setProperty("font-size", `${newSize}px`, "important");
-      });
-    };
-
-    increaseFontSizeByPercent(".td", 20);
-    increaseFontSizeByPercent(".th", 25);
-    increaseFontSizeByPercent("input", 20);
-
-    elementsToHide.forEach((el) => {
-      if (el) el.style.display = "none";
-    });
-
-    const restoreOriginalFontSizes = () => {
-      originalFontSizes.forEach((size, el) => {
-        if (el) {
-          el.style.setProperty("font-size", size, "important");
-        }
-      });
-    };
-
-    try {
-      const canvas = await html2canvas(input, {
-        scale: window.devicePixelRatio || 2,
-        useCORS: true,
-        scrollY: -window.scrollY,
-      });
-
-      elementsToHide.forEach((el) => {
-        if (el) el.style.display = "";
-      });
-
-      originalValues.forEach((value, el) => {
-        if (el) {
-          if (value.innerHTML !== undefined) {
-            el.innerHTML = value.innerHTML;
-          } else {
-            el.style.display = value.display;
-          }
-        }
-      });
-
-      restoreOriginalFontSizes();
-
-      const imgData = canvas.toDataURL("image/png");
-      const iframe = document.createElement("iframe");
-      iframe.style.position = "fixed";
-      iframe.style.right = "0";
-      iframe.style.bottom = "0";
-      iframe.style.width = "0";
-      iframe.style.height = "0";
-      iframe.style.border = "0";
-
-      iframe.onload = () => {
-        setTimeout(() => {
-          iframe.contentWindow.focus();
-          iframe.contentWindow.print();
-          document.body.removeChild(iframe);
-        }, 100);
-      };
-
-      iframe.srcdoc = `
-      <html>
-        <head>
-          <title>Print Bill</title>
-          <style>
-            body { margin: 0; padding: 0; }
-            img { width: 100%; height: auto; }
-          </style>
-        </head>
-        <body>
-          <img src="${imgData}" />
-        </body>
-      </html>
-    `;
-
-      document.body.appendChild(iframe);
-    } catch (error) {
-      console.error("Printing error:", error);
-
-      originalValues.forEach((value, el) => {
-        if (el) {
-          if (value.innerHTML !== undefined) {
-            el.innerHTML = value.innerHTML;
-          } else {
-            el.style.display = value.display;
-          }
-        }
-      });
-
-      elementsToHide.forEach((el) => {
-        if (el) el.style.display = "";
-      });
-
-      restoreOriginalFontSizes();
+useEffect(() => {
+  const handleKeyDown = async (event) => {
+    if ((event.ctrlKey || event.metaKey) && event.key === "p") {
+      event.preventDefault();
+      
+      // Wait for any pending state updates
+      await new Promise(resolve => setTimeout(resolve, 50));
+      
+      // Now call handlePrint
+      handlePrint();
     }
   };
 
-  useEffect(() => {
-    const handleKeyDown = (event) => {
-      if ((event.ctrlKey || event.metaKey) && event.key === "p") {
-        event.preventDefault();
-        handlePrint();
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, []);
+  window.addEventListener('keydown', handleKeyDown);
+  return () => window.removeEventListener('keydown', handleKeyDown);
+}, [handlePrint]);
 
   const reduceStockForBill = async (items) => {
     try {
@@ -480,8 +396,8 @@ const Billing = () => {
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
                 coinType: item.percentage.toString(),
-                gram: item.coinValue.toString(),
-                quantity: item.quantity.toString(),
+                gram: parseFloat(formatToFixed3Strict(item.coinValue)),
+                quantity: parseInt(item.quantity),
                 reason: `Sold in bill (${item.coinValue}g ${item.percentage})`,
               }),
             }
@@ -556,30 +472,32 @@ const Billing = () => {
 
       const billData = {
         customerId: selectedCustomer.id,
-        goldRate: parseFloat(goldRate),
-        hallmarkCharges: parseFloat(displayHallmarkCharges || 0),
-        hallmarkBalance: hallbalance,
-        totalWeight,
-        totalPurity,
-        totalAmount,
+        goldRate: parseFloat(formatNumber(goldRate, 2)),
+        hallmarkCharges: parseFloat(
+          formatNumber(displayHallmarkCharges, 2) || 0
+        ),
+        hallmarkBalance: parseFloat(formatNumber(hallbalance, 2)),
+        totalWeight: parseFloat(formatToFixed3Strict(totalWeight)),
+        totalPurity: parseFloat(formatToFixed3Strict(totalPurity)),
+        totalAmount: parseFloat(formatNumber(totalAmount, 2)),
         items: billItems.map((item) => ({
           coinValue: parseFloat(item.coinValue),
           quantity: parseInt(item.quantity),
           percentage: parseInt(item.percentage),
-          touch: parseFloat(item.touch || 0),
-          weight: parseFloat(item.weight || 0),
-          purity: parseFloat(item.purity || 0),
-          goldRate: parseFloat(item.goldRate || 0),
-          amount: item.amount ? parseFloat(item.amount) : 0,
+          touch: parseFloat(formatNumber(item.touch, 2) || 0),
+          weight: parseFloat(formatToFixed3Strict(item.weight) || 0),
+          purity: parseFloat(formatToFixed3Strict(item.purity) || 0),
+          goldRate: parseFloat(formatNumber(item.goldRate, 2) || 0),
+          amount: item.amount ? parseFloat(formatNumber(item.amount, 2)) : 0,
         })),
         receivedDetails: rows.map((row) => ({
           date: row.date ? new Date(row.date) : new Date(),
-          goldRate: parseFloat(row.goldRate),
-          givenGold: parseFloat(row.givenGold || 0),
-          touch: parseFloat(row.touch || 0),
-          purityWeight: parseFloat(row.purityWeight || 0),
-          amount: parseFloat(row.amount || 0),
-          paidAmount: parseFloat(row.paidAmount || 0),
+          goldRate: parseFloat(formatNumber(row.goldRate, 2)),
+          givenGold: parseFloat(formatToFixed3Strict(row.givenGold) || 0),
+          touch: parseFloat(formatNumber(row.touch, 2) || 0),
+          purityWeight: parseFloat(formatToFixed3Strict(row.purityWeight) || 0),
+          amount: parseFloat(formatNumber(row.amount, 2) || 0),
+          paidAmount: parseFloat(formatNumber(row.paidAmount, 2) || 0),
         })),
       };
 
@@ -595,7 +513,7 @@ const Billing = () => {
       setLatestBill(newBill);
       showSnackbar("Bill created successfully!", "success");
       await fetchBills();
-
+      window.location.reload();
       resetForm();
     } catch (error) {
       console.error("Error:", error);
@@ -611,11 +529,14 @@ const Billing = () => {
     let totalAmount = 0;
 
     billItems.forEach((item) => {
-      totalWeight += parseFloat(item.weight) || 0;
-      totalPurity += parseFloat(item.purity) || 0;
-      const itemGoldRate = parseFloat(item.goldRate);
+      totalWeight += parseFloat(formatToFixed3Strict(item.weight)) || 0;
+      totalPurity += parseFloat(formatToFixed3Strict(item.purity)) || 0;
+      const itemGoldRate = parseFloat(formatNumber(item.goldRate, 2));
       if (!isNaN(itemGoldRate) && itemGoldRate > 0) {
-        totalAmount += itemGoldRate * (parseFloat(item.purity) || 0);
+        totalAmount += formatNumber(
+          itemGoldRate * (parseFloat(item.purity) || 0),
+          2
+        );
       }
     });
 
@@ -633,27 +554,32 @@ const Billing = () => {
     try {
       const updatedBill = {
         ...selectedBill,
-        hallmarkBalance: parseFloat(hallmarkCharges || 0),
+        hallmarkBalance: parseFloat(formatNumber(hallmarkCharges, 2) || 0),
         items: billItems.map((item) => ({
           coinValue: parseFloat(item.coinValue),
           quantity: parseInt(item.quantity),
           percentage: parseInt(item.percentage),
-          touch: parseFloat(item.touch || 0),
-          weight: parseFloat(item.weight || 0),
-          purity: parseFloat(item.purity || 0),
-          goldRate: parseFloat(item.goldRate || 0),
-          amount: item.amount ? parseFloat(item.amount) : 0,
+          touch: parseFloat(formatNumber(item.touch, 2) || 0),
+          weight: parseFloat(formatToFixed3Strict(item.weight) || 0),
+          purity: parseFloat(formatToFixed3Strict(item.purity) || 0),
+          goldRate: parseFloat(formatNumber(item.goldRate, 2) || 0),
+          amount: item.amount ? parseFloat(formatNumber(item.amount, 2)) : 0,
         })),
         receivedDetails: [
           ...selectedBill.receivedDetails,
           ...rows.slice(selectedBill.receivedDetails.length).map((row) => ({
             date: row.date || new Date().toISOString().split("T")[0],
-            goldRate: parseFloat(row.goldRate || goldRate),
-            givenGold: parseFloat(row.givenGold || 0),
-            touch: parseFloat(row.touch || 0),
-            purityWeight: parseFloat(row.purityWeight || 0),
-            amount: parseFloat(row.amount || 0),
-            paidAmount: parseFloat(row.paidAmount || 0),
+
+            goldRate: parseFloat(
+              formatNumber(row.goldRate, 2) || formatNumber(goldRate, 2)
+            ),
+            givenGold: parseFloat(formatToFixed3Strict(row.givenGold) || 0),
+            touch: parseFloat(formatNumber(row.touch, 2) || 0),
+            purityWeight: parseFloat(
+              formatToFixed3Strict(row.purityWeight) || 0
+            ),
+            amount: parseFloat(formatNumber(row.amount, 2) || 0),
+            paidAmount: parseFloat(formatNumber(row.paidAmount, 2) || 0),
           })),
         ],
       };
@@ -672,6 +598,7 @@ const Billing = () => {
       const data = await response.json();
       setSelectedBill(data);
       showSnackbar("Bill updated successfully!", "success");
+      window.location.reload();
       fetchBills();
     } catch (error) {
       console.error("Error:", error);

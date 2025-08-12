@@ -21,6 +21,7 @@ import {
 import { BACKEND_SERVER_URL } from "../../Config/Config";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import { formatNumber } from "../../utils/formatNumber";
+import { formatToFixed3Strict } from "../../utils/formatToFixed3Strict";
 
 const CustomerReport = () => {
   const [customers, setCustomers] = useState([]);
@@ -168,7 +169,7 @@ const CustomerReport = () => {
     return (
       <>
         <div>{`${item.coinValue}g ${item.percentage} (touch ${item.touch}) x ${item.quantity}`}</div>
-        <div>Total Purity: {formatNumber(bill.totalPurity, 3)}g</div>
+        <div>Total Purity: {formatToFixed3Strict(bill.totalPurity)}g</div>
       </>
     );
   };
@@ -186,15 +187,39 @@ const CustomerReport = () => {
     return (
       <>
         <div>Received: {formatNumber(totalReceived, 3)}g</div>
-        {balanceInfo.advanceUsed > 0 && !(balanceInfo.usedFromAdvance > 0)  &&  (
+        {balanceInfo.advanceUsed > 0 && !(balanceInfo.usedFromAdvance > 0) && (
           <div>
-            Advance applied: {formatNumber(balanceInfo.advanceUsed, 3)}g
+            Advance applied: {formatToFixed3Strict(balanceInfo.advanceUsed)}g
           </div>
         )}
-        {balanceInfo.remainingAdvance > 0 &&!(balanceInfo.usedFromAdvance > 0)  &&  (
+        {balanceInfo.remainingAdvance > 0 &&
+          !(balanceInfo.usedFromAdvance > 0) && (
+            <div>
+              Advance available:{" "}
+              {formatToFixed3Strict(balanceInfo.remainingAdvance)}g
+            </div>
+          )}
+      </>
+    );
+  };
+
+  const getCustomerBalanceDetails = (bill) => {
+    if (!bill.receivedDetails || !Array.isArray(bill.receivedDetails)) {
+      return "No payments received";
+    }
+
+    const balanceInfo = calculateBillBalance(bill, bill.customerId);
+
+    const customerBalance = balanceInfo.balance > 0 ? balanceInfo.balance : 0;
+
+    return (
+      <>
+        {balanceInfo.advanceUsed > 0 && !(balanceInfo.usedFromAdvance > 0) ? (
           <div>
-            Advance available: {formatNumber(balanceInfo.remainingAdvance, 3)}g
+            {formatToFixed3Strict(balanceInfo.advanceUsed - customerBalance)}g
           </div>
+        ) : (
+          <div>{formatToFixed3Strict(customerBalance)}g</div>
         )}
       </>
     );
@@ -214,12 +239,14 @@ const CustomerReport = () => {
         <div>Balance: {formatNumber(ownerBalance, 3)}g</div>
         {balanceInfo.usedFromAdvance > 0 && (
           <div>
-            Advance applied: {formatNumber(balanceInfo.usedFromAdvance, 3)}g
+            Advance applied: {formatToFixed3Strict(balanceInfo.usedFromAdvance)}
+            g
           </div>
         )}
         {balanceInfo.usedFromAdvance > 0 && (
           <div>
-            Advance available: {formatNumber(balanceInfo.remainingAdvance, 3)}g
+            Advance available:{" "}
+            {formatToFixed3Strict(balanceInfo.remainingAdvance)}g
           </div>
         )}
       </>
@@ -271,7 +298,7 @@ const CustomerReport = () => {
       result = result.filter((txn) => txn.customerId === selectedCustomer.id);
     }
 
-    if (startDate) {
+    if (startDate && startDate != endDate) {
       result = result.filter(
         (txn) => new Date(txn.date) >= new Date(startDate)
       );
@@ -288,6 +315,7 @@ const CustomerReport = () => {
 
   const calculateTotalAdvanceAvailable = () => {
     const filteredTxns = getFilteredTransactions();
+    console.log("sss", filteredTxns);
     return filteredTxns.reduce((sum, txn) => sum + (txn.purity || 0), 0);
   };
 
@@ -328,7 +356,7 @@ const CustomerReport = () => {
       return total + cashBalances.ownerCashBalance;
     }, 0);
   };
- 
+
   return (
     <Box sx={{ p: 3 }}>
       <Typography style={{ textAlign: "center" }} variant="h5" gutterBottom>
@@ -387,10 +415,9 @@ const CustomerReport = () => {
               .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
               .map((bill) => {
                 const balanceInfo = calculateBillBalance(bill, bill.customerId);
+
                 const customerBalance =
                   balanceInfo.balance > 0 ? balanceInfo.balance : 0;
-                const ownerBalance =
-                  balanceInfo.balance < 0 ? balanceInfo.balance : 0;
 
                 const cashBalances = calculateCashBalances(bill);
 
@@ -403,7 +430,7 @@ const CustomerReport = () => {
                     <TableCell>{getBillDescription(bill)}</TableCell>
                     <TableCell>{getReceivedDetailsSummary(bill)}</TableCell>
                     <TableCell>{getAdvanceDetailsSummary(bill)}</TableCell>
-                    <TableCell>{formatNumber(customerBalance, 3)} </TableCell>
+                    <TableCell> {getCustomerBalanceDetails(bill)} </TableCell>
                     <TableCell>
                       ₹{formatNumber(cashBalances.customerCashBalance, 2)}
                     </TableCell>
@@ -434,18 +461,18 @@ const CustomerReport = () => {
                 <strong>Totals:</strong>
               </TableCell>
               <TableCell>
-                <strong>{formatNumber(calculateTotalPurity(), 3)}g</strong>
+                <strong>{formatToFixed3Strict(calculateTotalPurity())}g</strong>
               </TableCell>
               <TableCell>
                 <div>
                   <strong>
-                    Received: {formatNumber(calculateTotalReceived(), 3)}g
+                    Received: {formatToFixed3Strict(calculateTotalReceived())}g
                   </strong>
                 </div>
                 <div>
                   <strong>
-                    Advance: {formatNumber(calculateTotalAdvanceAvailable(), 3)}
-                    g
+                    Advance:{" "}
+                    {formatToFixed3Strict(calculateTotalAdvanceAvailable())}g
                   </strong>
                 </div>
                 <div
@@ -457,10 +484,9 @@ const CustomerReport = () => {
                 >
                   <strong>
                     Total:{" "}
-                    {formatNumber(
+                    {formatToFixed3Strict(
                       calculateTotalReceived() +
-                        calculateTotalAdvanceAvailable(),
-                      3
+                        calculateTotalAdvanceAvailable()
                     )}
                     g
                   </strong>
@@ -471,15 +497,27 @@ const CustomerReport = () => {
 
               <TableCell>
                 <strong>
-                  {formatNumber(
-                    filteredBills.reduce((sum, bill) => {
-                      const { balance } = calculateBillBalance(
-                        bill,
-                        bill.customerId
-                      );
-                      return sum + (balance > 0 ? balance : 0);
-                    }, 0),
-                    3
+                  {formatToFixed3Strict(
+                    calculateTotalAdvanceAvailable() -
+                      filteredBills.reduce((sum, bill) => {
+                        const { balance } = calculateBillBalance(
+                          bill,
+                          bill.customerId
+                        );
+                        return sum + (balance > 0 ? balance : 0);
+                      }, 0) >
+                      0
+                      ? 0
+                      : Math.abs(
+                          calculateTotalAdvanceAvailable() -
+                            filteredBills.reduce((sum, bill) => {
+                              const { balance } = calculateBillBalance(
+                                bill,
+                                bill.customerId
+                              );
+                              return sum + (balance > 0 ? balance : 0);
+                            }, 0)
+                        )
                   )}
                   g
                 </strong>
@@ -537,7 +575,7 @@ const CustomerReport = () => {
                 </Typography>
                 <Typography variant="body1">
                   <strong>Total Purity:</strong>{" "}
-                  {formatNumber(selectedBill.totalPurity, 3)}g
+                  {formatToFixed3Strict(selectedBill.totalPurity)}g
                 </Typography>
                 <Typography variant="body1">
                   <strong>Balance:</strong>{" "}
@@ -547,8 +585,10 @@ const CustomerReport = () => {
                       selectedBill.customerId
                     );
                     return balance > 0
-                      ? `Customer owes: ${formatNumber(balance, 3)}g`
-                      : `Owner owes: ${formatNumber(Math.abs(balance), 3)}g`;
+                      ? `Customer owes: ${formatToFixed3Strict(balance)}g`
+                      : `Owner owes: ${formatToFixed3Strict(
+                          Math.abs(balance)
+                        )}g`;
                   })()}
                 </Typography>
               </Box>
@@ -570,10 +610,16 @@ const CustomerReport = () => {
                     {/* new commit  */}
                     {selectedBill.items.map((item, index) => (
                       <TableRow key={index}>
-                        <TableCell>{item.coinValue}g{item.percentage}</TableCell>
+                        <TableCell>
+                          {item.coinValue}g{item.percentage}
+                        </TableCell>
                         <TableCell>{item.quantity}</TableCell>
-                        <TableCell>{formatNumber(item.weight, 3)}</TableCell>
-                        <TableCell>{formatNumber(item.purity, 3)}</TableCell>
+                        <TableCell>
+                          {formatToFixed3Strict(item.weight)}
+                        </TableCell>
+                        <TableCell>
+                          {formatToFixed3Strict(item.purity)}
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -605,7 +651,7 @@ const CustomerReport = () => {
                             {detail.givenGold ? "Gold" : "Cash"}
                           </TableCell>
                           <TableCell>
-                            {formatNumber(detail.purityWeight, 3) || "-"}
+                            {formatToFixed3Strict(detail.purityWeight) || "-"}
                           </TableCell>
                           <TableCell>
                             {formatNumber(detail.amount, 2) || "-"}
@@ -635,7 +681,7 @@ const CustomerReport = () => {
                   <Box key={index} sx={{ mb: 1 }}>
                     <Typography variant="body2">
                       {new Date(txn.date).toLocaleDateString()} - Advance:{" "}
-                      {formatNumber(txn.purity, 3) || 0}g
+                      {formatToFixed3Strict(txn.purity) || 0}g
                     </Typography>
                   </Box>
                 ))}

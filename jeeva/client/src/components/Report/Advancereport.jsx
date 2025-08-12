@@ -3,6 +3,7 @@ import axios from "axios";
 import "./Advance.css";
 import { BACKEND_SERVER_URL } from "../../Config/Config";
 import { formatNumber } from "../../utils/formatNumber";
+import { formatToFixed3Strict } from "../../utils/formatToFixed3Strict";
 
 const Advancereport = () => {
   const [transactions, setTransactions] = useState([]);
@@ -73,9 +74,9 @@ const Advancereport = () => {
                 <td>
                   {txn.type === "Cash"
                     ? `₹${formatNumber(txn.value, 2)}`
-                    : `${formatNumber(txn.value, 3)}g`}
+                    : `${formatToFixed3Strict(txn.value)}g`}
                 </td>
-                <td>{formatNumber(txn.purity, 3) || "-"}</td>
+                <td>{formatToFixed3Strict(txn.purity) || "-"}</td>
                 <td>{txn.touch ? `${formatNumber(txn.touch, 3)}%` : "-"}</td>
                 <td>
                   {txn.goldRate && txn.type === "Cash"
@@ -100,7 +101,7 @@ const Advancereport = () => {
               }}
             >
               <td colSpan="4">Total Purity:</td>
-              <td>{formatNumber(totalPurity, 3)}g</td>
+              <td>{formatToFixed3Strict(totalPurity)}g</td>
               <td colSpan="2  "></td>
             </tr>
           </tfoot>
