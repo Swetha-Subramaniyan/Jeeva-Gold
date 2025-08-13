@@ -230,9 +230,6 @@ const PrintableBill = React.forwardRef((props, ref) => {
                   <strong>{formatNumber(totalAmount, 2)}</strong>
                 </td>
 
-                <div className="no-prints-bill">
-                  <td style={styles.td}></td>
-                </div>
               </tr>
 
               <tr>
@@ -242,9 +239,6 @@ const PrintableBill = React.forwardRef((props, ref) => {
                 <td style={styles.td}></td>
                 <td style={styles.td}>{formatNumber(hallmarkCharges, 2)}</td>
 
-                <div className="no-prints-bill">
-                  <td style={styles.td}></td>
-                </div>
               </tr>
               <tr>
                 <td style={styles.td} colSpan={5}>
@@ -267,9 +261,6 @@ const PrintableBill = React.forwardRef((props, ref) => {
                   </strong>
                 </td>
 
-                <div className="no-prints-bill">
-                  <td style={styles.td}></td>
-                </div>
               </tr>
             </tbody>
           </table>
