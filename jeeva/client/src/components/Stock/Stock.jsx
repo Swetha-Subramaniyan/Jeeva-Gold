@@ -599,6 +599,7 @@ const Stock = () => {
                 value={formData.purity}
                 thousandSeparator=","
                 decimalScale={3}
+                fixedDecimalScale={true} 
                 allowNegative={false}
                 disabled
                 style={{
