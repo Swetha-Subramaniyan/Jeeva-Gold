@@ -381,6 +381,7 @@ const ReceivedDetails = ({
                   }}
                   thousandSeparator=","
                   decimalScale={3}
+                  fixedDecimalScale={true} 
                   allowNegative={false}
                   disabled={
                     (isViewMode && !row.isNew) ||
