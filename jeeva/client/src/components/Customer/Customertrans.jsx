@@ -58,7 +58,9 @@ const Customertrans = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+
     const updatedTransaction = { ...newTransaction, [name]: value };
+    console.log("handleChange", name, value, updatedTransaction);
 
     if (name === "cashValue" && updatedTransaction.type === "Cash") {
       updatedTransaction.value = value;
@@ -77,12 +79,15 @@ const Customertrans = () => {
         updatedTransaction.purity = formatToFixed3Strict((gold * touch) / 100);
       }
     } else if (name === "touch" && updatedTransaction.type === "Gold") {
+      updatedTransaction.value = value;
       const gold = parseFloat(updatedTransaction.goldValue);
       const touch = parseFloat(value);
       if (!isNaN(gold) && !isNaN(touch)) {
         updatedTransaction.purity = formatToFixed3Strict((gold * touch) / 100);
       }
     }
+
+    console.log("last", updatedTransaction)
 
     setNewTransaction(updatedTransaction);
   };
@@ -105,6 +110,8 @@ const Customertrans = () => {
   const addTransaction = async (e) => {
     e.preventDefault();
     setError("");
+
+    console.log("sssssssssssss new", newTransaction);
 
     try {
       if (!newTransaction.date || newTransaction.type === "Select") {
@@ -199,11 +206,14 @@ const Customertrans = () => {
 
   const totals = filteredTransactions.reduce(
     (acc, transaction) => {
-      acc.totalPurity += parseFloat(formatToFixed3Strict(transaction.purity)) || 0;
+      acc.totalPurity +=
+        parseFloat(formatToFixed3Strict(transaction.purity)) || 0;
       return acc;
     },
     { totalPurity: 0 }
   );
+
+  console.log("Sssssssss", transactions);
 
   return (
     <div className="customer-transactions">
@@ -383,10 +393,15 @@ const Customertrans = () => {
                           target: { name: "touch", value: values.floatValue },
                         });
                         if (newTransaction.goldValue && values.floatValue) {
+                          
                           const updatedTransaction = { ...newTransaction };
+
+                          console.log("in 111111", updatedTransaction);
+                          
                           updatedTransaction.purity =
                             (newTransaction.goldValue * values.floatValue) /
                             100;
+                          console.log("in", updatedTransaction);
                           setNewTransaction(updatedTransaction);
                         }
                       }}
@@ -402,8 +417,6 @@ const Customertrans = () => {
                       }}
                     />
                   </label>
-
-                 
 
                   <label>
                     Purity (grams):
