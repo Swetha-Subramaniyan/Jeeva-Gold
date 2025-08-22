@@ -87,7 +87,7 @@ const Customertrans = () => {
       }
     }
 
-    console.log("last", updatedTransaction)
+    console.log("last", updatedTransaction);
 
     setNewTransaction(updatedTransaction);
   };
@@ -389,21 +389,18 @@ const Customertrans = () => {
                       name="touch"
                       value={newTransaction.touch}
                       onValueChange={(values) => {
-                        handleChange({
-                          target: { name: "touch", value: values.floatValue },
-                        });
-                        if (newTransaction.goldValue && values.floatValue) {
-                          
-                          const updatedTransaction = { ...newTransaction };
+                        const updatedTransaction = {
+                          ...newTransaction,
+                          touch: values.floatValue,
+                        };
 
-                          console.log("in 111111", updatedTransaction);
-                          
-                          updatedTransaction.purity =
-                            (newTransaction.goldValue * values.floatValue) /
-                            100;
-                          console.log("in", updatedTransaction);
-                          setNewTransaction(updatedTransaction);
+                        if (updatedTransaction.goldValue && values.floatValue) {
+                          updatedTransaction.purity = formatToFixed3Strict(
+                            (updatedTransaction.goldValue * values.floatValue) /
+                              100
+                          );
                         }
+                        setNewTransaction(updatedTransaction);
                       }}
                       thousandSeparator=","
                       decimalScale={2}
