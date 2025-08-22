@@ -225,6 +225,28 @@ const CustomerReport = () => {
     );
   };
 
+  const getCustomerBalanceDetailss = (bill) => {
+    if (!bill.receivedDetails || !Array.isArray(bill.receivedDetails)) {
+      return "No payments received";
+    }
+
+    const balanceInfo = calculateBillBalance(bill, bill.customerId);
+
+    const customerBalance = balanceInfo.balance > 0 ? balanceInfo.balance : 0;
+
+    if (balanceInfo.advanceUsed > 0 && !(balanceInfo.usedFromAdvance > 0)) {
+      return balanceInfo.advanceUsed - customerBalance;
+    } else {
+      return customerBalance;
+    }
+  };
+
+const calculateTotalCustomerBalance = () => {
+  return filteredBills.reduce((total, bill) => {
+    return total + getCustomerBalanceDetailss(bill);
+  }, 0);
+};
+
   const getAdvanceDetailsSummary = (bill) => {
     if (!bill.receivedDetails || !Array.isArray(bill.receivedDetails)) {
       return "No payments received";
@@ -298,7 +320,7 @@ const CustomerReport = () => {
       result = result.filter((txn) => txn.customerId === selectedCustomer.id);
     }
 
-    if (startDate && startDate != endDate) {
+    if (startDate) {
       result = result.filter(
         (txn) => new Date(txn.date) >= new Date(startDate)
       );
@@ -315,7 +337,7 @@ const CustomerReport = () => {
 
   const calculateTotalAdvanceAvailable = () => {
     const filteredTxns = getFilteredTransactions();
-    console.log("sss", filteredTxns);
+    console.log("filtered transssss", filteredTxns);
     return filteredTxns.reduce((sum, txn) => sum + (txn.purity || 0), 0);
   };
 
@@ -357,6 +379,13 @@ const CustomerReport = () => {
     }, 0);
   };
 
+  const handleReset = () => {
+    setSelectedCustomer(null);
+    const today = new Date().toISOString().split("T")[0];
+    setStartDate(today);
+    setEndDate(today);
+  };
+
   return (
     <Box sx={{ p: 3 }}>
       <Typography style={{ textAlign: "center" }} variant="h5" gutterBottom>
@@ -394,6 +423,10 @@ const CustomerReport = () => {
           InputLabelProps={{ shrink: true }}
           sx={{ minWidth: 200 }}
         />
+
+        <Button variant="outlined" onClick={handleReset}>
+          Clear
+        </Button>
       </Box>
 
       <TableContainer component={Paper}>
@@ -497,28 +530,59 @@ const CustomerReport = () => {
 
               <TableCell>
                 <strong>
-                  {formatToFixed3Strict(
+                 {/*  {formatToFixed3Strict(
                     calculateTotalAdvanceAvailable() -
-                      filteredBills.reduce((sum, bill) => {
-                        const { balance } = calculateBillBalance(
-                          bill,
-                          bill.customerId
+                      (() => {
+                        const reduceValue = filteredBills.reduce(
+                          (sum, bill) => {
+                            const { balance } = calculateBillBalance(
+                              bill,
+                              bill.customerId
+                            );
+                            return sum + (balance > 0 ? balance : 0);
+                          },
+                          0
                         );
-                        return sum + (balance > 0 ? balance : 0);
-                      }, 0) >
+
+                        console.log("🔹 reduceValue:", reduceValue);
+                        console.log(
+                          "🔹 totalAdvance:",
+                          calculateTotalAdvanceAvailable()
+                        );
+
+                        return reduceValue;
+                      })() >
                       0
-                      ? 0
-                      : Math.abs(
+                      ? (console.log("✅ TRUE block"), 0)
+                      : (console.log("❌ FALSE block"),
+                        Math.abs(
                           calculateTotalAdvanceAvailable() -
-                            filteredBills.reduce((sum, bill) => {
-                              const { balance } = calculateBillBalance(
-                                bill,
-                                bill.customerId
+                            (() => {
+                              const reduceValue = filteredBills.reduce(
+                                (sum, bill) => {
+                                  const { balance } = calculateBillBalance(
+                                    bill,
+                                    bill.customerId
+                                  );
+                                  return sum + (balance > 0 ? balance : 0);
+                                },
+                                0
                               );
-                              return sum + (balance > 0 ? balance : 0);
-                            }, 0)
-                        )
-                  )}
+
+                              console.log(
+                                "🔹 reduceValue (FALSE block):",
+                                reduceValue
+                              );
+                              console.log(
+                                "🔹 totalAdvance (FALSE block):",
+                                calculateTotalAdvanceAvailable()
+                              );
+
+                              return reduceValue;
+                            })()
+                        ))
+                  )} */}
+                   {formatToFixed3Strict(calculateTotalCustomerBalance())}g
                   g
                 </strong>
               </TableCell>

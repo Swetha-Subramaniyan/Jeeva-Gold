@@ -77,7 +77,15 @@ const Advancereport = () => {
                     : `${formatToFixed3Strict(txn.value)}g`}
                 </td>
                 <td>{formatToFixed3Strict(txn.purity) || "-"}</td>
-                <td>{txn.touch ? `${formatNumber(txn.touch, 3)}%` : "-"}</td>
+                <td>
+                  {txn.type === "Cash"
+                    ? txn.touch
+                      ? `${formatNumber(txn.touch, 3)}%`
+                      : "-"
+                    : txn.touch
+                    ? `${formatNumber(txn.touch, 3)}%`
+                    : "%"}
+                </td>
                 <td>
                   {txn.goldRate && txn.type === "Cash"
                     ? `₹${formatNumber(txn.goldRate, 2)}`
