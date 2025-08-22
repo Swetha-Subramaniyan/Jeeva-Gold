@@ -103,8 +103,6 @@ const PrintableBill = React.forwardRef((props, ref) => {
     let total = parseFloat(totalAmount);
     let hallmark = parseFloat(hallmarkCharges);
 
-   
-
     rows.forEach((row) => {
       if (row.mode === "weight" && row.purityWeight) {
         pure -= parseFloat(row.purityWeight);
@@ -146,7 +144,6 @@ const PrintableBill = React.forwardRef((props, ref) => {
   const lastRowWithAmount = [...rows]
     .reverse()
     .find((row) => parseFloat(row.goldRate) > 0);
-
 
   const totalBalance = lastRowWithAmount
     ? currentBalances.pureBalance * parseFloat(lastRowWithAmount.goldRate)
@@ -229,7 +226,6 @@ const PrintableBill = React.forwardRef((props, ref) => {
                 <td style={styles.td}>
                   <strong>{formatNumber(totalAmount, 2)}</strong>
                 </td>
-
               </tr>
 
               <tr>
@@ -238,7 +234,6 @@ const PrintableBill = React.forwardRef((props, ref) => {
                 </td>
                 <td style={styles.td}></td>
                 <td style={styles.td}>{formatNumber(hallmarkCharges, 2)}</td>
-
               </tr>
               <tr>
                 <td style={styles.td} colSpan={5}>
@@ -260,7 +255,6 @@ const PrintableBill = React.forwardRef((props, ref) => {
                         )}
                   </strong>
                 </td>
-
               </tr>
             </tbody>
           </table>
@@ -286,7 +280,14 @@ const PrintableBill = React.forwardRef((props, ref) => {
                 {rows.map((row, index) => (
                   <tr key={index}>
                     <td style={styles.td}>{index + 1}</td>
-                    <td style={styles.td}>{row.date}</td>
+                    <td style={styles.td}>
+                      {row.date
+                        ? new Date(row.date)
+                            .toLocaleDateString("en-GB")
+                            .replace(/\//g, "-")
+                        : ""}
+                    </td>
+
                     <td style={styles.td}>
                       {formatToFixed3Strict(row.givenGold)}
                     </td>
@@ -306,7 +307,9 @@ const PrintableBill = React.forwardRef((props, ref) => {
 
         <div style={styles.flex}>
           <p style={styles.flexFirstChild}>
-            <b>Pure Balance: {formatToFixed3Strict(currentBalances.pureBalance)}g</b>
+            <b>
+              Pure Balance: {formatToFixed3Strict(currentBalances.pureBalance)}g
+            </b>
           </p>
           <p style={styles.flexSecondChild}>
             <b>
@@ -317,7 +320,12 @@ const PrintableBill = React.forwardRef((props, ref) => {
           <p style={styles.flexLastChild}>
             <b>
               Total Balance: ₹{" "}
-              {totalBalance > 0 ? formatNumber(totalBalance+currentBalances.hallmarkBalance, 2) : formatNumber(totalAmount+hallmarkCharges, 2)}
+              {totalBalance > 0
+                ? formatNumber(
+                    totalBalance + currentBalances.hallmarkBalance,
+                    2
+                  )
+                : formatNumber(totalAmount + hallmarkCharges, 2)}
             </b>
           </p>
         </div>

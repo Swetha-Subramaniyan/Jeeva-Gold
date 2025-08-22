@@ -83,7 +83,7 @@ const DailySalesReport = () => {
         const pureBalanceForMetric = itemPurityTotal - received.pure;
         const hallmarkBalanceForMetric = hallmarkCharge - received.hallmark;
 
-        const grandTotalAmount = bills.reduce((total, bill) => {
+        const grandTotalAmount = filteredBills.reduce((total, bill) => {
           const itemTotal = bill.items.reduce((sum, item) => {
             return sum + item.goldRate * item.purity;
           }, 0);
@@ -190,7 +190,7 @@ const DailySalesReport = () => {
     return totalCashBalance;
   };
 
-  console.log("sssss", selectedBill)
+  console.log("sssss", filteredBills)
 
   return (
     <Box sx={{ p: 3 }}>
