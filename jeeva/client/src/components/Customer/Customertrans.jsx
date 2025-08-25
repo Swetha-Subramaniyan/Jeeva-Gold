@@ -362,19 +362,18 @@ const Customertrans = () => {
                       name="goldValue"
                       value={newTransaction.goldValue}
                       onValueChange={(values) => {
-                        handleChange({
-                          target: {
-                            name: "goldValue",
-                            value: values.floatValue,
-                          },
-                        });
+                        setNewTransaction((prev) => {
+                          const updated = {
+                            ...prev,
+                            goldValue: values.floatValue,
+                          };
 
-                        if (values.floatValue && newTransaction.touch) {
-                          const updatedTransaction = { ...newTransaction };
-                          updatedTransaction.purity =
-                            (values.floatValue * newTransaction.touch) / 100;
-                          setNewTransaction(updatedTransaction);
-                        }
+                          if (values.floatValue && prev.touch) {
+                            updated.purity =
+                              (values.floatValue * prev.touch) / 100;
+                          }
+                          return updated;
+                        });
                       }}
                       thousandSeparator=","
                       decimalScale={3}

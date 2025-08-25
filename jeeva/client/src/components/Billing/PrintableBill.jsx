@@ -194,7 +194,7 @@ const PrintableBill = React.forwardRef((props, ref) => {
                     {item.coinValue}g {item.percentage}
                   </td>
                   <td style={styles.td}>{item.quantity}</td>
-                  <td style={styles.td}>{item.percentage}</td>
+                  <td style={styles.td}>{item.touch}</td>
 
                   <td style={styles.td}>{formatToFixed3Strict(item.weight)}</td>
                   <td style={styles.td}>{formatToFixed3Strict(item.purity)}</td>
