@@ -216,7 +216,7 @@ const CustomerReport = () => {
       <>
         {balanceInfo.advanceUsed > 0 && !(balanceInfo.usedFromAdvance > 0) ? (
           <div>
-            {formatToFixed3Strict(balanceInfo.advanceUsed - customerBalance)}g
+            {formatToFixed3Strict(Math.abs(balanceInfo.advanceUsed - customerBalance))}g
           </div>
         ) : (
           <div>{formatToFixed3Strict(customerBalance)}g</div>
@@ -243,7 +243,7 @@ const CustomerReport = () => {
 
 const calculateTotalCustomerBalance = () => {
   return filteredBills.reduce((total, bill) => {
-    return total + getCustomerBalanceDetailss(bill);
+    return total + Math.abs(getCustomerBalanceDetailss(bill));
   }, 0);
 };
 
@@ -530,59 +530,8 @@ const calculateTotalCustomerBalance = () => {
 
               <TableCell>
                 <strong>
-                 {/*  {formatToFixed3Strict(
-                    calculateTotalAdvanceAvailable() -
-                      (() => {
-                        const reduceValue = filteredBills.reduce(
-                          (sum, bill) => {
-                            const { balance } = calculateBillBalance(
-                              bill,
-                              bill.customerId
-                            );
-                            return sum + (balance > 0 ? balance : 0);
-                          },
-                          0
-                        );
-
-                        console.log("🔹 reduceValue:", reduceValue);
-                        console.log(
-                          "🔹 totalAdvance:",
-                          calculateTotalAdvanceAvailable()
-                        );
-
-                        return reduceValue;
-                      })() >
-                      0
-                      ? (console.log("✅ TRUE block"), 0)
-                      : (console.log("❌ FALSE block"),
-                        Math.abs(
-                          calculateTotalAdvanceAvailable() -
-                            (() => {
-                              const reduceValue = filteredBills.reduce(
-                                (sum, bill) => {
-                                  const { balance } = calculateBillBalance(
-                                    bill,
-                                    bill.customerId
-                                  );
-                                  return sum + (balance > 0 ? balance : 0);
-                                },
-                                0
-                              );
-
-                              console.log(
-                                "🔹 reduceValue (FALSE block):",
-                                reduceValue
-                              );
-                              console.log(
-                                "🔹 totalAdvance (FALSE block):",
-                                calculateTotalAdvanceAvailable()
-                              );
-
-                              return reduceValue;
-                            })()
-                        ))
-                  )} */}
-                   {formatToFixed3Strict(calculateTotalCustomerBalance())}g
+                 
+                   {formatToFixed3Strict(calculateTotalCustomerBalance())}
                   g
                 </strong>
               </TableCell>
