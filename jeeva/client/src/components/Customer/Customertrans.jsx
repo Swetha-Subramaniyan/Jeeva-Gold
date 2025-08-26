@@ -294,29 +294,27 @@ const Customertrans = () => {
                 <>
                   <label>
                     Cash Amount (₹):
-                    <NumericFormat
-                      name="cashValue"
-                      value={newTransaction.cashValue}
-                      onValueChange={(values) => {
-                        handleChange({
-                          target: {
-                            name: "cashValue",
-                            value: values.floatValue,
-                          },
-                        });
+                   <NumericFormat
+  name="cashValue"
+  value={newTransaction.cashValue}
+  onValueChange={(values) => {
+    const floatVal = values.floatValue || 0;
 
-                        if (values.floatValue && goldRate) {
-                          const updatedTransaction = { ...newTransaction };
-                          updatedTransaction.purity =
-                            values.floatValue / goldRate;
-                          setNewTransaction(updatedTransaction);
-                        }
-                      }}
-                      thousandSeparator=","
-                      decimalScale={2}
-                      allowNegative={false}
-                      required
-                    />
+    // calculate purity safely
+    const purityVal = goldRate ? floatVal / goldRate : "";
+
+    setNewTransaction((prev) => ({
+      ...prev,
+      cashValue: floatVal,
+      purity: purityVal,
+    }));
+  }}
+  thousandSeparator=","
+  decimalScale={2}
+  allowNegative={false}
+  required
+/>
+
                   </label>
 
                   <label>
