@@ -98,6 +98,8 @@ const PrintableBill = React.forwardRef((props, ref) => {
     },
   };
 
+  console.log("Rendering PrintableBill with props:", props);
+
   const calculateBalancess = () => {
     let pure = parseFloat(pureBalance);
     let total = parseFloat(totalAmount);
@@ -321,11 +323,17 @@ const PrintableBill = React.forwardRef((props, ref) => {
             <b>
               Total Balance: ₹{" "}
               {totalBalance > 0
-                ? formatNumber(
-                    totalBalance + currentBalances.hallmarkBalance,
-                    2
-                  )
-                : formatNumber(totalAmount + hallmarkCharges, 2)}
+                ? (() => {
+                    console.log("✅ IF block executed");
+                    return formatNumber(
+                      totalBalance + currentBalances.hallmarkBalance,
+                      2
+                    );
+                  })()
+                : (() => {totalBalance
+                    console.log("❌ ELSE block executed");
+                    return formatNumber(totalBalance, 2);
+                  })()}
             </b>
           </p>
         </div>
