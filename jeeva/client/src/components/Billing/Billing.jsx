@@ -363,8 +363,7 @@ const Billing = () => {
     </html>
   `;
 
-  //const printWindow = window.open('', '_blank', 'width=1000,height=800');
-  const printWindow = window.open('', '_self');
+  const printWindow = window.open('', '_blank', 'width=1000,height=800');
   printWindow.document.write(printHtml);
   printWindow.document.close();
 };

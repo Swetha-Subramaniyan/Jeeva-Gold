@@ -98,6 +98,8 @@ const PrintableBill = React.forwardRef((props, ref) => {
     },
   };
 
+  console.log("Rendering PrintableBill with props:", props);
+
   const calculateBalancess = () => {
     let pure = parseFloat(pureBalance);
     let total = parseFloat(totalAmount);
